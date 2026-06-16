@@ -1,0 +1,7 @@
+﻿variable,tipo_dato,valores_faltantes,valores_infinitos,valores_unicos
+severity,int64,0,0,6
+ndvi_med,float64,0,0,211
+evi_med,float64,0,0,210
+ndre_med,float64,0,0,211
+gli_med,float64,0,0,210
+height_med,float64,0,0,206

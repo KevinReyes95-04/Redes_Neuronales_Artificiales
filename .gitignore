@@ -1,0 +1,11 @@
+# Entorno virtual local
+.env/
+
+# Herramientas temporales de desarrollo
+.tools/
+
+# Python y Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.matplotlib/

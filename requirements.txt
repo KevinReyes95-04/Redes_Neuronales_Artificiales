@@ -1,0 +1,21 @@
+# Entorno de análisis
+numpy>=1.26,<3
+pandas>=2.2,<3
+scipy>=1.13,<2
+openpyxl>=3.1,<4
+
+# Modelado y evaluación
+scikit-learn>=1.5,<2
+imbalanced-learn>=0.12,<1
+tensorflow>=2.18,<3
+statsmodels>=0.14,<1
+
+# Análisis espacial
+libpysal>=4.12,<5
+esda>=2.6,<3
+
+# Visualización y trabajo reproducible
+matplotlib>=3.9,<4
+seaborn>=0.13,<1
+jupyterlab>=4.2,<5
+ipykernel>=6.29,<8
