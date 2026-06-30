@@ -1,0 +1,20 @@
+# Pregunta 2: Verifique si las categorías de severidad están balanceadas. En caso de desequilibrio notable, proponga y justifique al menos una estrategia para manejarlo (sobremuestreo, submuestreo, ponderación de clases u otra). Implemente la estrategia elegida y explique su efecto esperado sobre las métricas de ajuste.
+
+
+## Verificación del balance de clases
+
+El conjunto de datos cuenta con 212 observaciones distribuidas en seis categorías de severidad. Como se observa en la Figura 6, la distribución no es uniforme: la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la más escasa (n = 13, 6.2%), seguida de la categoría 1 —planta sana— con apenas 27 observaciones (12.9%).
+
+El ratio mínimo/máximo de 0.28 confirma un *desequilibrio moderado-alto*, superando el umbral crítico de 0.5 habitualmente reportado en la literatura. Este patrón es problemático porque una red neuronal entrenada sin corrección tendería a favorecer las clases mayoritarias (2, 4 y 5), produciendo una exactitud global engañosamente alta mientras falla sistemáticamente en los extremos del espectro de severidad —precisamente las categorías de mayor relevancia agronómica.
+
+## Estrategia implementada: SMOTE
+
+Se optó por SMOTE (Synthetic Minority Over-sampling Technique) como estrategia de balanceo. Este método genera observaciones sintéticas para las clases subrepresentadas mediante interpolación lineal entre cada muestra minoritaria y sus k vecinos más cercanos, introduciendo variabilidad controlada y evitando la simple duplicación de registros existentes.
+Con un tamaño muestral de n = 212, el submuestreo aleatorio (RandomUnderSampler) fue descartado por implicar una pérdida severa de información —el conjunto de entrenamiento quedaría reducido a aproximadamente 78 observaciones—. La ponderación de clases (class_weight='balanced') constituye una alternativa válida pero no corrige la subrepresentación en el espacio de características, solo repondera la función de pérdida.
+
+Un aspecto metodológico crítico es que SMOTE se aplicó exclusivamente sobre el conjunto de entrenamiento, tras realizar la partición de datos. Aplicarlo antes introduciría data leakage: muestras sintéticas derivadas de observaciones reales del conjunto de prueba contaminarían el entrenamiento, inflando artificialmente las métricas de evaluación.
+Como efecto esperado, la aplicación de SMOTE debería mejorar el recall en las clases 1 y 6, redistribuir los errores de forma más equitativa en la matriz de confusión y elevar el macro F1-score, que resulta la métrica más informativa bajo condiciones de desequilibrio al ponderar por igual todas las categorías.
+
+## Conclusión
+
+me das un párrafo de copnclusión por favor?En conclusión, el análisis de balance de clases evidenció un desequilibrio moderado-alto (ratio 0.28) que, de no corregirse, comprometería la capacidad del modelo para detectar adecuadamente las categorías de severidad extrema —precisamente las más relevantes desde el punto de vista fitosanitario. La implementación de SMOTE sobre el conjunto de entrenamiento constituye una respuesta metodológicamente sólida a este problema, al generar variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación. Su aplicación estrictamente posterior a la partición de datos garantiza que las métricas reportadas reflejen el desempeño real del modelo frente a datos no vistos, condición indispensable para que los resultados sean válidos y reproducibles en un contexto de apoyo a la decisión agronómica.

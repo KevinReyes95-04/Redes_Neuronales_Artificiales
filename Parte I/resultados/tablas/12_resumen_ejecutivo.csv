@@ -1,0 +1,5 @@
+﻿Modelo,Accuracy,AUC-ROC
+Reg. Logística,0.7188,0.9464
+MLP Binario,0.8125,0.9107
+MLP Dropout,0.75,0.9286
+Random Forest,0.8438,0.8929
