@@ -1,0 +1,34 @@
+# Pregunta 5: Entrene al menos cuatro perceptrones multicapa variando sistemáticamente el número de capas ocultas, neuronas por capa y tasa de aprendizaje. Para cada configuración reporte la pérdida en entrenamiento y validación por época. ¿En qué configuraciones observa indicios de sobreajuste o subajuste?
+
+Se entrenaron ocho arquitecturas de perceptrón multicapa orientadas a la clasificación multiclase de la severidad de *Verticillium sp.* (seis categorías: 1 = sano, 2 a 6 = niveles crecientes de severidad), variando el número de capas ocultas (1, 2 y 3), el número de neuronas por capa (16, 32 y 64, con al menos dos tamaños evaluados en cada número de capas) y la tasa de aprendizaje (0.001, 0.01 y 0.1). No se realizó un barrido factorial completo de las 27 combinaciones posibles, sino un diseño curado de ocho configuraciones que cumple los mínimos exigidos por el enunciado; como consecuencia, la tasa de aprendizaje no varía de forma independiente dentro de cada arquitectura, sino que está parcialmente confundida con la combinación capas-neuronas, lo que se tiene en cuenta al interpretar su efecto más adelante.
+
+El conjunto de datos (n = 212) presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones), por lo que el entrenamiento se realizó sobre el conjunto de entrenamiento balanceado mediante SMOTE, mientras que validación y prueba se mantuvieron sin sobremuestreo. Con el esquema de partición 70/15/15 de la Pregunta 3, los tamaños resultantes fueron *entrenamiento = 198*, *validación = 32* y *prueba = 32* observaciones. Este tamaño de validación y prueba es reducido y debe tenerse presente como límite al interpretar diferencias pequeñas entre configuraciones, pues con 32 observaciones una sola predicción adicional correcta ya mueve la exactitud en cerca de 3 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida *softmax*, con entropía cruzada categórica dispersa como función de pérdida y *early stopping* monitoreando la pérdida de validación.
+
+La selección de la mejor configuración se hizo por la menor pérdida de validación, y no por la exactitud de prueba: usar el conjunto de prueba para escoger hiperparámetros lo convertiría, de facto, en una extensión del conjunto de validación, contaminando la evaluación final con un sesgo optimista, justamente el problema que la partición en tres conjuntos de la Pregunta 3 busca evitar. La exactitud de prueba se reporta únicamente como referencia descriptiva del modelo ya seleccionado.
+
+## Resultados obtenidos
+
+| Configuración | Capas | Neuronas | Tasa aprendizaje | Épocas | Loss Train | Loss Val | Acc Train | Acc Val | Brecha Train-Val | Acc Test |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1L-16N-lr0.001 | 1 | 16 | 0.001 | 132 | 0.9101 | 1.1765 | 0.5960 | 0.4375 | +0.1585 | 0.2500 |
+| 1L-32N-lr0.01  | 1 | 32 | 0.01  | 24  | 0.8437 | 1.1655 | 0.6364 | 0.5000 | +0.1364 | 0.3125 |
+| 2L-16N-lr0.01  | 2 | 16 | 0.01  | 26  | 0.7985 | 1.2243 | 0.6818 | 0.6250 | +0.0568 | 0.3750 |
+| 2L-32N-lr0.001 | 2 | 32 | 0.001 | 44  | 0.8845 | 1.1567 | 0.6162 | 0.5000 | +0.1162 | 0.3438 |
+| 2L-64N-lr0.1   | 2 | 64 | 0.1   | 36  | 0.9285 | 1.5136 | 0.5758 | 0.5938 | −0.0180 | 0.4062 |
+| 3L-16N-lr0.001 | 3 | 16 | 0.001 | 55  | 0.8706 | 1.2510 | 0.6162 | 0.5000 | +0.1162 | 0.3438 |
+| 3L-32N-lr0.01  | 3 | 32 | 0.01  | 23  | 0.7581 | 1.2309 | 0.6515 | 0.5938 | +0.0578 | 0.4688 |
+| 3L-64N-lr0.001 | 3 | 64 | 0.001 | 30  | 0.8065 | 1.2189 | 0.6768 | 0.5000 | +0.1768 | 0.3438 |
+
+El modelo seleccionado es *2L-32N-lr0.001* (menor pérdida de validación, 1.1567), con exactitud de validación de *0.5000*, brecha Train-Val de *0.1162* y exactitud de prueba de referencia de *0.3438*. Esta configuración se usa como base para las Preguntas 6, 7, 9, 10, 17, 18 y 19.
+
+Vale la pena resaltar que el criterio de selección cambia la respuesta: por mayor exactitud de validación habría ganado *2L-16N-lr0.01* (0.6250), y por mayor exactitud de prueba habría ganado *3L-32N-lr0.01* (0.4688). Esto confirma que la elección del criterio de selección no es un detalle técnico menor, sino una decisión que puede cambiar por completo qué arquitectura se reporta como la mejor.
+
+## Diagnóstico de sobreajuste y subajuste
+
+La configuración más simple, *1L-16N-lr0.001*, necesitó 132 épocas —la más larga de todas— para alcanzar apenas una exactitud de entrenamiento de 0.5960, la más baja de la tabla junto con *2L-64N-lr0.1* (0.5758). Esto es consistente con una capacidad de representación insuficiente: la red tarda mucho en converger y aun así logra un ajuste mediocre, señal típica de subajuste. En el extremo opuesto, las brechas Train-Val más altas corresponden a *3L-64N-lr0.001* (0.1768) y a la misma *1L-16N-lr0.001* (0.1585), lo que indica que tanto la arquitectura más grande como la más simple presentan cierto grado de sobreajuste, aunque por razones distintas: la primera memoriza el conjunto de entrenamiento —incluidas las muestras sintéticas de SMOTE— sin transferir esa mejora a validación, mientras que la segunda sobreajusta levemente antes de que el *early stopping* actúe, tras muchas épocas de ajuste lento.
+
+Las brechas más bajas se observan en *2L-16N-lr0.01* (0.0568) y *3L-32N-lr0.01* (0.0578), ambas con tasa de aprendizaje intermedia, lo que sugiere que dentro de este diseño la tasa 0.01 favorece una convergencia más equilibrada que 0.001 —más lenta y con mayor tendencia a sobreajustar antes de detenerse— o que 0.1, que resulta inestable: la configuración *2L-64N-lr0.1* es la única con brecha negativa (−0.0180) y, a la vez, la pérdida de validación más alta de toda la tabla (1.5136), lo que no refleja buena generalización sino un entrenamiento inestable en el que los pasos de actualización, al ser demasiado grandes, no permiten una reducción consistente de la pérdida.
+
+## Conclusión
+
+La comparación sistemática muestra que la arquitectura más simple subajusta, que las arquitecturas de mayor capacidad con tasa de aprendizaje baja tienden a sobreajustar más, y que una tasa de aprendizaje alta produce inestabilidad en la convergencia sin ganancia clara en calibración. El mejor balance según la pérdida de validación se obtuvo con una red de 2 capas y 32 neuronas por capa y tasa de aprendizaje de 0.001. Deben señalarse dos limitaciones del análisis: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje del de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que las diferencias entre configuraciones cercanas deben interpretarse con cautela. Esta selección, hecha exclusivamente con el conjunto de validación, es la que se usa como punto de partida para las preguntas siguientes, reservando el conjunto de prueba para la evaluación final reportada en la Pregunta 7.

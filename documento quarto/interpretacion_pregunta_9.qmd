@@ -1,0 +1,24 @@
+# Pregunta 9: Entrene un perceptrón multicapa para el problema binario resultante, repitiendo el esquema de partición entrenamiento/validación/prueba. Compare el desempeño con el modelo de clasificación múltiple de la Parte I. ¿Mejora la clasificación al reducir el número de clases?
+
+Se entrenó un perceptrón multicapa binario con la misma arquitectura seleccionada en la Pregunta 5 (2 capas ocultas, 32 neuronas, tasa de aprendizaje 0.001), salida sigmoide y pérdida de entropía cruzada binaria, sobre la partición 70/15/15 del problema binario, con SMOTE aplicado únicamente al conjunto de entrenamiento.
+
+## Resultados obtenidos
+
+Con el umbral por defecto de 0.5, la exactitud de prueba fue de *0.8438* (27/32), con una matriz de confusión de *TN = 4, FP = 0, FN = 5, TP = 23*. Las métricas por clase se resumen a continuación:
+
+| Clase | Precisión | Sensibilidad | F1 | Soporte |
+|---|---|---|---|---|
+| Sano | 0.44 | 1.00 | 0.62 | 4 |
+| Enfermo | 1.00 | 0.82 | 0.90 | 28 |
+| Macro-promedio | 0.72 | 0.91 | 0.76 | 32 |
+| Promedio ponderado | 0.93 | 0.84 | 0.87 | 32 |
+
+## Comparación con el modelo multiclase
+
+La exactitud pasa de *0.3438* en el modelo multiclase a *0.8438* en el binario, y el F1 ponderado de *0.30* a *0.87*, una mejora sustancial que, sin embargo, no debe interpretarse como que el problema binario sea "más fácil" en un sentido profundo. Dos razones estructurales explican buena parte de la diferencia: primero, el azar de referencia cambia, pues con seis clases balanceadas al azar la exactitud esperada es de apenas 17 %, mientras que con dos clases es de 50 %, de modo que parte de la mejora es simplemente aritmética; segundo, colapsar las clases elimina justo los errores que dominaban el modelo multiclase, ya que casi todos ellos eran confusiones entre clases adyacentes (Sev 1 con 2 con 3, y Sev 4 con 5 con 6), que al agruparse en una sola etiqueta "Enfermo" dejan de contar como error.
+
+La comparación tampoco es completamente equivalente, porque la exactitud favorece artificialmente a la clase mayoritaria, que en este caso es "Enfermo" (185 de 212 observaciones, cerca del 87 %). Con solo cuatro observaciones sanas en el conjunto de prueba, el modelo comete cero falsos positivos pero cinco falsos negativos con el umbral por defecto, es decir, cinco plantas realmente enfermas fueron clasificadas como sanas, que es precisamente el error más costoso en este contexto agronómico, como se discute en la Pregunta 10.
+
+## Conclusión
+
+Reducir el número de clases mejora de forma sustancial las métricas globales de exactitud y F1, pero esa mejora debe interpretarse con cautela: refleja en parte un problema estructuralmente más simple y una menor exposición a errores de vecindad ordinal, no necesariamente un modelo mejor calibrado frente al tipo de error que más importa en la práctica fitosanitaria.

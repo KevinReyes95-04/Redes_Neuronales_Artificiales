@@ -1,0 +1,42 @@
+# Pregunta 7: Para el modelo seleccionado en la Pregunta 5, reporte exactitud global, precisión, sensibilidad y F1 por clase, macro-promedio y promedio ponderado, matriz de confusión con interpretación, y curva ROC/AUC uno-contra-todos. ¿Qué categorías de severidad son más difíciles de clasificar? ¿A qué lo atribuye?
+
+Se evaluó el modelo *2L-32N-lr0.001*, entrenado con entropía cruzada categórica, sobre el conjunto de prueba (n = 32). La exactitud global obtenida fue de *0.3438* (11/32).
+
+## Resultados obtenidos
+
+La matriz de confusión, con filas correspondientes a la severidad real y columnas a la severidad predicha, es la siguiente:
+
+```
+         Pred:  1  2  3  4  5  6
+Real Sev 1   [  4  0  0  0  0  0 ]
+Real Sev 2   [  5  1  1  0  0  0 ]
+Real Sev 3   [  3  0  0  2  0  0 ]
+Real Sev 4   [  0  0  2  2  3  0 ]
+Real Sev 5   [  0  0  0  2  3  2 ]
+Real Sev 6   [  0  0  0  0  1  1 ]
+```
+
+Las métricas por clase, junto con el macro-promedio y el promedio ponderado, se resumen a continuación:
+
+| Clase | Precisión | Sensibilidad | F1 | Soporte |
+|---|---|---|---|---|
+| Sev 1 | 0.33 | 1.00 | 0.50 | 4 |
+| Sev 2 | 1.00 | 0.14 | 0.25 | 7 |
+| Sev 3 | 0.00 | 0.00 | 0.00 | 5 |
+| Sev 4 | 0.33 | 0.29 | 0.31 | 7 |
+| Sev 5 | 0.43 | 0.43 | 0.43 | 7 |
+| Sev 6 | 0.33 | 0.50 | 0.40 | 2 |
+| Macro-promedio | 0.40 | 0.39 | 0.31 | 32 |
+| Promedio ponderado | 0.45 | 0.34 | 0.30 | 32 |
+
+El AUC-ROC uno-contra-todos por clase fue de 1.00 para Sev 1, 0.817 para Sev 2, 0.726 para Sev 3, 0.726 para Sev 4, 0.869 para Sev 5 y 0.833 para Sev 6, con un macro-promedio de *0.828*.
+
+## Interpretación por categoría
+
+La severidad 3 es, con claridad, la categoría más difícil de clasificar: presenta precisión y sensibilidad de 0.00, pues ninguno de los cinco casos reales fue clasificado correctamente (tres se confundieron con Sev 1 y dos con Sev 4), y comparte el AUC-ROC más bajo (0.726) con Sev 4. Al ser una categoría intermedia en la escala ordinal, su señal espectral se superpone con la de sus vecinas más de lo que se diferencia de ellas. La severidad 2 muestra una asimetría reveladora: su precisión es de 1.00 —el único caso que el modelo predijo como Sev 2 efectivamente lo era— pero su sensibilidad es de apenas 0.14, ya que cinco de sus siete casos reales fueron clasificados como Sev 1. Esto sugiere que el modelo tiende a colapsar las severidades más leves hacia la clase Sev 1, posiblemente porque el contraste espectral entre plantas sanas y levemente enfermas es sutil. En la misma línea, la severidad 1 tiene sensibilidad perfecta (1.00) pero precisión baja (0.33), pues el modelo predice "Sev 1" con demasiada frecuencia, capturando erróneamente varios casos de Sev 2 y Sev 3; existe, por tanto, una tendencia sistemática a sobre-predecir la clase sana.
+
+Las severidades 5 y 6, en contraste, se clasifican relativamente mejor (F1 de 0.43 y 0.40, AUC de 0.869 y 0.833), lo que sugiere que el daño más avanzado deja una huella espectral más distintiva y separable del resto. En conjunto, el patrón encontrado es el típico de variables ordinales con clases intermedias: los errores del modelo son casi todos de vecindad —Sev 2 confundida con Sev 1, Sev 3 con Sev 1 o Sev 4, Sev 4 con Sev 3 o Sev 5— y no hay prácticamente ninguna confusión entre extremos alejados de la escala. Esto es alentador desde el punto de vista agronómico, pues el modelo rara vez confunde severidad leve con severidad grave, pero también evidencia que seis clases ordinales resultan demasiado finas para el tamaño de muestra disponible, con soportes de prueba de apenas dos a siete observaciones por clase.
+
+## Conclusión
+
+El desempeño global del modelo multiclase es modesto y desigual entre categorías: las clases extremas (1, 5 y 6) se separan razonablemente bien, mientras que las intermedias (2 y 3) resultan difíciles de distinguir de sus vecinas, en particular Sev 3, que no logra clasificarse correctamente en ningún caso. Esta limitación, más que un defecto puntual de la arquitectura, refleja la dificultad inherente de discriminar seis niveles ordinales con un tamaño muestral de 212 observaciones, y motiva directamente la simplificación a un problema binario que se explora en la Parte II del taller.
