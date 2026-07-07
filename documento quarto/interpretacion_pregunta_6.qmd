@@ -1,0 +1,15 @@
+# Pregunta 6: Implemente y compare dos criterios para cuantificar el error durante el entrenamiento: entropía cruzada categórica (CCE) y error cuadrático medio (MSE). ¿Cuál es más apropiado para un problema de clasificación múltiple? Fundamente su respuesta tanto teórica como empíricamente.
+
+Se entrenó la arquitectura seleccionada en la Pregunta 5 (*2L-32N-lr0.001*) dos veces, idéntica en todo salvo la función de pérdida: entropía cruzada categórica dispersa (CCE) y error cuadrático medio (MSE) sobre las etiquetas en formato *one-hot*.
+
+## Resultados obtenidos
+
+CCE obtuvo una exactitud de prueba de *0.3438* (11/32) y MSE obtuvo *0.3750* (12/32); MSE superó a CCE por un margen de exactamente una observación sobre 32 casos de prueba. Con un conjunto de prueba de este tamaño, una diferencia de una predicción correcta —cerca de 3 puntos porcentuales— no permite concluir que MSE sea empíricamente superior a CCE en este problema, pues es perfectamente compatible con ruido de muestreo. Reportar que "MSE ganó" como conclusión firme a partir de esta única corrida sería un error metodológico; el resultado empírico debe leerse únicamente como evidencia de que, en este caso, ambas funciones de pérdida producen un desempeño de prueba similar y bajo, no como evidencia de que MSE sea preferible.
+
+## Fundamento teórico
+
+La entropía cruzada categórica es la función de pérdida coherente con la capa de salida *softmax*: maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (*proper scoring rule*), que penaliza de forma creciente la confianza mal ubicada en la clase incorrecta, con gradientes bien escalados incluso cuando la predicción está muy alejada del valor real. El error cuadrático medio, en cambio, fue diseñado para variables continuas; aplicado sobre probabilidades *softmax* con codificación *one-hot*, produce gradientes que se aplanan cuando la salida se acerca a 0 o a 1, ralentizando el aprendizaje justo en los casos de error más claro. Además, MSE trata cada clase como si tuviera una distancia euclidiana equivalente a las demás, sin reconocer ninguna estructura del problema, ni siquiera el orden ordinal de la severidad. En un problema con seis clases desbalanceadas y un tamaño muestral reducido como este, ambas pérdidas terminan limitadas más por el tamaño de muestra y el desbalance que por la elección de la función de pérdida, lo que explica que la diferencia observada entre 11 y 12 aciertos sea tan pequeña.
+
+## Conclusión
+
+Se recomienda la entropía cruzada categórica como función de pérdida para este problema de clasificación múltiple, con fundamento teórico en su coherencia con la salida *softmax*, sus gradientes bien comportados y su interpretación probabilística correcta. La evidencia empírica de esta corrida no es concluyente por el tamaño reducido del conjunto de prueba, por lo que no debe usarse esta comparación puntual como criterio de selección del modelo final, sino como argumento de que la elección de la función de pérdida debe fundamentarse en principios y no únicamente en el resultado de una sola corrida con muestra pequeña.
