@@ -1,0 +1,177 @@
+---
+title: "Trabajo Final - Métodos Multivariados"
+author:
+  - name: "Derly Paola Mahecha Suarez"
+  - name: "Kevin Orlando Reyes Mosquera"
+  - name: "Julian Andres Torres Lozano"
+date: today
+lang: es
+format:
+  html:
+    toc: true
+    toc-title: "Contenido"
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    include-in-header:
+      text: |
+        <style>
+        body {
+          text-align: justify;
+          margin-left: 2.5cm;
+          margin-right: 2.5cm;
+        }
+        </style>
+  pdf:
+    toc: true
+    toc-title: "Contenido"
+    toc-depth: 3
+    number-sections: true
+    documentclass: report
+    geometry:
+      - top=2.5cm
+      - bottom=2.5cm
+      - left=2.5cm
+      - right=2.5cm
+---
+
+# Introducción
+
+La enfermedad causada por Verticillium sp. es una de las principales amenazas fitosanitarias en cultivos de alto valor económico. Su detección temprana y la clasificación precisa de su severidad son fundamentales para la toma de decisiones agronómicas. En este taller se dispone de un conjunto de datos con más de 200 observaciones de plantas, caracterizadas
+por cinco índices espectrales obtenidos mediante teledetección y por la altura media de la planta, con una etiqueta de severidad de la enfermedad donde la categoría 1 corresponde a planta sana.
+
+El objetivo es desarrollar, evaluar y comparar modelos de clasificación basados en perceptrón multicapa (redes neuronales artificiales) y regresión logística, bajo diferentes esquemas de partición de datos, funciones de pérdida y configuraciones arquitectónicas. Adicionalmente, se explorará la dimensión espacial del problema mediante la construcción de una grilla y el análisis de dependencia espacial en escala ordinal.
+
+# Pregunta 1: Realice un análisis exploratorio de los cinco índices espectrales y la altura media de la planta. Reporte estadísticos descriptivos por categoría de severidad, incluyendo media, desviación estándar, mínimo y máximo. £Observa diferencias visibles entre categorías? Justifique si considera necesaria alguna transformación o estandarización de las variables antes de entrenar la red.
+
+## Descripción de los datos
+
+El conjunto contiene 212 observaciones y seis categorias ordinales de severidad, codificadas de 1 a 6. La variable 1 corresponde a plantas sanas y los valores mayores representan niveles crecientes de severidad.
+
+El archivo incluye cinco predictores: cuatro indices espectrales (`NDVI`, `EVI`, `NDRE` y `GLI`) y la altura media. Esto difiere del enunciado, que menciona cinco indices espectrales mas la altura. Ademas, la altura aparece entre 0.0005 y 0.8472, por lo que probablemente ya se encuentra normalizada y no expresada directamente en centimetros. Ambas diferencias deben aclararse con la fuente de los datos.
+
+La tabla completa con media, desviacion estandar, minimo y maximo para cada predictor y categoria se muestra a continuación en:
+
+```{python}
+#| echo: false
+import pandas as pd
+pd.read_csv("../Parte I/resultados/tablas/04_estadisticos_descriptivos_por_severidad.csv")
+```
+
+## Calidad de los datos
+
+No se encontraron valores faltantes ni infinitos. Se identifico una fila duplicada: las filas originales 174 y 175 contienen exactamente los mismos valores.
+
+En 48 observaciones, los valores de `EVI`, `GLI` y altura son exactamente iguales. Esta coincidencia ocurre principalmente en las severidades 3 y 4 y es poco esperable para tres variables obtenidas de manera independiente. No se modificaron ni eliminaron estas observaciones, pero deben verificarse contra los datos de origen antes de entrenar los modelos. 
+
+```{python}
+#| echo: false
+import pandas as pd
+pd.read_csv("../Parte I/resultados/tablas/01_resumen_calidad_datos.csv")
+```
+
+## Diferencias entre categorias
+
+### NDVI
+
+El NDVI muestra el patron ordinal mas claro. Su media disminuye de 0.8784 en la severidad 1 a 0.6871 en la severidad 6. La asociacion de Spearman con la severidad es fuerte y negativa (`rho = -0.8548`). Las categorias adyacentes 1 y 2 presentan solapamiento, pero la separacion aumenta a partir de la categoria 3.
+
+### NDRE
+
+El NDRE tambien disminuye de forma consistente: pasa de una media de 0.3383 en la severidad 1 a 0.1987 en la severidad 6. Su correlacion con la severidad es `rho = -0.8170`. Junto con el NDVI, parece ser uno de los predictores con mayor capacidad para distinguir niveles de enfermedad.
+
+### EVI
+
+El EVI disminuye desde 0.7905 en plantas sanas hasta 0.3180 en la severidad 6, con una asociacion negativa moderada a fuerte (`rho = -0.6124`). Sin embargo, las categorias intermedias tienen alta dispersion y el patron no es completamente monotono: la media de la severidad 5 es ligeramente mayor que la de la severidad 4.
+
+### GLI
+
+El GLI presenta una disminucion general, pero con oscilaciones entre las categorias 3, 4 y 5. Su asociacion con la severidad es debil (`rho = -0.2535`) y existe un solapamiento considerable. Su contribucion al modelo podria depender de relaciones no lineales o de interacciones con otros predictores.
+
+### Altura media
+
+La altura disminuye desde una media de 0.5101 en la severidad 1 hasta 0.2492 en la severidad 4, pero aumenta de nuevo en las categorias 5 y 6. La correlacion es negativa pero moderada (`rho = -0.3401`) y las distribuciones se solapan ampliamente. Por si sola, la altura parece tener menor poder discriminante que NDVI y NDRE.
+
+## Relacion entre predictores
+
+NDVI y NDRE presentan una correlacion de Spearman muy alta (`rho = 0.94`), lo cual indica que contienen informacion parcialmente redundante. EVI tambien se relaciona con GLI (`rho = 0.71`) y con la altura (`rho = 0.66`). Estas asociaciones no impiden utilizar las variables en una red neuronal, pero deben considerarse al interpretar su importancia.
+
+```{python}
+#| echo: false
+import pandas as pd
+pd.read_csv("../Parte I/resultados/tablas/05_correlacion_spearman_con_severidad.csv")
+```
+
+![Matriz de correlación entre variables predictoras]("../Parte I/resultados/figuras/04_matriz_correlacion.png"){#fig-nombre width="80%"}
+
+## Transformacion y estandarizacion
+
+No se recomienda aplicar inicialmente transformaciones logaritmicas. Los predictores estan acotados aproximadamente entre 0 y 1, y varios contienen valores muy cercanos a cero. Una transformacion logaritmica dificultaria la interpretacion y no resolveria el patron de valores que requiere revision. 
+
+Si se confirma la validez de los datos, se recomienda estandarizar los cinco predictores mediante puntuaciones Z antes de entrenar el perceptron multicapa. Aunque sus rangos son parecidos, sus dispersiones son diferentes; la estandarizacion facilitara la optimizacion y evitara que una variable influya mas por su escala numerica.
+
+El escalador debera ajustarse exclusivamente con el conjunto de entrenamiento y luego aplicarse sin reajuste a validacion y prueba. De esta manera se evita la fuga de informacion.
+
+## Conclusion
+
+Existen diferencias visibles entre las categorias de severidad. NDVI y NDRE presentan los patrones mas ordenados y una separacion clara entre plantas sanas, niveles intermedios y severidades altas. EVI aporta una señal adicional, aunque con mayor variabilidad. GLI y altura muestran un solapamiento considerable y relaciones menos monotonicamente ordenadas.
+
+Antes del modelado debe verificarse el origen de las 48 coincidencias entre EVI, GLI y altura, la fila duplicada y la unidad real de la altura. Estas observaciones se conservaron en el analisis para describir fielmente el archivo recibido.
+
+# Pregunta 2: Verifique si las categorías de severidad están balanceadas. En caso de desequilibrio notable, proponga y justifique al menos una estrategia para manejarlo (sobremuestreo, submuestreo, ponderación de clases u otra). Implemente la estrategia elegida y explique su efecto esperado sobre las métricas de ajuste.
+
+## Verificación del balance de clases
+
+El conjunto de datos cuenta con 212 observaciones distribuidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme: la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la más escasa (n = 13, 6.2%), seguida de la categoría 1 —planta sana— con apenas 27 observaciones (12.9%).
+
+![Balance de clases en la variable severidad]("../Parte I/resultados/figuras/06_balance_clases.png"){#fig-nombre width="80%"}
+
+El ratio mínimo/máximo de 0.28 confirma un *desequilibrio moderado-alto*, superando el umbral crítico de 0.5 habitualmente reportado en la literatura. Este patrón es problemático porque una red neuronal entrenada sin corrección tendería a favorecer las clases mayoritarias (2, 4 y 5), produciendo una exactitud global engañosamente alta mientras falla sistemáticamente en los extremos del espectro de severidad —precisamente las categorías de mayor relevancia agronómica.
+
+## Estrategia implementada: SMOTE
+
+Se optó por SMOTE (Synthetic Minority Over-sampling Technique) como estrategia de balanceo. Este método genera observaciones sintéticas para las clases subrepresentadas mediante interpolación lineal entre cada muestra minoritaria y sus k vecinos más cercanos, introduciendo variabilidad controlada y evitando la simple duplicación de registros existentes.
+Con un tamaño muestral de n = 212, el submuestreo aleatorio (RandomUnderSampler) fue descartado por implicar una pérdida severa de información —el conjunto de entrenamiento quedaría reducido a aproximadamente 78 observaciones—. La ponderación de clases (class_weight='balanced') constituye una alternativa válida pero no corrige la subrepresentación en el espacio de características, solo repondera la función de pérdida.
+
+Un aspecto metodológico crítico es que SMOTE se aplicó exclusivamente sobre el conjunto de entrenamiento, tras realizar la partición de datos. Aplicarlo antes introduciría data leakage: muestras sintéticas derivadas de observaciones reales del conjunto de prueba contaminarían el entrenamiento, inflando artificialmente las métricas de evaluación.
+Como efecto esperado, la aplicación de SMOTE debería mejorar el recall en las clases 1 y 6, redistribuir los errores de forma más equitativa en la matriz de confusión y elevar el macro F1-score, que resulta la métrica más informativa bajo condiciones de desequilibrio al ponderar por igual todas las categorías.
+
+## Conclusión
+
+En conclusión, el análisis de balance de clases evidenció un desequilibrio moderado-alto (ratio 0.28) que, de no corregirse, comprometería la capacidad del modelo para detectar adecuadamente las categorías de severidad extrema —precisamente las más relevantes desde el punto de vista fitosanitario. La implementación de SMOTE sobre el conjunto de entrenamiento constituye una respuesta metodológicamente sólida a este problema, al generar variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación. Su aplicación estrictamente posterior a la partición de datos garantiza que las métricas reportadas reflejen el desempeño real del modelo frente a datos no vistos, condición indispensable para que los resultados sean válidos y reproducibles en un contexto de apoyo a la decisión agronómica.
+
+# Pregunta 3: Partición de datos y selección de hiperparámetros. Para cada esquema, entrene un perceptrón multicapa con la misma arquitectura inicial y compare los resultados. Explique en detalle cuál es la ventaja del esquema de tres particiones frente al de dos, en particular con respecto al riesgo de sobreajuste y a la selección de hiperparámetros.
+
+Durante la implementación del esquema 80/20 el algoritmo SMOTE no pudo aplicarse sobre el conjunto de entrenamiento, dado que la clase de severidad 6 —con apenas 13 observaciones en el dataset completo— quedó con un número de vecinos inferior al mínimo requerido (k = 5) para generar muestras sintéticas. En consecuencia, este esquema se entrenó con los datos originales sin balanceo, lo que constituye una limitación adicional a considerar al interpretar sus resultados.
+
+## Esquema A: Entrenamiento / Prueba (80 % / 20 %)
+
+El esquema de dos particiones asigna aproximadamente 170 observaciones al entrenamiento y 42 a la prueba. Su principal debilidad metodológica radica en que no existe un conjunto de validación independiente: cualquier decisión sobre hiperparámetros —número de capas, neuronas o tasa de aprendizaje— que se tome observando el desempeño sobre el conjunto de prueba convierte implícitamente a este último en un conjunto de validación. El modelo seleccionado ya no es el más generalizable, sino el más ajustado a ese conjunto de prueba particular, introduciendo un sesgo optimista en la evaluación final que invalida la comparación justa entre configuraciones.
+
+## Esquema B: Entrenamiento / Validación / Prueba (70 % / 15 % / 15 %)
+
+El esquema de tres particiones asigna aproximadamente 148, 32 y 32 observaciones a cada conjunto respectivamente, con roles claramente diferenciados. El conjunto de entrenamiento ajusta los pesos de la red mediante retropropagación; el conjunto de validación monitorea la pérdida en tiempo real para detectar sobreajuste y aplicar early stopping, sin que el modelo aprenda de él; y el conjunto de prueba se reserva de forma estricta para el reporte final, siendo consultado una única vez al término del proceso. Esta separación de roles preserva la integridad de la evaluación y garantiza que las métricas reportadas constituyan una estimación imparcial del error de generalización ante datos completamente nuevos.
+No obstante, con n = 212 los subconjuntos de validación y prueba resultan reducidos (~32 observaciones cada uno), lo que introduce varianza en las estimaciones: una sola observación mal clasificada puede desplazar el accuracy varios puntos porcentuales. Esta limitación motiva la exploración de validación cruzada k-fold en la Pregunta 4 como estrategia complementaria de menor varianza.
+
+## Conclusión
+
+La elección del esquema de partición no es una decisión menor, ya que determina directamente la validez de las métricas reportadas y la confiabilidad de la selección de modelos. El esquema 80/20, aunque maximiza los datos de entrenamiento, compromete la imparcialidad de la evaluación al exponer el conjunto de prueba al proceso de ajuste de hiperparámetros. El esquema 70/15/15, en cambio, garantiza una separación metodológica rigurosa entre optimización y evaluación, condición indispensable cuando los resultados deben fundamentar decisiones agronómicas reales. Por estas razones, el esquema de tres particiones fue adoptado como referencia para el resto del taller, asumiendo la mayor varianza asociada al tamaño reducido de cada subconjunto como un costo aceptable frente a la solidez metodológica que ofrece.
+
+# Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, £considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.
+
+Con un tamaño muestral de n = 212, la estimación del error de generalización a partir de una única partición fija está sujeta a una varianza considerable, pues la composición específica del conjunto de prueba influye de forma no despreciable sobre las métricas reportadas. Para cuantificar esta variabilidad se implementó una validación cruzada estratificada con k = 5 folds, utilizando una regresión logística como modelo proxy. El uso de un modelo lineal en lugar del MLP responde a una razón de eficiencia computacional: entrenar la red neuronal en cada fold y para múltiples configuraciones de hiperparámetros resultaría prohibitivo con los recursos disponibles. La estratificación garantiza que la proporción de cada categoría de severidad se preserve en todos los subconjuntos, condición especialmente relevante dado el desequilibrio identificado en la Pregunta 2.
+
+## Resultados obtenidos
+
+La accuracy por fold fue de *0.4419, 0.4186, 0.5000, 0.5000 y 0.4286*, con una media de *0.4578 ± 0.0352*. Interpretado en su contexto, este valor supera ampliamente la línea base de un clasificador aleatorio para seis clases (*≈ 16.7 %*), lo que indica que los índices espectrales y la altura media contienen información discriminativa real. Sin embargo, el nivel moderado del accuracy anticipa que la frontera de separación entre categorías no es lineal, lo que justifica el uso de redes neuronales con mayor capacidad de representación.
+
+La desviación estándar de *0.0352* refleja una variabilidad moderada entre folds: el peor desempeño (*fold 2, 0.4186*) y el mejor (*folds 3 y 4, 0.5000*) difieren en casi 8 puntos porcentuales. Esta oscilación confirma que una evaluación basada en una única partición puede ser poco representativa del desempeño real del modelo, y que promediar sobre múltiples subconjuntos produce estimaciones más robustas y confiables.
+
+## Rol metodológico en la estrategia global
+
+La validación cruzada k-fold no sustituye al esquema *70/15/15* adoptado en la Pregunta 3, sino que lo complementa con funciones diferenciadas. El k-fold resulta especialmente útil durante la selección de hiperparámetros —número de capas, neuronas y tasa de aprendizaje— al promediar el desempeño sobre múltiples particiones y reducir el riesgo de elegir una configuración que funcione bien solo para una división particular de los datos. La partición fija, por su parte, se reserva para el reporte final de métricas, garantizando comparabilidad entre modelos y transparencia metodológica.
+Cabe señalar además que el accuracy de *0.4578* corresponde a un modelo lineal y debe interpretarse como una cota inferior de referencia: si el MLP no supera consistentemente este valor, sería indicativo de sobreajuste o de una configuración arquitectónica inadecuada.
+
+## Conclusión
+
+La validación cruzada k-fold con *k = 5* evidenció que el error de generalización estimado con una única partición fija está sujeto a variaciones de hasta 8 puntos porcentuales dependiendo de la composición del conjunto de prueba, lo que subraya la importancia de estrategias de evaluación más robustas cuando el tamaño muestral es reducido. El accuracy medio de *0.4578* obtenido con la regresión logística confirma la presencia de información discriminativa en las variables espectrales, aunque su naturaleza no lineal demanda modelos de mayor capacidad como el MLP. En el marco de este taller, el k-fold se adopta como herramienta de selección de hiperparámetros, mientras que la partición fija *70/15/15* se mantiene como referencia para la evaluación final, combinando así la robustez estadística del primero con la trazabilidad y comparabilidad que ofrece el segundo.
