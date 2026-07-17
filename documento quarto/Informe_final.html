@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Derly Paola Mahecha Suarez">
+<meta name="author" content="Kevin Orlando Reyes Mosquera">
+<meta name="author" content="Julian Andres Torres Lozano">
+
+<title>Trabajo Final - Métodos Multivariados</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="Informe_final_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Informe_final_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Informe_final_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Informe_final_files/libs/quarto-html/popper.min.js"></script>
+<script src="Informe_final_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Informe_final_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Informe_final_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Informe_final_files/libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Informe_final_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Informe_final_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Informe_final_files/libs/bootstrap/bootstrap-67270d1595a62d14f123c043d4fb2f18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<style>
+body {
+  text-align: justify;
+  margin-left: 2.5cm;
+  margin-right: 2.5cm;
+}
+</style>
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contenido</h2>
+   
+  <ul>
+  <li><a href="#introducción" id="toc-introducción" class="nav-link active" data-scroll-target="#introducción"><span class="header-section-number">1</span> Introducción</a></li>
+  <li><a href="#pregunta-1-realice-un-análisis-exploratorio-de-los-cinco-índices-espectrales-y-la-altura-media-de-la-planta.-reporte-estadísticos-descriptivos-por-categoría-de-severidad-incluyendo-media-desviación-estándar-mínimo-y-máximo.-observa-diferencias-visibles-entre-categorías-justifique-si-considera-necesaria-alguna-transformación-o-estandarización-de-las-variables-antes-de-entrenar-la-red." id="toc-pregunta-1-realice-un-análisis-exploratorio-de-los-cinco-índices-espectrales-y-la-altura-media-de-la-planta.-reporte-estadísticos-descriptivos-por-categoría-de-severidad-incluyendo-media-desviación-estándar-mínimo-y-máximo.-observa-diferencias-visibles-entre-categorías-justifique-si-considera-necesaria-alguna-transformación-o-estandarización-de-las-variables-antes-de-entrenar-la-red." class="nav-link" data-scroll-target="#pregunta-1-realice-un-análisis-exploratorio-de-los-cinco-índices-espectrales-y-la-altura-media-de-la-planta.-reporte-estadísticos-descriptivos-por-categoría-de-severidad-incluyendo-media-desviación-estándar-mínimo-y-máximo.-observa-diferencias-visibles-entre-categorías-justifique-si-considera-necesaria-alguna-transformación-o-estandarización-de-las-variables-antes-de-entrenar-la-red."><span class="header-section-number">2</span> Pregunta 1: Realice un análisis exploratorio de los cinco índices espectrales y la altura media de la planta. Reporte estadísticos descriptivos por categoría de severidad, incluyendo media, desviación estándar, mínimo y máximo. ¿Observa diferencias visibles entre categorías? Justifique si considera necesaria alguna transformación o estandarización de las variables antes de entrenar la red.</a>
+  <ul class="collapse">
+  <li><a href="#descripción-de-los-datos" id="toc-descripción-de-los-datos" class="nav-link" data-scroll-target="#descripción-de-los-datos"><span class="header-section-number">2.1</span> Descripción de los datos</a></li>
+  <li><a href="#calidad-de-los-datos" id="toc-calidad-de-los-datos" class="nav-link" data-scroll-target="#calidad-de-los-datos"><span class="header-section-number">2.2</span> Calidad de los datos</a></li>
+  <li><a href="#diferencias-entre-categorias" id="toc-diferencias-entre-categorias" class="nav-link" data-scroll-target="#diferencias-entre-categorias"><span class="header-section-number">2.3</span> Diferencias entre categorias</a>
+  <ul class="collapse">
+  <li><a href="#ndvi" id="toc-ndvi" class="nav-link" data-scroll-target="#ndvi"><span class="header-section-number">2.3.1</span> NDVI</a></li>
+  <li><a href="#ndre" id="toc-ndre" class="nav-link" data-scroll-target="#ndre"><span class="header-section-number">2.3.2</span> NDRE</a></li>
+  <li><a href="#evi" id="toc-evi" class="nav-link" data-scroll-target="#evi"><span class="header-section-number">2.3.3</span> EVI</a></li>
+  <li><a href="#gli" id="toc-gli" class="nav-link" data-scroll-target="#gli"><span class="header-section-number">2.3.4</span> GLI</a></li>
+  <li><a href="#altura-media" id="toc-altura-media" class="nav-link" data-scroll-target="#altura-media"><span class="header-section-number">2.3.5</span> Altura media</a></li>
+  </ul></li>
+  <li><a href="#relacion-entre-predictores" id="toc-relacion-entre-predictores" class="nav-link" data-scroll-target="#relacion-entre-predictores"><span class="header-section-number">2.4</span> Relacion entre predictores</a></li>
+  <li><a href="#transformacion-y-estandarizacion" id="toc-transformacion-y-estandarizacion" class="nav-link" data-scroll-target="#transformacion-y-estandarizacion"><span class="header-section-number">2.5</span> Transformacion y estandarizacion</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">2.6</span> Conclusion</a></li>
+  </ul></li>
+  <li><a href="#pregunta-2-verifique-si-las-categorías-de-severidad-están-balanceadas.-en-caso-de-desequilibrio-notable-proponga-y-justifique-al-menos-una-estrategia-para-manejarlo-sobremuestreo-submuestreo-ponderación-de-clases-u-otra.-implemente-la-estrategia-elegida-y-explique-su-efecto-esperado-sobre-las-métricas-de-ajuste." id="toc-pregunta-2-verifique-si-las-categorías-de-severidad-están-balanceadas.-en-caso-de-desequilibrio-notable-proponga-y-justifique-al-menos-una-estrategia-para-manejarlo-sobremuestreo-submuestreo-ponderación-de-clases-u-otra.-implemente-la-estrategia-elegida-y-explique-su-efecto-esperado-sobre-las-métricas-de-ajuste." class="nav-link" data-scroll-target="#pregunta-2-verifique-si-las-categorías-de-severidad-están-balanceadas.-en-caso-de-desequilibrio-notable-proponga-y-justifique-al-menos-una-estrategia-para-manejarlo-sobremuestreo-submuestreo-ponderación-de-clases-u-otra.-implemente-la-estrategia-elegida-y-explique-su-efecto-esperado-sobre-las-métricas-de-ajuste."><span class="header-section-number">3</span> Pregunta 2: Verifique si las categorías de severidad están balanceadas. En caso de desequilibrio notable, proponga y justifique al menos una estrategia para manejarlo (sobremuestreo, submuestreo, ponderación de clases u otra). Implemente la estrategia elegida y explique su efecto esperado sobre las métricas de ajuste.</a>
+  <ul class="collapse">
+  <li><a href="#verificación-del-balance-de-clases" id="toc-verificación-del-balance-de-clases" class="nav-link" data-scroll-target="#verificación-del-balance-de-clases"><span class="header-section-number">3.1</span> Verificación del balance de clases</a></li>
+  <li><a href="#estrategia-implementada-smote" id="toc-estrategia-implementada-smote" class="nav-link" data-scroll-target="#estrategia-implementada-smote"><span class="header-section-number">3.2</span> Estrategia implementada: SMOTE</a></li>
+  <li><a href="#conclusión" id="toc-conclusión" class="nav-link" data-scroll-target="#conclusión"><span class="header-section-number">3.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-3-partición-de-datos-y-selección-de-hiperparámetros.-para-cada-esquema-entrene-un-perceptrón-multicapa-con-la-misma-arquitectura-inicial-y-compare-los-resultados.-explique-en-detalle-cuál-es-la-ventaja-del-esquema-de-tres-particiones-frente-al-de-dos-en-particular-con-respecto-al-riesgo-de-sobreajuste-y-a-la-selección-de-hiperparámetros." id="toc-pregunta-3-partición-de-datos-y-selección-de-hiperparámetros.-para-cada-esquema-entrene-un-perceptrón-multicapa-con-la-misma-arquitectura-inicial-y-compare-los-resultados.-explique-en-detalle-cuál-es-la-ventaja-del-esquema-de-tres-particiones-frente-al-de-dos-en-particular-con-respecto-al-riesgo-de-sobreajuste-y-a-la-selección-de-hiperparámetros." class="nav-link" data-scroll-target="#pregunta-3-partición-de-datos-y-selección-de-hiperparámetros.-para-cada-esquema-entrene-un-perceptrón-multicapa-con-la-misma-arquitectura-inicial-y-compare-los-resultados.-explique-en-detalle-cuál-es-la-ventaja-del-esquema-de-tres-particiones-frente-al-de-dos-en-particular-con-respecto-al-riesgo-de-sobreajuste-y-a-la-selección-de-hiperparámetros."><span class="header-section-number">4</span> Pregunta 3: Partición de datos y selección de hiperparámetros. Para cada esquema, entrene un perceptrón multicapa con la misma arquitectura inicial y compare los resultados. Explique en detalle cuál es la ventaja del esquema de tres particiones frente al de dos, en particular con respecto al riesgo de sobreajuste y a la selección de hiperparámetros.</a>
+  <ul class="collapse">
+  <li><a href="#esquema-a-entrenamiento-prueba-80-20" id="toc-esquema-a-entrenamiento-prueba-80-20" class="nav-link" data-scroll-target="#esquema-a-entrenamiento-prueba-80-20"><span class="header-section-number">4.1</span> Esquema A: Entrenamiento / Prueba (80 % / 20 %)</a></li>
+  <li><a href="#esquema-b-entrenamiento-validación-prueba-70-15-15" id="toc-esquema-b-entrenamiento-validación-prueba-70-15-15" class="nav-link" data-scroll-target="#esquema-b-entrenamiento-validación-prueba-70-15-15"><span class="header-section-number">4.2</span> Esquema B: Entrenamiento / Validación / Prueba (70 % / 15 % / 15 %)</a></li>
+  <li><a href="#conclusión-1" id="toc-conclusión-1" class="nav-link" data-scroll-target="#conclusión-1"><span class="header-section-number">4.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-4-dado-que-el-tamaño-muestral-es-mayor-a-200-pero-no-muy-grande-considera-que-sería-apropiado-usar-validación-cruzada-k-fold-como-alternativa-o-complemento-argumente-su-respuesta-y-si-decide-implementarla-reporte-los-resultados-comparativos." id="toc-pregunta-4-dado-que-el-tamaño-muestral-es-mayor-a-200-pero-no-muy-grande-considera-que-sería-apropiado-usar-validación-cruzada-k-fold-como-alternativa-o-complemento-argumente-su-respuesta-y-si-decide-implementarla-reporte-los-resultados-comparativos." class="nav-link" data-scroll-target="#pregunta-4-dado-que-el-tamaño-muestral-es-mayor-a-200-pero-no-muy-grande-considera-que-sería-apropiado-usar-validación-cruzada-k-fold-como-alternativa-o-complemento-argumente-su-respuesta-y-si-decide-implementarla-reporte-los-resultados-comparativos."><span class="header-section-number">5</span> Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, ¿considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos" id="toc-resultados-obtenidos" class="nav-link" data-scroll-target="#resultados-obtenidos"><span class="header-section-number">5.1</span> Resultados obtenidos</a></li>
+  <li><a href="#rol-metodológico-en-la-estrategia-global" id="toc-rol-metodológico-en-la-estrategia-global" class="nav-link" data-scroll-target="#rol-metodológico-en-la-estrategia-global"><span class="header-section-number">5.2</span> Rol metodológico en la estrategia global</a></li>
+  <li><a href="#conclusión-2" id="toc-conclusión-2" class="nav-link" data-scroll-target="#conclusión-2"><span class="header-section-number">5.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-5-entrene-al-menos-cuatro-perceptrones-multicapa-variando-sistemáticamente-el-número-de-capas-ocultas-neuronas-por-capa-y-tasa-de-aprendizaje.-para-cada-configuración-reporte-la-pérdida-en-entrenamiento-y-validación-por-época.-en-qué-configuraciones-observa-indicios-de-sobreajuste-o-subajuste" id="toc-pregunta-5-entrene-al-menos-cuatro-perceptrones-multicapa-variando-sistemáticamente-el-número-de-capas-ocultas-neuronas-por-capa-y-tasa-de-aprendizaje.-para-cada-configuración-reporte-la-pérdida-en-entrenamiento-y-validación-por-época.-en-qué-configuraciones-observa-indicios-de-sobreajuste-o-subajuste" class="nav-link" data-scroll-target="#pregunta-5-entrene-al-menos-cuatro-perceptrones-multicapa-variando-sistemáticamente-el-número-de-capas-ocultas-neuronas-por-capa-y-tasa-de-aprendizaje.-para-cada-configuración-reporte-la-pérdida-en-entrenamiento-y-validación-por-época.-en-qué-configuraciones-observa-indicios-de-sobreajuste-o-subajuste"><span class="header-section-number">6</span> Pregunta 5: Entrene al menos cuatro perceptrones multicapa variando sistemáticamente el número de capas ocultas, neuronas por capa y tasa de aprendizaje. Para cada configuración reporte la pérdida en entrenamiento y validación por época. ¿En qué configuraciones observa indicios de sobreajuste o subajuste?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-1" id="toc-resultados-obtenidos-1" class="nav-link" data-scroll-target="#resultados-obtenidos-1"><span class="header-section-number">6.1</span> Resultados obtenidos</a></li>
+  <li><a href="#diagnóstico-de-sobreajuste-y-subajuste" id="toc-diagnóstico-de-sobreajuste-y-subajuste" class="nav-link" data-scroll-target="#diagnóstico-de-sobreajuste-y-subajuste"><span class="header-section-number">6.2</span> Diagnóstico de sobreajuste y subajuste</a></li>
+  <li><a href="#conclusión-3" id="toc-conclusión-3" class="nav-link" data-scroll-target="#conclusión-3"><span class="header-section-number">6.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-6-implemente-y-compare-dos-criterios-para-cuantificar-el-error-durante-el-entrenamiento-entropía-cruzada-categórica-cce-y-error-cuadrático-medio-mse.-cuál-es-más-apropiado-para-un-problema-de-clasificación-múltiple-fundamente-su-respuesta-tanto-teórica-como-empíricamente." id="toc-pregunta-6-implemente-y-compare-dos-criterios-para-cuantificar-el-error-durante-el-entrenamiento-entropía-cruzada-categórica-cce-y-error-cuadrático-medio-mse.-cuál-es-más-apropiado-para-un-problema-de-clasificación-múltiple-fundamente-su-respuesta-tanto-teórica-como-empíricamente." class="nav-link" data-scroll-target="#pregunta-6-implemente-y-compare-dos-criterios-para-cuantificar-el-error-durante-el-entrenamiento-entropía-cruzada-categórica-cce-y-error-cuadrático-medio-mse.-cuál-es-más-apropiado-para-un-problema-de-clasificación-múltiple-fundamente-su-respuesta-tanto-teórica-como-empíricamente."><span class="header-section-number">7</span> Pregunta 6: Implemente y compare dos criterios para cuantificar el error durante el entrenamiento: entropía cruzada categórica (CCE) y error cuadrático medio (MSE). ¿Cuál es más apropiado para un problema de clasificación múltiple? Fundamente su respuesta tanto teórica como empíricamente.</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-2" id="toc-resultados-obtenidos-2" class="nav-link" data-scroll-target="#resultados-obtenidos-2"><span class="header-section-number">7.1</span> Resultados obtenidos</a></li>
+  <li><a href="#fundamento-teórico" id="toc-fundamento-teórico" class="nav-link" data-scroll-target="#fundamento-teórico"><span class="header-section-number">7.2</span> Fundamento teórico</a></li>
+  <li><a href="#conclusión-4" id="toc-conclusión-4" class="nav-link" data-scroll-target="#conclusión-4"><span class="header-section-number">7.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-7-para-el-modelo-seleccionado-en-la-pregunta-5-reporte-exactitud-global-precisión-sensibilidad-y-f1-por-clase-macro-promedio-y-promedio-ponderado-matriz-de-confusión-con-interpretación-y-curva-rocauc-uno-contra-todos.-qué-categorías-de-severidad-son-más-difíciles-de-clasificar-a-qué-lo-atribuye" id="toc-pregunta-7-para-el-modelo-seleccionado-en-la-pregunta-5-reporte-exactitud-global-precisión-sensibilidad-y-f1-por-clase-macro-promedio-y-promedio-ponderado-matriz-de-confusión-con-interpretación-y-curva-rocauc-uno-contra-todos.-qué-categorías-de-severidad-son-más-difíciles-de-clasificar-a-qué-lo-atribuye" class="nav-link" data-scroll-target="#pregunta-7-para-el-modelo-seleccionado-en-la-pregunta-5-reporte-exactitud-global-precisión-sensibilidad-y-f1-por-clase-macro-promedio-y-promedio-ponderado-matriz-de-confusión-con-interpretación-y-curva-rocauc-uno-contra-todos.-qué-categorías-de-severidad-son-más-difíciles-de-clasificar-a-qué-lo-atribuye"><span class="header-section-number">8</span> Pregunta 7: Para el modelo seleccionado en la Pregunta 5, reporte exactitud global, precisión, sensibilidad y F1 por clase, macro-promedio y promedio ponderado, matriz de confusión con interpretación, y curva ROC/AUC uno-contra-todos. ¿Qué categorías de severidad son más difíciles de clasificar? ¿A qué lo atribuye?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-3" id="toc-resultados-obtenidos-3" class="nav-link" data-scroll-target="#resultados-obtenidos-3"><span class="header-section-number">8.1</span> Resultados obtenidos</a></li>
+  <li><a href="#interpretación-por-categoría" id="toc-interpretación-por-categoría" class="nav-link" data-scroll-target="#interpretación-por-categoría"><span class="header-section-number">8.2</span> Interpretación por categoría</a></li>
+  <li><a href="#conclusión-5" id="toc-conclusión-5" class="nav-link" data-scroll-target="#conclusión-5"><span class="header-section-number">8.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-8-proponga-y-justifique-un-criterio-para-colapsar-las-categorías-de-severidad-en-sano-versus-enfermo.-discuta-si-esta-agrupación-es-la-más-apropiada-o-si-existiría-una-alternativa-mejor-fundamentada.-se-pierde-información-relevante" id="toc-pregunta-8-proponga-y-justifique-un-criterio-para-colapsar-las-categorías-de-severidad-en-sano-versus-enfermo.-discuta-si-esta-agrupación-es-la-más-apropiada-o-si-existiría-una-alternativa-mejor-fundamentada.-se-pierde-información-relevante" class="nav-link" data-scroll-target="#pregunta-8-proponga-y-justifique-un-criterio-para-colapsar-las-categorías-de-severidad-en-sano-versus-enfermo.-discuta-si-esta-agrupación-es-la-más-apropiada-o-si-existiría-una-alternativa-mejor-fundamentada.-se-pierde-información-relevante"><span class="header-section-number">9</span> Pregunta 8: Proponga y justifique un criterio para colapsar las categorías de severidad en sano versus enfermo. Discuta si esta agrupación es la más apropiada o si existiría una alternativa mejor fundamentada. ¿Se pierde información relevante?</a>
+  <ul class="collapse">
+  <li><a href="#criterio-adoptado-y-justificación" id="toc-criterio-adoptado-y-justificación" class="nav-link" data-scroll-target="#criterio-adoptado-y-justificación"><span class="header-section-number">9.1</span> Criterio adoptado y justificación</a></li>
+  <li><a href="#alternativas-y-pérdida-de-información" id="toc-alternativas-y-pérdida-de-información" class="nav-link" data-scroll-target="#alternativas-y-pérdida-de-información"><span class="header-section-number">9.2</span> Alternativas y pérdida de información</a></li>
+  <li><a href="#conclusión-6" id="toc-conclusión-6" class="nav-link" data-scroll-target="#conclusión-6"><span class="header-section-number">9.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-9-entrene-un-perceptrón-multicapa-para-el-problema-binario-resultante-repitiendo-el-esquema-de-partición-entrenamientovalidaciónprueba.-compare-el-desempeño-con-el-modelo-de-clasificación-múltiple-de-la-parte-i.-mejora-la-clasificación-al-reducir-el-número-de-clases" id="toc-pregunta-9-entrene-un-perceptrón-multicapa-para-el-problema-binario-resultante-repitiendo-el-esquema-de-partición-entrenamientovalidaciónprueba.-compare-el-desempeño-con-el-modelo-de-clasificación-múltiple-de-la-parte-i.-mejora-la-clasificación-al-reducir-el-número-de-clases" class="nav-link" data-scroll-target="#pregunta-9-entrene-un-perceptrón-multicapa-para-el-problema-binario-resultante-repitiendo-el-esquema-de-partición-entrenamientovalidaciónprueba.-compare-el-desempeño-con-el-modelo-de-clasificación-múltiple-de-la-parte-i.-mejora-la-clasificación-al-reducir-el-número-de-clases"><span class="header-section-number">10</span> Pregunta 9: Entrene un perceptrón multicapa para el problema binario resultante, repitiendo el esquema de partición entrenamiento/validación/prueba. Compare el desempeño con el modelo de clasificación múltiple de la Parte I. ¿Mejora la clasificación al reducir el número de clases?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-4" id="toc-resultados-obtenidos-4" class="nav-link" data-scroll-target="#resultados-obtenidos-4"><span class="header-section-number">10.1</span> Resultados obtenidos</a></li>
+  <li><a href="#comparación-con-el-modelo-multiclase" id="toc-comparación-con-el-modelo-multiclase" class="nav-link" data-scroll-target="#comparación-con-el-modelo-multiclase"><span class="header-section-number">10.2</span> Comparación con el modelo multiclase</a></li>
+  <li><a href="#conclusión-7" id="toc-conclusión-7" class="nav-link" data-scroll-target="#conclusión-7"><span class="header-section-number">10.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-10-reporte-para-el-modelo-binario-exactitud-precisión-sensibilidad-especificidad-f1-auc-roc-y-el-umbral-óptimo-según-el-criterio-de-youden.-interprete-cada-métrica-en-el-contexto-fitosanitario-qué-es-más-costoso-un-falso-negativo-o-un-falso-positivo" id="toc-pregunta-10-reporte-para-el-modelo-binario-exactitud-precisión-sensibilidad-especificidad-f1-auc-roc-y-el-umbral-óptimo-según-el-criterio-de-youden.-interprete-cada-métrica-en-el-contexto-fitosanitario-qué-es-más-costoso-un-falso-negativo-o-un-falso-positivo" class="nav-link" data-scroll-target="#pregunta-10-reporte-para-el-modelo-binario-exactitud-precisión-sensibilidad-especificidad-f1-auc-roc-y-el-umbral-óptimo-según-el-criterio-de-youden.-interprete-cada-métrica-en-el-contexto-fitosanitario-qué-es-más-costoso-un-falso-negativo-o-un-falso-positivo"><span class="header-section-number">11</span> Pregunta 10: Reporte para el modelo binario exactitud, precisión, sensibilidad, especificidad, F1, AUC-ROC y el umbral óptimo según el criterio de Youden. Interprete cada métrica en el contexto fitosanitario: ¿qué es más costoso, un falso negativo o un falso positivo?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-5" id="toc-resultados-obtenidos-5" class="nav-link" data-scroll-target="#resultados-obtenidos-5"><span class="header-section-number">11.1</span> Resultados obtenidos</a></li>
+  <li><a href="#interpretación-en-el-contexto-fitosanitario" id="toc-interpretación-en-el-contexto-fitosanitario" class="nav-link" data-scroll-target="#interpretación-en-el-contexto-fitosanitario"><span class="header-section-number">11.2</span> Interpretación en el contexto fitosanitario</a></li>
+  <li><a href="#conclusión-8" id="toc-conclusión-8" class="nav-link" data-scroll-target="#conclusión-8"><span class="header-section-number">11.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-11-ajuste-un-modelo-de-regresión-logística-binaria-usando-la-misma-partición-que-en-la-parte-ii.-reporte-los-coeficientes-estimados-sus-errores-estándar-valores-p-e-intervalos-de-confianza-al-95.-qué-variables-son-estadísticamente-significativas-tienen-el-signo-esperado-desde-el-punto-de-vista-agronómico" id="toc-pregunta-11-ajuste-un-modelo-de-regresión-logística-binaria-usando-la-misma-partición-que-en-la-parte-ii.-reporte-los-coeficientes-estimados-sus-errores-estándar-valores-p-e-intervalos-de-confianza-al-95.-qué-variables-son-estadísticamente-significativas-tienen-el-signo-esperado-desde-el-punto-de-vista-agronómico" class="nav-link" data-scroll-target="#pregunta-11-ajuste-un-modelo-de-regresión-logística-binaria-usando-la-misma-partición-que-en-la-parte-ii.-reporte-los-coeficientes-estimados-sus-errores-estándar-valores-p-e-intervalos-de-confianza-al-95.-qué-variables-son-estadísticamente-significativas-tienen-el-signo-esperado-desde-el-punto-de-vista-agronómico"><span class="header-section-number">12</span> Pregunta 11: Ajuste un modelo de regresión logística binaria usando la misma partición que en la Parte II. Reporte los coeficientes estimados, sus errores estándar, valores p e intervalos de confianza al 95%. ¿Qué variables son estadísticamente significativas? ¿Tienen el signo esperado desde el punto de vista agronómico?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-6" id="toc-resultados-obtenidos-6" class="nav-link" data-scroll-target="#resultados-obtenidos-6"><span class="header-section-number">12.1</span> Resultados obtenidos</a></li>
+  <li><a href="#interpretación-de-los-coeficientes" id="toc-interpretación-de-los-coeficientes" class="nav-link" data-scroll-target="#interpretación-de-los-coeficientes"><span class="header-section-number">12.2</span> Interpretación de los coeficientes</a></li>
+  <li><a href="#conclusión-9" id="toc-conclusión-9" class="nav-link" data-scroll-target="#conclusión-9"><span class="header-section-number">12.3</span> Conclusión</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Otros formatos</h2><ul><li><a href="..\Informe_final.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Trabajo Final - Métodos Multivariados</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Autores/as</div>
+    <div class="quarto-title-meta-contents">
+             <p>Derly Paola Mahecha Suarez </p>
+             <p>Kevin Orlando Reyes Mosquera </p>
+             <p>Julian Andres Torres Lozano </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Fecha de publicación</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">16 de julio de 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introducción" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introducción</h1>
+<p>La enfermedad causada por Verticillium sp. es una de las principales amenazas fitosanitarias en cultivos de alto valor económico. Su detección temprana y la clasificación precisa de su severidad son fundamentales para la toma de decisiones agronómicas. En este taller se dispone de un conjunto de datos con más de 200 observaciones de plantas, caracterizadas por cinco índices espectrales obtenidos mediante teledetección y por la altura media de la planta, con una etiqueta de severidad de la enfermedad donde la categoría 1 corresponde a planta sana.</p>
+<p>El objetivo es desarrollar, evaluar y comparar modelos de clasificación basados en perceptrón multicapa (redes neuronales artificiales) y regresión logística, bajo diferentes esquemas de partición de datos, funciones de pérdida y configuraciones arquitectónicas. Adicionalmente, se explorará la dimensión espacial del problema mediante la construcción de una grilla y el análisis de dependencia espacial en escala ordinal.</p>
+</section>
+<section id="pregunta-1-realice-un-análisis-exploratorio-de-los-cinco-índices-espectrales-y-la-altura-media-de-la-planta.-reporte-estadísticos-descriptivos-por-categoría-de-severidad-incluyendo-media-desviación-estándar-mínimo-y-máximo.-observa-diferencias-visibles-entre-categorías-justifique-si-considera-necesaria-alguna-transformación-o-estandarización-de-las-variables-antes-de-entrenar-la-red." class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Pregunta 1: Realice un análisis exploratorio de los cinco índices espectrales y la altura media de la planta. Reporte estadísticos descriptivos por categoría de severidad, incluyendo media, desviación estándar, mínimo y máximo. ¿Observa diferencias visibles entre categorías? Justifique si considera necesaria alguna transformación o estandarización de las variables antes de entrenar la red.</h1>
+<section id="descripción-de-los-datos" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="descripción-de-los-datos"><span class="header-section-number">2.1</span> Descripción de los datos</h2>
+<p>El conjunto contiene 212 observaciones y seis categorias ordinales de severidad, codificadas de 1 a 6. La variable 1 corresponde a plantas sanas y los valores mayores representan niveles crecientes de severidad.</p>
+<p>El archivo incluye cinco predictores: cuatro indices espectrales (<code>NDVI</code>, <code>EVI</code>, <code>NDRE</code> y <code>GLI</code>) y la altura media. Esto difiere del enunciado, que menciona cinco indices espectrales mas la altura. Ademas, la altura aparece entre 0.0005 y 0.8472, por lo que probablemente ya se encuentra normalizada y no expresada directamente en centimetros. Ambas diferencias deben aclararse con la fuente de los datos.</p>
+<p>La tabla completa con media, desviacion estandar, minimo y maximo para cada predictor y categoria se muestra a continuación en:</p>
+<div id="ad5a5281" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">severity</th>
+<th data-quarto-table-cell-role="th">variable</th>
+<th data-quarto-table-cell-role="th">descripcion</th>
+<th data-quarto-table-cell-role="th">n</th>
+<th data-quarto-table-cell-role="th">media</th>
+<th data-quarto-table-cell-role="th">desviacion_estandar</th>
+<th data-quarto-table-cell-role="th">minimo</th>
+<th data-quarto-table-cell-role="th">maximo</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>1</td>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>27</td>
+<td>0.878411</td>
+<td>0.010596</td>
+<td>0.848040</td>
+<td>0.892666</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>2</td>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>47</td>
+<td>0.872789</td>
+<td>0.015417</td>
+<td>0.826087</td>
+<td>0.894434</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>3</td>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>35</td>
+<td>0.855317</td>
+<td>0.022401</td>
+<td>0.775026</td>
+<td>0.888567</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>4</td>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>45</td>
+<td>0.814126</td>
+<td>0.032418</td>
+<td>0.729996</td>
+<td>0.871709</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>5</td>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>45</td>
+<td>0.767979</td>
+<td>0.055399</td>
+<td>0.589066</td>
+<td>0.840108</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">5</th>
+<td>6</td>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>13</td>
+<td>0.687071</td>
+<td>0.073961</td>
+<td>0.532207</td>
+<td>0.813544</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">6</th>
+<td>1</td>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>27</td>
+<td>0.790498</td>
+<td>0.085910</td>
+<td>0.638046</td>
+<td>0.927066</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">7</th>
+<td>2</td>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>47</td>
+<td>0.653020</td>
+<td>0.217378</td>
+<td>0.014160</td>
+<td>0.860697</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">8</th>
+<td>3</td>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>35</td>
+<td>0.442552</td>
+<td>0.316289</td>
+<td>0.001465</td>
+<td>0.862928</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">9</th>
+<td>4</td>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>45</td>
+<td>0.389202</td>
+<td>0.240697</td>
+<td>0.010498</td>
+<td>0.707630</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">10</th>
+<td>5</td>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>45</td>
+<td>0.430134</td>
+<td>0.169902</td>
+<td>0.006104</td>
+<td>0.739029</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">11</th>
+<td>6</td>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>13</td>
+<td>0.318021</td>
+<td>0.152521</td>
+<td>0.004883</td>
+<td>0.629362</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">12</th>
+<td>1</td>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>27</td>
+<td>0.338290</td>
+<td>0.028089</td>
+<td>0.287091</td>
+<td>0.388338</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">13</th>
+<td>2</td>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>47</td>
+<td>0.322966</td>
+<td>0.034040</td>
+<td>0.230192</td>
+<td>0.387311</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">14</th>
+<td>3</td>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>35</td>
+<td>0.287686</td>
+<td>0.039692</td>
+<td>0.220126</td>
+<td>0.369670</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">15</th>
+<td>4</td>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>45</td>
+<td>0.230059</td>
+<td>0.042852</td>
+<td>0.146030</td>
+<td>0.322176</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">16</th>
+<td>5</td>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>45</td>
+<td>0.207274</td>
+<td>0.028791</td>
+<td>0.156162</td>
+<td>0.275124</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">17</th>
+<td>6</td>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>13</td>
+<td>0.198729</td>
+<td>0.020293</td>
+<td>0.168763</td>
+<td>0.232790</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">18</th>
+<td>1</td>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>27</td>
+<td>0.418376</td>
+<td>0.016459</td>
+<td>0.391081</td>
+<td>0.458933</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">19</th>
+<td>2</td>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>47</td>
+<td>0.380734</td>
+<td>0.109939</td>
+<td>0.014160</td>
+<td>0.442297</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">20</th>
+<td>3</td>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>35</td>
+<td>0.282555</td>
+<td>0.170171</td>
+<td>0.001465</td>
+<td>0.446327</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">21</th>
+<td>4</td>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>45</td>
+<td>0.303346</td>
+<td>0.169183</td>
+<td>0.010498</td>
+<td>0.457646</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">22</th>
+<td>5</td>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>45</td>
+<td>0.350846</td>
+<td>0.115496</td>
+<td>0.006104</td>
+<td>0.453716</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">23</th>
+<td>6</td>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>13</td>
+<td>0.283331</td>
+<td>0.118167</td>
+<td>0.004883</td>
+<td>0.433823</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">24</th>
+<td>1</td>
+<td>height_med</td>
+<td>Altura media</td>
+<td>27</td>
+<td>0.510118</td>
+<td>0.205159</td>
+<td>0.084961</td>
+<td>0.817139</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">25</th>
+<td>2</td>
+<td>height_med</td>
+<td>Altura media</td>
+<td>47</td>
+<td>0.478310</td>
+<td>0.212021</td>
+<td>0.014160</td>
+<td>0.815430</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">26</th>
+<td>3</td>
+<td>height_med</td>
+<td>Altura media</td>
+<td>35</td>
+<td>0.334033</td>
+<td>0.262952</td>
+<td>0.001465</td>
+<td>0.847168</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">27</th>
+<td>4</td>
+<td>height_med</td>
+<td>Altura media</td>
+<td>45</td>
+<td>0.249213</td>
+<td>0.204824</td>
+<td>0.010498</td>
+<td>0.753418</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">28</th>
+<td>5</td>
+<td>height_med</td>
+<td>Altura media</td>
+<td>45</td>
+<td>0.300304</td>
+<td>0.194563</td>
+<td>0.000488</td>
+<td>0.676758</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">29</th>
+<td>6</td>
+<td>height_med</td>
+<td>Altura media</td>
+<td>13</td>
+<td>0.338078</td>
+<td>0.251117</td>
+<td>0.004883</td>
+<td>0.733521</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="calidad-de-los-datos" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="calidad-de-los-datos"><span class="header-section-number">2.2</span> Calidad de los datos</h2>
+<p>No se encontraron valores faltantes ni infinitos. Se identifico una fila duplicada: las filas originales 174 y 175 contienen exactamente los mismos valores.</p>
+<p>En 48 observaciones, los valores de <code>EVI</code>, <code>GLI</code> y altura son exactamente iguales. Esta coincidencia ocurre principalmente en las severidades 3 y 4 y es poco esperable para tres variables obtenidas de manera independiente. No se modificaron ni eliminaron estas observaciones, pero deben verificarse contra los datos de origen antes de entrenar los modelos.</p>
+<div id="7776e57e" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">indicador</th>
+<th data-quarto-table-cell-role="th">valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>numero_observaciones</td>
+<td>212</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>numero_variables_predictoras</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>numero_categorias_severidad</td>
+<td>6</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>valores_faltantes</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>valores_infinitos</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">5</th>
+<td>filas_duplicadas_adicionales</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">6</th>
+<td>registros_evi_gli_altura_iguales</td>
+<td>48</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="diferencias-entre-categorias" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="diferencias-entre-categorias"><span class="header-section-number">2.3</span> Diferencias entre categorias</h2>
+<section id="ndvi" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="ndvi"><span class="header-section-number">2.3.1</span> NDVI</h3>
+<p>El NDVI muestra el patron ordinal mas claro. Su media disminuye de 0.8784 en la severidad 1 a 0.6871 en la severidad 6. La asociacion de Spearman con la severidad es fuerte y negativa (<code>rho = -0.8548</code>). Las categorias adyacentes 1 y 2 presentan solapamiento, pero la separacion aumenta a partir de la categoria 3.</p>
+</section>
+<section id="ndre" class="level3" data-number="2.3.2">
+<h3 data-number="2.3.2" class="anchored" data-anchor-id="ndre"><span class="header-section-number">2.3.2</span> NDRE</h3>
+<p>El NDRE tambien disminuye de forma consistente: pasa de una media de 0.3383 en la severidad 1 a 0.1987 en la severidad 6. Su correlacion con la severidad es <code>rho = -0.8170</code>. Junto con el NDVI, parece ser uno de los predictores con mayor capacidad para distinguir niveles de enfermedad.</p>
+</section>
+<section id="evi" class="level3" data-number="2.3.3">
+<h3 data-number="2.3.3" class="anchored" data-anchor-id="evi"><span class="header-section-number">2.3.3</span> EVI</h3>
+<p>El EVI disminuye desde 0.7905 en plantas sanas hasta 0.3180 en la severidad 6, con una asociacion negativa moderada a fuerte (<code>rho = -0.6124</code>). Sin embargo, las categorias intermedias tienen alta dispersion y el patron no es completamente monotono: la media de la severidad 5 es ligeramente mayor que la de la severidad 4.</p>
+</section>
+<section id="gli" class="level3" data-number="2.3.4">
+<h3 data-number="2.3.4" class="anchored" data-anchor-id="gli"><span class="header-section-number">2.3.4</span> GLI</h3>
+<p>El GLI presenta una disminucion general, pero con oscilaciones entre las categorias 3, 4 y 5. Su asociacion con la severidad es debil (<code>rho = -0.2535</code>) y existe un solapamiento considerable. Su contribucion al modelo podria depender de relaciones no lineales o de interacciones con otros predictores.</p>
+</section>
+<section id="altura-media" class="level3" data-number="2.3.5">
+<h3 data-number="2.3.5" class="anchored" data-anchor-id="altura-media"><span class="header-section-number">2.3.5</span> Altura media</h3>
+<p>La altura disminuye desde una media de 0.5101 en la severidad 1 hasta 0.2492 en la severidad 4, pero aumenta de nuevo en las categorias 5 y 6. La correlacion es negativa pero moderada (<code>rho = -0.3401</code>) y las distribuciones se solapan ampliamente. Por si sola, la altura parece tener menor poder discriminante que NDVI y NDRE.</p>
+</section>
+</section>
+<section id="relacion-entre-predictores" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="relacion-entre-predictores"><span class="header-section-number">2.4</span> Relacion entre predictores</h2>
+<p>NDVI y NDRE presentan una correlacion de Spearman muy alta (<code>rho = 0.94</code>), lo cual indica que contienen informacion parcialmente redundante. EVI tambien se relaciona con GLI (<code>rho = 0.71</code>) y con la altura (<code>rho = 0.66</code>). Estas asociaciones no impiden utilizar las variables en una red neuronal, pero deben considerarse al interpretar su importancia.</p>
+<div id="34676418" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">variable</th>
+<th data-quarto-table-cell-role="th">descripcion</th>
+<th data-quarto-table-cell-role="th">rho_spearman</th>
+<th data-quarto-table-cell-role="th">valor_p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>ndvi_med</td>
+<td>NDVI promedio</td>
+<td>-0.854774</td>
+<td>9.837772e-62</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>ndre_med</td>
+<td>NDRE promedio</td>
+<td>-0.816957</td>
+<td>4.230662e-52</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>evi_med</td>
+<td>EVI promedio</td>
+<td>-0.612399</td>
+<td>3.272932e-23</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>height_med</td>
+<td>Altura media</td>
+<td>-0.340089</td>
+<td>3.883709e-07</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>gli_med</td>
+<td>GLI promedio</td>
+<td>-0.253497</td>
+<td>1.912735e-04</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="fig-matriz-correlacion" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-matriz-correlacion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/04_matriz_correlacion.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-matriz-correlacion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;1: Matriz de correlación entre variables predictoras
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="transformacion-y-estandarizacion" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="transformacion-y-estandarizacion"><span class="header-section-number">2.5</span> Transformacion y estandarizacion</h2>
+<p>No se recomienda aplicar inicialmente transformaciones logaritmicas. Los predictores estan acotados aproximadamente entre 0 y 1, y varios contienen valores muy cercanos a cero. Una transformacion logaritmica dificultaria la interpretacion y no resolveria el patron de valores que requiere revision.</p>
+<p>Si se confirma la validez de los datos, se recomienda estandarizar los cinco predictores mediante puntuaciones Z antes de entrenar el perceptron multicapa. Aunque sus rangos son parecidos, sus dispersiones son diferentes; la estandarizacion facilitara la optimizacion y evitara que una variable influya mas por su escala numerica.</p>
+<p>El escalador debera ajustarse exclusivamente con el conjunto de entrenamiento y luego aplicarse sin reajuste a validacion y prueba. De esta manera se evita la fuga de informacion.</p>
+</section>
+<section id="conclusion" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">2.6</span> Conclusion</h2>
+<p>Existen diferencias visibles entre las categorias de severidad. NDVI y NDRE presentan los patrones mas ordenados y una separacion clara entre plantas sanas, niveles intermedios y severidades altas. EVI aporta una señal adicional, aunque con mayor variabilidad. GLI y altura muestran un solapamiento considerable y relaciones menos monotonicamente ordenadas.</p>
+<p>Antes del modelado debe verificarse el origen de las 48 coincidencias entre EVI, GLI y altura, la fila duplicada y la unidad real de la altura. Estas observaciones se conservaron en el analisis para describir fielmente el archivo recibido.</p>
+</section>
+</section>
+<section id="pregunta-2-verifique-si-las-categorías-de-severidad-están-balanceadas.-en-caso-de-desequilibrio-notable-proponga-y-justifique-al-menos-una-estrategia-para-manejarlo-sobremuestreo-submuestreo-ponderación-de-clases-u-otra.-implemente-la-estrategia-elegida-y-explique-su-efecto-esperado-sobre-las-métricas-de-ajuste." class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Pregunta 2: Verifique si las categorías de severidad están balanceadas. En caso de desequilibrio notable, proponga y justifique al menos una estrategia para manejarlo (sobremuestreo, submuestreo, ponderación de clases u otra). Implemente la estrategia elegida y explique su efecto esperado sobre las métricas de ajuste.</h1>
+<section id="verificación-del-balance-de-clases" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="verificación-del-balance-de-clases"><span class="header-section-number">3.1</span> Verificación del balance de clases</h2>
+<p>El conjunto de datos cuenta con 212 observaciones distribuidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme: la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la más escasa (n = 13, 6.2%), seguida de la categoría 1 —planta sana— con apenas 27 observaciones (12.9%).</p>
+<div id="fig-balance-clases" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-balance-clases-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/06_balance_clases.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-balance-clases-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2: Balance de clases en la variable severidad
+</figcaption>
+</figure>
+</div>
+<p>El ratio mínimo/máximo de 0.28 confirma un <em>desequilibrio moderado-alto</em>, superando el umbral crítico de 0.5 habitualmente reportado en la literatura. Este patrón es problemático porque una red neuronal entrenada sin corrección tendería a favorecer las clases mayoritarias (2, 4 y 5), produciendo una exactitud global engañosamente alta mientras falla sistemáticamente en los extremos del espectro de severidad —precisamente las categorías de mayor relevancia agronómica.</p>
+</section>
+<section id="estrategia-implementada-smote" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="estrategia-implementada-smote"><span class="header-section-number">3.2</span> Estrategia implementada: SMOTE</h2>
+<p>Se optó por SMOTE (Synthetic Minority Over-sampling Technique) como estrategia de balanceo. Este método genera observaciones sintéticas para las clases subrepresentadas mediante interpolación lineal entre cada muestra minoritaria y sus k vecinos más cercanos, introduciendo variabilidad controlada y evitando la simple duplicación de registros existentes. Con un tamaño muestral de n = 212, el submuestreo aleatorio (RandomUnderSampler) fue descartado por implicar una pérdida severa de información —el conjunto de entrenamiento quedaría reducido a aproximadamente 78 observaciones—. La ponderación de clases (class_weight=‘balanced’) constituye una alternativa válida pero no corrige la subrepresentación en el espacio de características, solo repondera la función de pérdida.</p>
+<p>Un aspecto metodológico crítico es que SMOTE se aplicó exclusivamente sobre el conjunto de entrenamiento, tras realizar la partición de datos. Aplicarlo antes introduciría data leakage: muestras sintéticas derivadas de observaciones reales del conjunto de prueba contaminarían el entrenamiento, inflando artificialmente las métricas de evaluación. Como efecto esperado, la aplicación de SMOTE debería mejorar el recall en las clases 1 y 6, redistribuir los errores de forma más equitativa en la matriz de confusión y elevar el macro F1-score, que resulta la métrica más informativa bajo condiciones de desequilibrio al ponderar por igual todas las categorías.</p>
+</section>
+<section id="conclusión" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="conclusión"><span class="header-section-number">3.3</span> Conclusión</h2>
+<p>En conclusión, el análisis de balance de clases evidenció un desequilibrio moderado-alto (ratio 0.28) que, de no corregirse, comprometería la capacidad del modelo para detectar adecuadamente las categorías de severidad extrema —precisamente las más relevantes desde el punto de vista fitosanitario. La implementación de SMOTE sobre el conjunto de entrenamiento constituye una respuesta metodológicamente sólida a este problema, al generar variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación. Su aplicación estrictamente posterior a la partición de datos garantiza que las métricas reportadas reflejen el desempeño real del modelo frente a datos no vistos, condición indispensable para que los resultados sean válidos y reproducibles en un contexto de apoyo a la decisión agronómica.</p>
+</section>
+</section>
+<section id="pregunta-3-partición-de-datos-y-selección-de-hiperparámetros.-para-cada-esquema-entrene-un-perceptrón-multicapa-con-la-misma-arquitectura-inicial-y-compare-los-resultados.-explique-en-detalle-cuál-es-la-ventaja-del-esquema-de-tres-particiones-frente-al-de-dos-en-particular-con-respecto-al-riesgo-de-sobreajuste-y-a-la-selección-de-hiperparámetros." class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Pregunta 3: Partición de datos y selección de hiperparámetros. Para cada esquema, entrene un perceptrón multicapa con la misma arquitectura inicial y compare los resultados. Explique en detalle cuál es la ventaja del esquema de tres particiones frente al de dos, en particular con respecto al riesgo de sobreajuste y a la selección de hiperparámetros.</h1>
+<p>Durante la implementación del esquema 80/20 el algoritmo SMOTE no pudo aplicarse sobre el conjunto de entrenamiento, dado que la clase de severidad 6 —con apenas 13 observaciones en el dataset completo— quedó con un número de vecinos inferior al mínimo requerido (k = 5) para generar muestras sintéticas. En consecuencia, este esquema se entrenó con los datos originales sin balanceo, lo que constituye una limitación adicional a considerar al interpretar sus resultados.</p>
+<section id="esquema-a-entrenamiento-prueba-80-20" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="esquema-a-entrenamiento-prueba-80-20"><span class="header-section-number">4.1</span> Esquema A: Entrenamiento / Prueba (80 % / 20 %)</h2>
+<p>El esquema de dos particiones asigna aproximadamente 170 observaciones al entrenamiento y 42 a la prueba. Su principal debilidad metodológica radica en que no existe un conjunto de validación independiente: cualquier decisión sobre hiperparámetros —número de capas, neuronas o tasa de aprendizaje— que se tome observando el desempeño sobre el conjunto de prueba convierte implícitamente a este último en un conjunto de validación. El modelo seleccionado ya no es el más generalizable, sino el más ajustado a ese conjunto de prueba particular, introduciendo un sesgo optimista en la evaluación final que invalida la comparación justa entre configuraciones.</p>
+</section>
+<section id="esquema-b-entrenamiento-validación-prueba-70-15-15" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="esquema-b-entrenamiento-validación-prueba-70-15-15"><span class="header-section-number">4.2</span> Esquema B: Entrenamiento / Validación / Prueba (70 % / 15 % / 15 %)</h2>
+<p>El esquema de tres particiones asigna aproximadamente 148, 32 y 32 observaciones a cada conjunto respectivamente, con roles claramente diferenciados. El conjunto de entrenamiento ajusta los pesos de la red mediante retropropagación; el conjunto de validación monitorea la pérdida en tiempo real para detectar sobreajuste y aplicar early stopping, sin que el modelo aprenda de él; y el conjunto de prueba se reserva de forma estricta para el reporte final, siendo consultado una única vez al término del proceso. Esta separación de roles preserva la integridad de la evaluación y garantiza que las métricas reportadas constituyan una estimación imparcial del error de generalización ante datos completamente nuevos. No obstante, con n = 212 los subconjuntos de validación y prueba resultan reducidos (~32 observaciones cada uno), lo que introduce varianza en las estimaciones: una sola observación mal clasificada puede desplazar el accuracy varios puntos porcentuales. Esta limitación motiva la exploración de validación cruzada k-fold en la Pregunta 4 como estrategia complementaria de menor varianza.</p>
+</section>
+<section id="conclusión-1" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="conclusión-1"><span class="header-section-number">4.3</span> Conclusión</h2>
+<p>La elección del esquema de partición no es una decisión menor, ya que determina directamente la validez de las métricas reportadas y la confiabilidad de la selección de modelos. El esquema 80/20, aunque maximiza los datos de entrenamiento, compromete la imparcialidad de la evaluación al exponer el conjunto de prueba al proceso de ajuste de hiperparámetros. El esquema 70/15/15, en cambio, garantiza una separación metodológica rigurosa entre optimización y evaluación, condición indispensable cuando los resultados deben fundamentar decisiones agronómicas reales. Por estas razones, el esquema de tres particiones fue adoptado como referencia para el resto del taller, asumiendo la mayor varianza asociada al tamaño reducido de cada subconjunto como un costo aceptable frente a la solidez metodológica que ofrece.</p>
+</section>
+</section>
+<section id="pregunta-4-dado-que-el-tamaño-muestral-es-mayor-a-200-pero-no-muy-grande-considera-que-sería-apropiado-usar-validación-cruzada-k-fold-como-alternativa-o-complemento-argumente-su-respuesta-y-si-decide-implementarla-reporte-los-resultados-comparativos." class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, ¿considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.</h1>
+<p>Con un tamaño muestral de n = 212, la estimación del error de generalización a partir de una única partición fija está sujeta a una varianza considerable, pues la composición específica del conjunto de prueba influye de forma no despreciable sobre las métricas reportadas. Para cuantificar esta variabilidad se implementó una validación cruzada estratificada con k = 5 folds, utilizando una regresión logística como modelo proxy. El uso de un modelo lineal en lugar del MLP responde a una razón de eficiencia computacional: entrenar la red neuronal en cada fold y para múltiples configuraciones de hiperparámetros resultaría prohibitivo con los recursos disponibles. La estratificación garantiza que la proporción de cada categoría de severidad se preserve en todos los subconjuntos, condición especialmente relevante dado el desequilibrio identificado en la Pregunta 2.</p>
+<section id="resultados-obtenidos" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="resultados-obtenidos"><span class="header-section-number">5.1</span> Resultados obtenidos</h2>
+<p>La accuracy por fold fue de <em>0.4419, 0.4186, 0.5000, 0.5000 y 0.4286</em>, con una media de <em>0.4578 ± 0.0352</em>. Interpretado en su contexto, este valor supera ampliamente la línea base de un clasificador aleatorio para seis clases (<em>≈ 16.7 %</em>), lo que indica que los índices espectrales y la altura media contienen información discriminativa real. Sin embargo, el nivel moderado del accuracy anticipa que la frontera de separación entre categorías no es lineal, lo que justifica el uso de redes neuronales con mayor capacidad de representación.</p>
+<p>La desviación estándar de <em>0.0352</em> refleja una variabilidad moderada entre folds: el peor desempeño (<em>fold 2, 0.4186</em>) y el mejor (<em>folds 3 y 4, 0.5000</em>) difieren en casi 8 puntos porcentuales. Esta oscilación confirma que una evaluación basada en una única partición puede ser poco representativa del desempeño real del modelo, y que promediar sobre múltiples subconjuntos produce estimaciones más robustas y confiables.</p>
+</section>
+<section id="rol-metodológico-en-la-estrategia-global" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="rol-metodológico-en-la-estrategia-global"><span class="header-section-number">5.2</span> Rol metodológico en la estrategia global</h2>
+<p>La validación cruzada k-fold no sustituye al esquema <em>70/15/15</em> adoptado en la Pregunta 3, sino que lo complementa con funciones diferenciadas. El k-fold resulta especialmente útil durante la selección de hiperparámetros —número de capas, neuronas y tasa de aprendizaje— al promediar el desempeño sobre múltiples particiones y reducir el riesgo de elegir una configuración que funcione bien solo para una división particular de los datos. La partición fija, por su parte, se reserva para el reporte final de métricas, garantizando comparabilidad entre modelos y transparencia metodológica. Cabe señalar además que el accuracy de <em>0.4578</em> corresponde a un modelo lineal y debe interpretarse como una cota inferior de referencia: si el MLP no supera consistentemente este valor, sería indicativo de sobreajuste o de una configuración arquitectónica inadecuada.</p>
+</section>
+<section id="conclusión-2" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="conclusión-2"><span class="header-section-number">5.3</span> Conclusión</h2>
+<p>La validación cruzada k-fold con <em>k = 5</em> evidenció que el error de generalización estimado con una única partición fija está sujeto a variaciones de hasta 8 puntos porcentuales dependiendo de la composición del conjunto de prueba, lo que subraya la importancia de estrategias de evaluación más robustas cuando el tamaño muestral es reducido. El accuracy medio de <em>0.4578</em> obtenido con la regresión logística confirma la presencia de información discriminativa en las variables espectrales, aunque su naturaleza no lineal demanda modelos de mayor capacidad como el MLP. En el marco de este taller, el k-fold se adopta como herramienta de selección de hiperparámetros, mientras que la partición fija <em>70/15/15</em> se mantiene como referencia para la evaluación final, combinando así la robustez estadística del primero con la trazabilidad y comparabilidad que ofrece el segundo.</p>
+</section>
+</section>
+<section id="pregunta-5-entrene-al-menos-cuatro-perceptrones-multicapa-variando-sistemáticamente-el-número-de-capas-ocultas-neuronas-por-capa-y-tasa-de-aprendizaje.-para-cada-configuración-reporte-la-pérdida-en-entrenamiento-y-validación-por-época.-en-qué-configuraciones-observa-indicios-de-sobreajuste-o-subajuste" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Pregunta 5: Entrene al menos cuatro perceptrones multicapa variando sistemáticamente el número de capas ocultas, neuronas por capa y tasa de aprendizaje. Para cada configuración reporte la pérdida en entrenamiento y validación por época. ¿En qué configuraciones observa indicios de sobreajuste o subajuste?</h1>
+<p>Se entrenaron ocho arquitecturas de perceptrón multicapa orientadas a la clasificación multiclase de la severidad de <em>Verticillium sp.</em> (seis categorías: 1 = sano, 2 a 6 = niveles crecientes de severidad), variando el número de capas ocultas (1, 2 y 3), el número de neuronas por capa (16, 32 y 64, con al menos dos tamaños evaluados en cada número de capas) y la tasa de aprendizaje (0.001, 0.01 y 0.1). No se realizó un barrido factorial completo de las 27 combinaciones posibles, sino un diseño curado de ocho configuraciones que cumple los mínimos exigidos por el enunciado; como consecuencia, la tasa de aprendizaje no varía de forma independiente dentro de cada arquitectura, sino que está parcialmente confundida con la combinación capas-neuronas, lo que se tiene en cuenta al interpretar su efecto más adelante.</p>
+<p>El conjunto de datos (n = 212) presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones), por lo que el entrenamiento se realizó sobre el conjunto de entrenamiento balanceado mediante SMOTE, mientras que validación y prueba se mantuvieron sin sobremuestreo. Con el esquema de partición 70/15/15 de la Pregunta 3, los tamaños resultantes fueron <em>entrenamiento = 198</em>, <em>validación = 32</em> y <em>prueba = 32</em> observaciones. Este tamaño de validación y prueba es reducido y debe tenerse presente como límite al interpretar diferencias pequeñas entre configuraciones, pues con 32 observaciones una sola predicción adicional correcta ya mueve la exactitud en cerca de 3 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida <em>softmax</em>, con entropía cruzada categórica dispersa como función de pérdida y <em>early stopping</em> monitoreando la pérdida de validación.</p>
+<p>La selección de la mejor configuración se hizo por la menor pérdida de validación, y no por la exactitud de prueba: usar el conjunto de prueba para escoger hiperparámetros lo convertiría, de facto, en una extensión del conjunto de validación, contaminando la evaluación final con un sesgo optimista, justamente el problema que la partición en tres conjuntos de la Pregunta 3 busca evitar. La exactitud de prueba se reporta únicamente como referencia descriptiva del modelo ya seleccionado.</p>
+<section id="resultados-obtenidos-1" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="resultados-obtenidos-1"><span class="header-section-number">6.1</span> Resultados obtenidos</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Configuración</th>
+<th>Capas</th>
+<th>Neuronas</th>
+<th>Tasa aprendizaje</th>
+<th>Épocas</th>
+<th>Loss Train</th>
+<th>Loss Val</th>
+<th>Acc Train</th>
+<th>Acc Val</th>
+<th>Brecha Train-Val</th>
+<th>Acc Test</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1L-16N-lr0.001</td>
+<td>1</td>
+<td>16</td>
+<td>0.001</td>
+<td>132</td>
+<td>0.9101</td>
+<td>1.1765</td>
+<td>0.5960</td>
+<td>0.4375</td>
+<td>+0.1585</td>
+<td>0.2500</td>
+</tr>
+<tr class="even">
+<td>1L-32N-lr0.01</td>
+<td>1</td>
+<td>32</td>
+<td>0.01</td>
+<td>24</td>
+<td>0.8437</td>
+<td>1.1655</td>
+<td>0.6364</td>
+<td>0.5000</td>
+<td>+0.1364</td>
+<td>0.3125</td>
+</tr>
+<tr class="odd">
+<td>2L-16N-lr0.01</td>
+<td>2</td>
+<td>16</td>
+<td>0.01</td>
+<td>26</td>
+<td>0.7985</td>
+<td>1.2243</td>
+<td>0.6818</td>
+<td>0.6250</td>
+<td>+0.0568</td>
+<td>0.3750</td>
+</tr>
+<tr class="even">
+<td>2L-32N-lr0.001</td>
+<td>2</td>
+<td>32</td>
+<td>0.001</td>
+<td>44</td>
+<td>0.8845</td>
+<td>1.1567</td>
+<td>0.6162</td>
+<td>0.5000</td>
+<td>+0.1162</td>
+<td>0.3438</td>
+</tr>
+<tr class="odd">
+<td>2L-64N-lr0.1</td>
+<td>2</td>
+<td>64</td>
+<td>0.1</td>
+<td>36</td>
+<td>0.9285</td>
+<td>1.5136</td>
+<td>0.5758</td>
+<td>0.5938</td>
+<td>−0.0180</td>
+<td>0.4062</td>
+</tr>
+<tr class="even">
+<td>3L-16N-lr0.001</td>
+<td>3</td>
+<td>16</td>
+<td>0.001</td>
+<td>55</td>
+<td>0.8706</td>
+<td>1.2510</td>
+<td>0.6162</td>
+<td>0.5000</td>
+<td>+0.1162</td>
+<td>0.3438</td>
+</tr>
+<tr class="odd">
+<td>3L-32N-lr0.01</td>
+<td>3</td>
+<td>32</td>
+<td>0.01</td>
+<td>23</td>
+<td>0.7581</td>
+<td>1.2309</td>
+<td>0.6515</td>
+<td>0.5938</td>
+<td>+0.0578</td>
+<td>0.4688</td>
+</tr>
+<tr class="even">
+<td>3L-64N-lr0.001</td>
+<td>3</td>
+<td>64</td>
+<td>0.001</td>
+<td>30</td>
+<td>0.8065</td>
+<td>1.2189</td>
+<td>0.6768</td>
+<td>0.5000</td>
+<td>+0.1768</td>
+<td>0.3438</td>
+</tr>
+</tbody>
+</table>
+<p>El modelo seleccionado es <em>2L-32N-lr0.001</em> (menor pérdida de validación, 1.1567), con exactitud de validación de <em>0.5000</em>, brecha Train-Val de <em>0.1162</em> y exactitud de prueba de referencia de <em>0.3438</em>. Esta configuración se usa como base para las Preguntas 6, 7, 9, 10, 17, 18 y 19.</p>
+<p>Vale la pena resaltar que el criterio de selección cambia la respuesta: por mayor exactitud de validación habría ganado <em>2L-16N-lr0.01</em> (0.6250), y por mayor exactitud de prueba habría ganado <em>3L-32N-lr0.01</em> (0.4688). Esto confirma que la elección del criterio de selección no es un detalle técnico menor, sino una decisión que puede cambiar por completo qué arquitectura se reporta como la mejor.</p>
+</section>
+<section id="diagnóstico-de-sobreajuste-y-subajuste" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="diagnóstico-de-sobreajuste-y-subajuste"><span class="header-section-number">6.2</span> Diagnóstico de sobreajuste y subajuste</h2>
+<p>La configuración más simple, <em>1L-16N-lr0.001</em>, necesitó 132 épocas —la más larga de todas— para alcanzar apenas una exactitud de entrenamiento de 0.5960, la más baja de la tabla junto con <em>2L-64N-lr0.1</em> (0.5758). Esto es consistente con una capacidad de representación insuficiente: la red tarda mucho en converger y aun así logra un ajuste mediocre, señal típica de subajuste. En el extremo opuesto, las brechas Train-Val más altas corresponden a <em>3L-64N-lr0.001</em> (0.1768) y a la misma <em>1L-16N-lr0.001</em> (0.1585), lo que indica que tanto la arquitectura más grande como la más simple presentan cierto grado de sobreajuste, aunque por razones distintas: la primera memoriza el conjunto de entrenamiento —incluidas las muestras sintéticas de SMOTE— sin transferir esa mejora a validación, mientras que la segunda sobreajusta levemente antes de que el <em>early stopping</em> actúe, tras muchas épocas de ajuste lento.</p>
+<p>Las brechas más bajas se observan en <em>2L-16N-lr0.01</em> (0.0568) y <em>3L-32N-lr0.01</em> (0.0578), ambas con tasa de aprendizaje intermedia, lo que sugiere que dentro de este diseño la tasa 0.01 favorece una convergencia más equilibrada que 0.001 —más lenta y con mayor tendencia a sobreajustar antes de detenerse— o que 0.1, que resulta inestable: la configuración <em>2L-64N-lr0.1</em> es la única con brecha negativa (−0.0180) y, a la vez, la pérdida de validación más alta de toda la tabla (1.5136), lo que no refleja buena generalización sino un entrenamiento inestable en el que los pasos de actualización, al ser demasiado grandes, no permiten una reducción consistente de la pérdida.</p>
+</section>
+<section id="conclusión-3" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="conclusión-3"><span class="header-section-number">6.3</span> Conclusión</h2>
+<p>La comparación sistemática muestra que la arquitectura más simple subajusta, que las arquitecturas de mayor capacidad con tasa de aprendizaje baja tienden a sobreajustar más, y que una tasa de aprendizaje alta produce inestabilidad en la convergencia sin ganancia clara en calibración. El mejor balance según la pérdida de validación se obtuvo con una red de 2 capas y 32 neuronas por capa y tasa de aprendizaje de 0.001. Deben señalarse dos limitaciones del análisis: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje del de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que las diferencias entre configuraciones cercanas deben interpretarse con cautela. Esta selección, hecha exclusivamente con el conjunto de validación, es la que se usa como punto de partida para las preguntas siguientes, reservando el conjunto de prueba para la evaluación final reportada en la Pregunta 7.</p>
+</section>
+</section>
+<section id="pregunta-6-implemente-y-compare-dos-criterios-para-cuantificar-el-error-durante-el-entrenamiento-entropía-cruzada-categórica-cce-y-error-cuadrático-medio-mse.-cuál-es-más-apropiado-para-un-problema-de-clasificación-múltiple-fundamente-su-respuesta-tanto-teórica-como-empíricamente." class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Pregunta 6: Implemente y compare dos criterios para cuantificar el error durante el entrenamiento: entropía cruzada categórica (CCE) y error cuadrático medio (MSE). ¿Cuál es más apropiado para un problema de clasificación múltiple? Fundamente su respuesta tanto teórica como empíricamente.</h1>
+<p>Se entrenó la arquitectura seleccionada en la Pregunta 5 (<em>2L-32N-lr0.001</em>) dos veces, idéntica en todo salvo la función de pérdida: entropía cruzada categórica dispersa (CCE) y error cuadrático medio (MSE) sobre las etiquetas en formato <em>one-hot</em>.</p>
+<section id="resultados-obtenidos-2" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="resultados-obtenidos-2"><span class="header-section-number">7.1</span> Resultados obtenidos</h2>
+<p>CCE obtuvo una exactitud de prueba de <em>0.3438</em> (11/32) y MSE obtuvo <em>0.3750</em> (12/32); MSE superó a CCE por un margen de exactamente una observación sobre 32 casos de prueba. Con un conjunto de prueba de este tamaño, una diferencia de una predicción correcta —cerca de 3 puntos porcentuales— no permite concluir que MSE sea empíricamente superior a CCE en este problema, pues es perfectamente compatible con ruido de muestreo. Reportar que “MSE ganó” como conclusión firme a partir de esta única corrida sería un error metodológico; el resultado empírico debe leerse únicamente como evidencia de que, en este caso, ambas funciones de pérdida producen un desempeño de prueba similar y bajo, no como evidencia de que MSE sea preferible.</p>
+</section>
+<section id="fundamento-teórico" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="fundamento-teórico"><span class="header-section-number">7.2</span> Fundamento teórico</h2>
+<p>La entropía cruzada categórica es la función de pérdida coherente con la capa de salida <em>softmax</em>: maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (<em>proper scoring rule</em>), que penaliza de forma creciente la confianza mal ubicada en la clase incorrecta, con gradientes bien escalados incluso cuando la predicción está muy alejada del valor real. El error cuadrático medio, en cambio, fue diseñado para variables continuas; aplicado sobre probabilidades <em>softmax</em> con codificación <em>one-hot</em>, produce gradientes que se aplanan cuando la salida se acerca a 0 o a 1, ralentizando el aprendizaje justo en los casos de error más claro. Además, MSE trata cada clase como si tuviera una distancia euclidiana equivalente a las demás, sin reconocer ninguna estructura del problema, ni siquiera el orden ordinal de la severidad. En un problema con seis clases desbalanceadas y un tamaño muestral reducido como este, ambas pérdidas terminan limitadas más por el tamaño de muestra y el desbalance que por la elección de la función de pérdida, lo que explica que la diferencia observada entre 11 y 12 aciertos sea tan pequeña.</p>
+</section>
+<section id="conclusión-4" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="conclusión-4"><span class="header-section-number">7.3</span> Conclusión</h2>
+<p>Se recomienda la entropía cruzada categórica como función de pérdida para este problema de clasificación múltiple, con fundamento teórico en su coherencia con la salida <em>softmax</em>, sus gradientes bien comportados y su interpretación probabilística correcta. La evidencia empírica de esta corrida no es concluyente por el tamaño reducido del conjunto de prueba, por lo que no debe usarse esta comparación puntual como criterio de selección del modelo final, sino como argumento de que la elección de la función de pérdida debe fundamentarse en principios y no únicamente en el resultado de una sola corrida con muestra pequeña.</p>
+</section>
+</section>
+<section id="pregunta-7-para-el-modelo-seleccionado-en-la-pregunta-5-reporte-exactitud-global-precisión-sensibilidad-y-f1-por-clase-macro-promedio-y-promedio-ponderado-matriz-de-confusión-con-interpretación-y-curva-rocauc-uno-contra-todos.-qué-categorías-de-severidad-son-más-difíciles-de-clasificar-a-qué-lo-atribuye" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Pregunta 7: Para el modelo seleccionado en la Pregunta 5, reporte exactitud global, precisión, sensibilidad y F1 por clase, macro-promedio y promedio ponderado, matriz de confusión con interpretación, y curva ROC/AUC uno-contra-todos. ¿Qué categorías de severidad son más difíciles de clasificar? ¿A qué lo atribuye?</h1>
+<p>Se evaluó el modelo <em>2L-32N-lr0.001</em>, entrenado con entropía cruzada categórica, sobre el conjunto de prueba (n = 32). La exactitud global obtenida fue de <em>0.3438</em> (11/32).</p>
+<section id="resultados-obtenidos-3" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="resultados-obtenidos-3"><span class="header-section-number">8.1</span> Resultados obtenidos</h2>
+<p>La matriz de confusión, con filas correspondientes a la severidad real y columnas a la severidad predicha, es la siguiente:</p>
+<pre><code>         Pred:  1  2  3  4  5  6
+Real Sev 1   [  4  0  0  0  0  0 ]
+Real Sev 2   [  5  1  1  0  0  0 ]
+Real Sev 3   [  3  0  0  2  0  0 ]
+Real Sev 4   [  0  0  2  2  3  0 ]
+Real Sev 5   [  0  0  0  2  3  2 ]
+Real Sev 6   [  0  0  0  0  1  1 ]</code></pre>
+<p>Las métricas por clase, junto con el macro-promedio y el promedio ponderado, se resumen a continuación:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Clase</th>
+<th>Precisión</th>
+<th>Sensibilidad</th>
+<th>F1</th>
+<th>Soporte</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sev 1</td>
+<td>0.33</td>
+<td>1.00</td>
+<td>0.50</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td>Sev 2</td>
+<td>1.00</td>
+<td>0.14</td>
+<td>0.25</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td>Sev 3</td>
+<td>0.00</td>
+<td>0.00</td>
+<td>0.00</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td>Sev 4</td>
+<td>0.33</td>
+<td>0.29</td>
+<td>0.31</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td>Sev 5</td>
+<td>0.43</td>
+<td>0.43</td>
+<td>0.43</td>
+<td>7</td>
+</tr>
+<tr class="even">
+<td>Sev 6</td>
+<td>0.33</td>
+<td>0.50</td>
+<td>0.40</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Macro-promedio</td>
+<td>0.40</td>
+<td>0.39</td>
+<td>0.31</td>
+<td>32</td>
+</tr>
+<tr class="even">
+<td>Promedio ponderado</td>
+<td>0.45</td>
+<td>0.34</td>
+<td>0.30</td>
+<td>32</td>
+</tr>
+</tbody>
+</table>
+<p>El AUC-ROC uno-contra-todos por clase fue de 1.00 para Sev 1, 0.817 para Sev 2, 0.726 para Sev 3, 0.726 para Sev 4, 0.869 para Sev 5 y 0.833 para Sev 6, con un macro-promedio de <em>0.828</em>.</p>
+</section>
+<section id="interpretación-por-categoría" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="interpretación-por-categoría"><span class="header-section-number">8.2</span> Interpretación por categoría</h2>
+<p>La severidad 3 es, con claridad, la categoría más difícil de clasificar: presenta precisión y sensibilidad de 0.00, pues ninguno de los cinco casos reales fue clasificado correctamente (tres se confundieron con Sev 1 y dos con Sev 4), y comparte el AUC-ROC más bajo (0.726) con Sev 4. Al ser una categoría intermedia en la escala ordinal, su señal espectral se superpone con la de sus vecinas más de lo que se diferencia de ellas. La severidad 2 muestra una asimetría reveladora: su precisión es de 1.00 —el único caso que el modelo predijo como Sev 2 efectivamente lo era— pero su sensibilidad es de apenas 0.14, ya que cinco de sus siete casos reales fueron clasificados como Sev 1. Esto sugiere que el modelo tiende a colapsar las severidades más leves hacia la clase Sev 1, posiblemente porque el contraste espectral entre plantas sanas y levemente enfermas es sutil. En la misma línea, la severidad 1 tiene sensibilidad perfecta (1.00) pero precisión baja (0.33), pues el modelo predice “Sev 1” con demasiada frecuencia, capturando erróneamente varios casos de Sev 2 y Sev 3; existe, por tanto, una tendencia sistemática a sobre-predecir la clase sana.</p>
+<p>Las severidades 5 y 6, en contraste, se clasifican relativamente mejor (F1 de 0.43 y 0.40, AUC de 0.869 y 0.833), lo que sugiere que el daño más avanzado deja una huella espectral más distintiva y separable del resto. En conjunto, el patrón encontrado es el típico de variables ordinales con clases intermedias: los errores del modelo son casi todos de vecindad —Sev 2 confundida con Sev 1, Sev 3 con Sev 1 o Sev 4, Sev 4 con Sev 3 o Sev 5— y no hay prácticamente ninguna confusión entre extremos alejados de la escala. Esto es alentador desde el punto de vista agronómico, pues el modelo rara vez confunde severidad leve con severidad grave, pero también evidencia que seis clases ordinales resultan demasiado finas para el tamaño de muestra disponible, con soportes de prueba de apenas dos a siete observaciones por clase.</p>
+</section>
+<section id="conclusión-5" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="conclusión-5"><span class="header-section-number">8.3</span> Conclusión</h2>
+<p>El desempeño global del modelo multiclase es modesto y desigual entre categorías: las clases extremas (1, 5 y 6) se separan razonablemente bien, mientras que las intermedias (2 y 3) resultan difíciles de distinguir de sus vecinas, en particular Sev 3, que no logra clasificarse correctamente en ningún caso. Esta limitación, más que un defecto puntual de la arquitectura, refleja la dificultad inherente de discriminar seis niveles ordinales con un tamaño muestral de 212 observaciones, y motiva directamente la simplificación a un problema binario que se explora en la Parte II del taller.</p>
+</section>
+</section>
+<section id="pregunta-8-proponga-y-justifique-un-criterio-para-colapsar-las-categorías-de-severidad-en-sano-versus-enfermo.-discuta-si-esta-agrupación-es-la-más-apropiada-o-si-existiría-una-alternativa-mejor-fundamentada.-se-pierde-información-relevante" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Pregunta 8: Proponga y justifique un criterio para colapsar las categorías de severidad en sano versus enfermo. Discuta si esta agrupación es la más apropiada o si existiría una alternativa mejor fundamentada. ¿Se pierde información relevante?</h1>
+<p>El criterio adoptado asigna la severidad 1 a la categoría “Sano” (0) y las severidades 2 a 6 a la categoría “Enfermo” (1). Con los datos disponibles, esto produce 27 observaciones sanas y 185 enfermas, una razón de desbalance incluso más marcada que en el problema de seis clases (27/185 ≈ 0.146).</p>
+<section id="criterio-adoptado-y-justificación" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="criterio-adoptado-y-justificación"><span class="header-section-number">9.1</span> Criterio adoptado y justificación</h2>
+<p>Desde el punto de vista agronómico, para un sistema de alerta temprana la decisión operativa relevante no es cuán severa es la infección sino si existe evidencia de infección que amerite intervención. Agrupar cualquier nivel de severidad igual o superior a 2 como “Enfermo” tiene sentido práctico en ese contexto, pues prioriza la sensibilidad de detección sobre la caracterización fina del estado de avance de la enfermedad.</p>
+</section>
+<section id="alternativas-y-pérdida-de-información" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="alternativas-y-pérdida-de-información"><span class="header-section-number">9.2</span> Alternativas y pérdida de información</h2>
+<p>Este criterio es defendible, pero no es el único razonable. El análisis de la Pregunta 7 mostró que el modelo confunde sobre todo clases adyacentes —1, 2 y 3 entre sí, y 4, 5 y 6 entre sí—, con muy poca confusión cruzada entre esos dos bloques. Una alternativa con mejor sustento empírico, y no solo agronómico, sería un corte en tres grupos, por ejemplo sano o leve (severidades 1 a 3) frente a avanzado (severidades 4 a 6), que reflejaría mejor la separación espectral observada. Sin embargo, un esquema de tres grupos requeriría un consenso agronómico adicional sobre dónde trazar el límite entre leve y severo, y complicaría la comparación directa con la regresión logística binaria solicitada en la Parte III, por lo que se mantiene el criterio binario sano frente a enfermo pedido en el enunciado, dejando esta alternativa como discusión.</p>
+<p>Se pierde información relevante al hacer esta reducción: toda distinción de severidad dentro de “Enfermo” desaparece, y esa categoría concentra el 87 % de la muestra (185 de 212 observaciones) en una sola etiqueta, justo el gradiente de severidad que, según la Pregunta 7, sí presenta una señal espectral parcialmente diferenciable en los extremos. Para un propósito de alerta temprana esta pérdida es aceptable, pero no lo sería para priorizar tratamientos o pronosticar el impacto sobre la cosecha, escenarios en los que una clasificación ordinal, o el esquema de tres grupos propuesto, resultaría más informativa.</p>
+</section>
+<section id="conclusión-6" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="conclusión-6"><span class="header-section-number">9.3</span> Conclusión</h2>
+<p>El colapso sano/enfermo es una simplificación razonable y alineada con el objetivo de detección temprana, pero implica una pérdida de información no trivial sobre el gradiente de severidad, y su idoneidad depende del uso que se le dé al modelo: adecuada para alertar sobre la presencia de la enfermedad, insuficiente si el objetivo es apoyar decisiones que dependan del grado de avance.</p>
+</section>
+</section>
+<section id="pregunta-9-entrene-un-perceptrón-multicapa-para-el-problema-binario-resultante-repitiendo-el-esquema-de-partición-entrenamientovalidaciónprueba.-compare-el-desempeño-con-el-modelo-de-clasificación-múltiple-de-la-parte-i.-mejora-la-clasificación-al-reducir-el-número-de-clases" class="level1" data-number="10">
+<h1 data-number="10"><span class="header-section-number">10</span> Pregunta 9: Entrene un perceptrón multicapa para el problema binario resultante, repitiendo el esquema de partición entrenamiento/validación/prueba. Compare el desempeño con el modelo de clasificación múltiple de la Parte I. ¿Mejora la clasificación al reducir el número de clases?</h1>
+<p>Se entrenó un perceptrón multicapa binario con la misma arquitectura seleccionada en la Pregunta 5 (2 capas ocultas, 32 neuronas, tasa de aprendizaje 0.001), salida sigmoide y pérdida de entropía cruzada binaria, sobre la partición 70/15/15 del problema binario, con SMOTE aplicado únicamente al conjunto de entrenamiento.</p>
+<section id="resultados-obtenidos-4" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="resultados-obtenidos-4"><span class="header-section-number">10.1</span> Resultados obtenidos</h2>
+<p>Con el umbral por defecto de 0.5, la exactitud de prueba fue de <em>0.8438</em> (27/32), con una matriz de confusión de <em>TN = 4, FP = 0, FN = 5, TP = 23</em>. Las métricas por clase se resumen a continuación:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Clase</th>
+<th>Precisión</th>
+<th>Sensibilidad</th>
+<th>F1</th>
+<th>Soporte</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sano</td>
+<td>0.44</td>
+<td>1.00</td>
+<td>0.62</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td>Enfermo</td>
+<td>1.00</td>
+<td>0.82</td>
+<td>0.90</td>
+<td>28</td>
+</tr>
+<tr class="odd">
+<td>Macro-promedio</td>
+<td>0.72</td>
+<td>0.91</td>
+<td>0.76</td>
+<td>32</td>
+</tr>
+<tr class="even">
+<td>Promedio ponderado</td>
+<td>0.93</td>
+<td>0.84</td>
+<td>0.87</td>
+<td>32</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="comparación-con-el-modelo-multiclase" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="comparación-con-el-modelo-multiclase"><span class="header-section-number">10.2</span> Comparación con el modelo multiclase</h2>
+<p>La exactitud pasa de <em>0.3438</em> en el modelo multiclase a <em>0.8438</em> en el binario, y el F1 ponderado de <em>0.30</em> a <em>0.87</em>, una mejora sustancial que, sin embargo, no debe interpretarse como que el problema binario sea “más fácil” en un sentido profundo. Dos razones estructurales explican buena parte de la diferencia: primero, el azar de referencia cambia, pues con seis clases balanceadas al azar la exactitud esperada es de apenas 17 %, mientras que con dos clases es de 50 %, de modo que parte de la mejora es simplemente aritmética; segundo, colapsar las clases elimina justo los errores que dominaban el modelo multiclase, ya que casi todos ellos eran confusiones entre clases adyacentes (Sev 1 con 2 con 3, y Sev 4 con 5 con 6), que al agruparse en una sola etiqueta “Enfermo” dejan de contar como error.</p>
+<p>La comparación tampoco es completamente equivalente, porque la exactitud favorece artificialmente a la clase mayoritaria, que en este caso es “Enfermo” (185 de 212 observaciones, cerca del 87 %). Con solo cuatro observaciones sanas en el conjunto de prueba, el modelo comete cero falsos positivos pero cinco falsos negativos con el umbral por defecto, es decir, cinco plantas realmente enfermas fueron clasificadas como sanas, que es precisamente el error más costoso en este contexto agronómico, como se discute en la Pregunta 10.</p>
+</section>
+<section id="conclusión-7" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="conclusión-7"><span class="header-section-number">10.3</span> Conclusión</h2>
+<p>Reducir el número de clases mejora de forma sustancial las métricas globales de exactitud y F1, pero esa mejora debe interpretarse con cautela: refleja en parte un problema estructuralmente más simple y una menor exposición a errores de vecindad ordinal, no necesariamente un modelo mejor calibrado frente al tipo de error que más importa en la práctica fitosanitaria.</p>
+</section>
+</section>
+<section id="pregunta-10-reporte-para-el-modelo-binario-exactitud-precisión-sensibilidad-especificidad-f1-auc-roc-y-el-umbral-óptimo-según-el-criterio-de-youden.-interprete-cada-métrica-en-el-contexto-fitosanitario-qué-es-más-costoso-un-falso-negativo-o-un-falso-positivo" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> Pregunta 10: Reporte para el modelo binario exactitud, precisión, sensibilidad, especificidad, F1, AUC-ROC y el umbral óptimo según el criterio de Youden. Interprete cada métrica en el contexto fitosanitario: ¿qué es más costoso, un falso negativo o un falso positivo?</h1>
+<p>Con el umbral por defecto de 0.5, la sensibilidad del modelo binario fue de 23/28 = <em>0.821</em> y la especificidad de 4/4 = <em>1.000</em>, según se reportó en la Pregunta 9. El umbral óptimo según el criterio de Youden resultó ser <em>0.2739</em>, considerablemente más bajo que 0.5.</p>
+<section id="resultados-obtenidos-5" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="resultados-obtenidos-5"><span class="header-section-number">11.1</span> Resultados obtenidos</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Métrica</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Umbral óptimo (Youden)</td>
+<td>0.2739</td>
+</tr>
+<tr class="even">
+<td>Exactitud</td>
+<td>0.9062</td>
+</tr>
+<tr class="odd">
+<td>Sensibilidad</td>
+<td>0.8929</td>
+</tr>
+<tr class="even">
+<td>Especificidad</td>
+<td>1.0000</td>
+</tr>
+<tr class="odd">
+<td>Precisión</td>
+<td>1.0000</td>
+</tr>
+<tr class="even">
+<td>F1-Score</td>
+<td>0.9434</td>
+</tr>
+<tr class="odd">
+<td>AUC-ROC</td>
+<td>0.9464</td>
+</tr>
+</tbody>
+</table>
+<p>Al bajar el umbral de 0.5 a 0.2739, la matriz de confusión pasa de <em>(TN=4, FP=0, FN=5, TP=23)</em> a <em>(TN=4, FP=0, FN=3, TP=25)</em>: se recuperan dos de los cinco falsos negativos anteriores sin generar ningún falso positivo adicional, pues la especificidad se mantiene en 1.00. Esto ocurre porque esas dos observaciones tenían una probabilidad predicha de “Enfermo” entre 0.2739 y 0.5, de modo que el modelo ya las ubicaba cerca del límite, pero el umbral por defecto las clasificaba como sanas.</p>
+</section>
+<section id="interpretación-en-el-contexto-fitosanitario" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="interpretación-en-el-contexto-fitosanitario"><span class="header-section-number">11.2</span> Interpretación en el contexto fitosanitario</h2>
+<p>Un falso negativo, es decir, una planta enferma clasificada como sana, es claramente más costoso en este contexto: la planta no recibe tratamiento y la infección por <em>Verticillium sp.</em>, al tratarse de un patógeno de suelo con capacidad de dispersión, puede progresar y contagiar el entorno. El costo de un falso positivo, en cambio, es acotado: una inspección o un tratamiento preventivo innecesario, con un costo económico menor y sin riesgo fitosanitario adicional. En esta muestra, el umbral de Youden no solo es matemáticamente óptimo al maximizar la suma de sensibilidad y especificidad, sino que además mejora la sensibilidad sin ningún costo en especificidad, por lo que resulta una elección claramente preferible al umbral por defecto. Dada esta asimetría de costos, incluso valdría la pena considerar un umbral aún más bajo, del orden de 0.15 a 0.20, que sacrifique algo de especificidad a cambio de una sensibilidad cercana a 1.00, aunque esa decisión debería tomarse junto con un agrónomo que cuantifique el costo real de cada tipo de error, y no solo con el criterio estadístico de Youden, que trata ambos errores como igualmente costosos.</p>
+</section>
+<section id="conclusión-8" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="conclusión-8"><span class="header-section-number">11.3</span> Conclusión</h2>
+<p>El ajuste del umbral de decisión, más allá del valor por defecto de 0.5, constituye una herramienta simple y efectiva para alinear el modelo con los costos reales del problema: en este caso permite reducir los falsos negativos sin sacrificar especificidad, lo que representa una mejora concreta para un sistema de apoyo a la decisión agronómica orientado a minimizar el riesgo de dejar plantas enfermas sin tratamiento.</p>
+</section>
+</section>
+<section id="pregunta-11-ajuste-un-modelo-de-regresión-logística-binaria-usando-la-misma-partición-que-en-la-parte-ii.-reporte-los-coeficientes-estimados-sus-errores-estándar-valores-p-e-intervalos-de-confianza-al-95.-qué-variables-son-estadísticamente-significativas-tienen-el-signo-esperado-desde-el-punto-de-vista-agronómico" class="level1" data-number="12">
+<h1 data-number="12"><span class="header-section-number">12</span> Pregunta 11: Ajuste un modelo de regresión logística binaria usando la misma partición que en la Parte II. Reporte los coeficientes estimados, sus errores estándar, valores p e intervalos de confianza al 95%. ¿Qué variables son estadísticamente significativas? ¿Tienen el signo esperado desde el punto de vista agronómico?</h1>
+<p>Se ajustó una regresión logística sobre la misma partición binaria utilizada en la Parte II (entrenamiento con SMOTE, sin sobremuestreo en validación ni en prueba), usando los cinco índices espectrales y la altura media, todos estandarizados.</p>
+<section id="resultados-obtenidos-6" class="level2" data-number="12.1">
+<h2 data-number="12.1" class="anchored" data-anchor-id="resultados-obtenidos-6"><span class="header-section-number">12.1</span> Resultados obtenidos</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Coeficiente (β)</th>
+<th>OR = exp(β)</th>
+<th>Error Std.</th>
+<th>Z</th>
+<th>p-valor</th>
+<th>IC 95%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ndvi_med</td>
+<td>−0.8753</td>
+<td>0.417</td>
+<td>1.3252</td>
+<td>−0.66</td>
+<td>0.509</td>
+<td>[−3.473, 1.722]</td>
+</tr>
+<tr class="even">
+<td>evi_med</td>
+<td>−2.1740</td>
+<td>0.114</td>
+<td>0.6688</td>
+<td>−3.25</td>
+<td>0.0012</td>
+<td>[−3.485, −0.863]</td>
+</tr>
+<tr class="odd">
+<td>ndre_med</td>
+<td>−0.7681</td>
+<td>0.464</td>
+<td>0.7991</td>
+<td>−0.96</td>
+<td>0.336</td>
+<td>[−2.334, 0.798]</td>
+</tr>
+<tr class="even">
+<td>gli_med</td>
+<td>−0.1800</td>
+<td>0.835</td>
+<td>1.0853</td>
+<td>−0.17</td>
+<td>0.868</td>
+<td>[−2.307, 1.947]</td>
+</tr>
+<tr class="odd">
+<td>height_med</td>
+<td>+0.6513</td>
+<td>1.918</td>
+<td>0.3169</td>
+<td>2.06</td>
+<td>0.0398</td>
+<td>[0.030, 1.272]</td>
+</tr>
+</tbody>
+</table>
+<p>El intercepto estimado fue de 2.1310. Al nivel de significancia α = 0.05, solo el EVI (p = 0.0012) y la altura media (p = 0.0398) resultan estadísticamente significativos. El NDVI, el NDRE y el GLI no lo son en este modelo multivariado, pese a que en el análisis exploratorio de la Pregunta 1 el NDVI (ρ = −0.855) y el NDRE (ρ = −0.817) mostraron las correlaciones univariadas de Spearman más fuertes con la severidad, muy por encima de la altura (ρ = −0.340).</p>
+</section>
+<section id="interpretación-de-los-coeficientes" class="level2" data-number="12.2">
+<h2 data-number="12.2" class="anchored" data-anchor-id="interpretación-de-los-coeficientes"><span class="header-section-number">12.2</span> Interpretación de los coeficientes</h2>
+<p>La pérdida de significancia de variables con fuerte correlación univariada se explica principalmente por multicolinealidad: el NDVI, el EVI y el NDRE son índices espectrales derivados de combinaciones parcialmente solapadas de bandas de reflectancia, todos sensibles a la actividad fotosintética y al contenido de clorofila, por lo que están altamente correlacionados entre sí. Esto se refleja en los errores estándar de la tabla, donde el NDVI presenta el valor más alto de todas las variables (1.325), mayor incluso que su propio coeficiente en valor absoluto, lo que genera un intervalo de confianza extremadamente amplio que cruza el cero. Cuando varias variables comparten la misma señal subyacente, el modelo reparte el crédito explicativo entre ellas de forma inestable, y cuál de ellas termina apareciendo significativa depende de particularidades de la muestra más que de su relevancia biológica.</p>
+<p>En cuanto al signo de los coeficientes, el NDVI, el EVI, el NDRE y el GLI son negativos, lo cual coincide con lo esperado desde el punto de vista agronómico: valores más altos de estos índices reflejan mayor vigor fotosintético y, por tanto, se asocian a una menor probabilidad de estar enfermo. La altura media, en cambio, presenta un coeficiente positivo y significativo, lo que a primera vista resulta contraintuitivo, pues cabría esperar que las plantas más enfermas fueran también más bajas. Sin embargo, esto es consistente con lo observado en el análisis exploratorio: la altura promedio por severidad no decrece de forma monótona, sino que cae entre las severidades 1 y 4 y repunta en las severidades 5 y 6, siendo además la variable con la correlación univariada más débil de las cinco (ρ = −0.340). Es probable que el signo positivo de la altura en el modelo multivariado sea, en parte, un artefacto de esa relación no monótona combinado con la multicolinealidad entre los índices espectrales, por lo que debe señalarse como una limitación de la interpretación causal de este coeficiente y no como una conclusión agronómica firme.</p>
+</section>
+<section id="conclusión-9" class="level2" data-number="12.3">
+<h2 data-number="12.3" class="anchored" data-anchor-id="conclusión-9"><span class="header-section-number">12.3</span> Conclusión</h2>
+<p>Según este modelo, el EVI es el predictor individual más fuerte y confiable, con el mayor valor absoluto de Z, el menor p-valor y el intervalo de confianza relativamente más estrecho, seguido de la altura, aunque con la salvedad señalada sobre su signo. El NDVI y el NDRE, pese a ser los índices más prometedores en el análisis univariado, no aportan señal estadísticamente independiente una vez que el EVI está en el modelo, muy probablemente por la colinealidad entre índices espectrales, un punto que conviene retomar en la Pregunta 12 al aplicar selección de variables mediante Lasso, dado que la regularización L1 está diseñada precisamente para lidiar con este tipo de redundancia entre predictores correlacionados.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiado");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiado");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

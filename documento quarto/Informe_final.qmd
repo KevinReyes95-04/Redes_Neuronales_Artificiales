@@ -42,7 +42,7 @@ por cinco índices espectrales obtenidos mediante teledetección y por la altura
 
 El objetivo es desarrollar, evaluar y comparar modelos de clasificación basados en perceptrón multicapa (redes neuronales artificiales) y regresión logística, bajo diferentes esquemas de partición de datos, funciones de pérdida y configuraciones arquitectónicas. Adicionalmente, se explorará la dimensión espacial del problema mediante la construcción de una grilla y el análisis de dependencia espacial en escala ordinal.
 
-# Pregunta 1: Realice un análisis exploratorio de los cinco índices espectrales y la altura media de la planta. Reporte estadísticos descriptivos por categoría de severidad, incluyendo media, desviación estándar, mínimo y máximo. £Observa diferencias visibles entre categorías? Justifique si considera necesaria alguna transformación o estandarización de las variables antes de entrenar la red.
+# Pregunta 1: Realice un análisis exploratorio de los cinco índices espectrales y la altura media de la planta. Reporte estadísticos descriptivos por categoría de severidad, incluyendo media, desviación estándar, mínimo y máximo. ¿Observa diferencias visibles entre categorías? Justifique si considera necesaria alguna transformación o estandarización de las variables antes de entrenar la red.
 
 ## Descripción de los datos
 
@@ -55,7 +55,7 @@ La tabla completa con media, desviacion estandar, minimo y maximo para cada pred
 ```{python}
 #| echo: false
 import pandas as pd
-pd.read_csv("../Parte I/resultados/tablas/04_estadisticos_descriptivos_por_severidad.csv")
+pd.read_csv("../resultados/tablas/04_estadisticos_descriptivos_por_severidad.csv")
 ```
 
 ## Calidad de los datos
@@ -67,7 +67,7 @@ En 48 observaciones, los valores de `EVI`, `GLI` y altura son exactamente iguale
 ```{python}
 #| echo: false
 import pandas as pd
-pd.read_csv("../Parte I/resultados/tablas/01_resumen_calidad_datos.csv")
+pd.read_csv("../resultados/tablas/01_resumen_calidad_datos.csv")
 ```
 
 ## Diferencias entre categorias
@@ -99,10 +99,10 @@ NDVI y NDRE presentan una correlacion de Spearman muy alta (`rho = 0.94`), lo cu
 ```{python}
 #| echo: false
 import pandas as pd
-pd.read_csv("../Parte I/resultados/tablas/05_correlacion_spearman_con_severidad.csv")
+pd.read_csv("../resultados/tablas/05_correlacion_spearman_con_severidad.csv")
 ```
 
-![Matriz de correlación entre variables predictoras]("../Parte I/resultados/figuras/04_matriz_correlacion.png"){#fig-nombre width="80%"}
+![Matriz de correlación entre variables predictoras](../resultados/figuras/04_matriz_correlacion.png){#fig-matriz-correlacion width="80%"}
 
 ## Transformacion y estandarizacion
 
@@ -124,7 +124,7 @@ Antes del modelado debe verificarse el origen de las 48 coincidencias entre EVI,
 
 El conjunto de datos cuenta con 212 observaciones distribuidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme: la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la más escasa (n = 13, 6.2%), seguida de la categoría 1 —planta sana— con apenas 27 observaciones (12.9%).
 
-![Balance de clases en la variable severidad]("../Parte I/resultados/figuras/06_balance_clases.png"){#fig-nombre width="80%"}
+![Balance de clases en la variable severidad](../resultados/figuras/06_balance_clases.png){#fig-balance-clases width="80%"}
 
 El ratio mínimo/máximo de 0.28 confirma un *desequilibrio moderado-alto*, superando el umbral crítico de 0.5 habitualmente reportado en la literatura. Este patrón es problemático porque una red neuronal entrenada sin corrección tendería a favorecer las clases mayoritarias (2, 4 y 5), produciendo una exactitud global engañosamente alta mientras falla sistemáticamente en los extremos del espectro de severidad —precisamente las categorías de mayor relevancia agronómica.
 
@@ -157,7 +157,7 @@ No obstante, con n = 212 los subconjuntos de validación y prueba resultan reduc
 
 La elección del esquema de partición no es una decisión menor, ya que determina directamente la validez de las métricas reportadas y la confiabilidad de la selección de modelos. El esquema 80/20, aunque maximiza los datos de entrenamiento, compromete la imparcialidad de la evaluación al exponer el conjunto de prueba al proceso de ajuste de hiperparámetros. El esquema 70/15/15, en cambio, garantiza una separación metodológica rigurosa entre optimización y evaluación, condición indispensable cuando los resultados deben fundamentar decisiones agronómicas reales. Por estas razones, el esquema de tres particiones fue adoptado como referencia para el resto del taller, asumiendo la mayor varianza asociada al tamaño reducido de cada subconjunto como un costo aceptable frente a la solidez metodológica que ofrece.
 
-# Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, £considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.
+# Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, ¿considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.
 
 Con un tamaño muestral de n = 212, la estimación del error de generalización a partir de una única partición fija está sujeta a una varianza considerable, pues la composición específica del conjunto de prueba influye de forma no despreciable sobre las métricas reportadas. Para cuantificar esta variabilidad se implementó una validación cruzada estratificada con k = 5 folds, utilizando una regresión logística como modelo proxy. El uso de un modelo lineal en lugar del MLP responde a una razón de eficiencia computacional: entrenar la red neuronal en cada fold y para múltiples configuraciones de hiperparámetros resultaría prohibitivo con los recursos disponibles. La estratificación garantiza que la proporción de cada categoría de severidad se preserve en todos los subconjuntos, condición especialmente relevante dado el desequilibrio identificado en la Pregunta 2.
 
@@ -175,3 +175,193 @@ Cabe señalar además que el accuracy de *0.4578* corresponde a un modelo lineal
 ## Conclusión
 
 La validación cruzada k-fold con *k = 5* evidenció que el error de generalización estimado con una única partición fija está sujeto a variaciones de hasta 8 puntos porcentuales dependiendo de la composición del conjunto de prueba, lo que subraya la importancia de estrategias de evaluación más robustas cuando el tamaño muestral es reducido. El accuracy medio de *0.4578* obtenido con la regresión logística confirma la presencia de información discriminativa en las variables espectrales, aunque su naturaleza no lineal demanda modelos de mayor capacidad como el MLP. En el marco de este taller, el k-fold se adopta como herramienta de selección de hiperparámetros, mientras que la partición fija *70/15/15* se mantiene como referencia para la evaluación final, combinando así la robustez estadística del primero con la trazabilidad y comparabilidad que ofrece el segundo.
+
+
+# Pregunta 5: Entrene al menos cuatro perceptrones multicapa variando sistemáticamente el número de capas ocultas, neuronas por capa y tasa de aprendizaje. Para cada configuración reporte la pérdida en entrenamiento y validación por época. ¿En qué configuraciones observa indicios de sobreajuste o subajuste?
+
+Se entrenaron ocho arquitecturas de perceptrón multicapa orientadas a la clasificación multiclase de la severidad de *Verticillium sp.* (seis categorías: 1 = sano, 2 a 6 = niveles crecientes de severidad), variando el número de capas ocultas (1, 2 y 3), el número de neuronas por capa (16, 32 y 64, con al menos dos tamaños evaluados en cada número de capas) y la tasa de aprendizaje (0.001, 0.01 y 0.1). No se realizó un barrido factorial completo de las 27 combinaciones posibles, sino un diseño curado de ocho configuraciones que cumple los mínimos exigidos por el enunciado; como consecuencia, la tasa de aprendizaje no varía de forma independiente dentro de cada arquitectura, sino que está parcialmente confundida con la combinación capas-neuronas, lo que se tiene en cuenta al interpretar su efecto más adelante.
+
+El conjunto de datos (n = 212) presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones), por lo que el entrenamiento se realizó sobre el conjunto de entrenamiento balanceado mediante SMOTE, mientras que validación y prueba se mantuvieron sin sobremuestreo. Con el esquema de partición 70/15/15 de la Pregunta 3, los tamaños resultantes fueron *entrenamiento = 198*, *validación = 32* y *prueba = 32* observaciones. Este tamaño de validación y prueba es reducido y debe tenerse presente como límite al interpretar diferencias pequeñas entre configuraciones, pues con 32 observaciones una sola predicción adicional correcta ya mueve la exactitud en cerca de 3 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida *softmax*, con entropía cruzada categórica dispersa como función de pérdida y *early stopping* monitoreando la pérdida de validación.
+
+La selección de la mejor configuración se hizo por la menor pérdida de validación, y no por la exactitud de prueba: usar el conjunto de prueba para escoger hiperparámetros lo convertiría, de facto, en una extensión del conjunto de validación, contaminando la evaluación final con un sesgo optimista, justamente el problema que la partición en tres conjuntos de la Pregunta 3 busca evitar. La exactitud de prueba se reporta únicamente como referencia descriptiva del modelo ya seleccionado.
+
+## Resultados obtenidos
+
+| Configuración | Capas | Neuronas | Tasa aprendizaje | Épocas | Loss Train | Loss Val | Acc Train | Acc Val | Brecha Train-Val | Acc Test |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1L-16N-lr0.001 | 1 | 16 | 0.001 | 132 | 0.9101 | 1.1765 | 0.5960 | 0.4375 | +0.1585 | 0.2500 |
+| 1L-32N-lr0.01  | 1 | 32 | 0.01  | 24  | 0.8437 | 1.1655 | 0.6364 | 0.5000 | +0.1364 | 0.3125 |
+| 2L-16N-lr0.01  | 2 | 16 | 0.01  | 26  | 0.7985 | 1.2243 | 0.6818 | 0.6250 | +0.0568 | 0.3750 |
+| 2L-32N-lr0.001 | 2 | 32 | 0.001 | 44  | 0.8845 | 1.1567 | 0.6162 | 0.5000 | +0.1162 | 0.3438 |
+| 2L-64N-lr0.1   | 2 | 64 | 0.1   | 36  | 0.9285 | 1.5136 | 0.5758 | 0.5938 | −0.0180 | 0.4062 |
+| 3L-16N-lr0.001 | 3 | 16 | 0.001 | 55  | 0.8706 | 1.2510 | 0.6162 | 0.5000 | +0.1162 | 0.3438 |
+| 3L-32N-lr0.01  | 3 | 32 | 0.01  | 23  | 0.7581 | 1.2309 | 0.6515 | 0.5938 | +0.0578 | 0.4688 |
+| 3L-64N-lr0.001 | 3 | 64 | 0.001 | 30  | 0.8065 | 1.2189 | 0.6768 | 0.5000 | +0.1768 | 0.3438 |
+
+El modelo seleccionado es *2L-32N-lr0.001* (menor pérdida de validación, 1.1567), con exactitud de validación de *0.5000*, brecha Train-Val de *0.1162* y exactitud de prueba de referencia de *0.3438*. Esta configuración se usa como base para las Preguntas 6, 7, 9, 10, 17, 18 y 19.
+
+Vale la pena resaltar que el criterio de selección cambia la respuesta: por mayor exactitud de validación habría ganado *2L-16N-lr0.01* (0.6250), y por mayor exactitud de prueba habría ganado *3L-32N-lr0.01* (0.4688). Esto confirma que la elección del criterio de selección no es un detalle técnico menor, sino una decisión que puede cambiar por completo qué arquitectura se reporta como la mejor.
+
+## Diagnóstico de sobreajuste y subajuste
+
+La configuración más simple, *1L-16N-lr0.001*, necesitó 132 épocas —la más larga de todas— para alcanzar apenas una exactitud de entrenamiento de 0.5960, la más baja de la tabla junto con *2L-64N-lr0.1* (0.5758). Esto es consistente con una capacidad de representación insuficiente: la red tarda mucho en converger y aun así logra un ajuste mediocre, señal típica de subajuste. En el extremo opuesto, las brechas Train-Val más altas corresponden a *3L-64N-lr0.001* (0.1768) y a la misma *1L-16N-lr0.001* (0.1585), lo que indica que tanto la arquitectura más grande como la más simple presentan cierto grado de sobreajuste, aunque por razones distintas: la primera memoriza el conjunto de entrenamiento —incluidas las muestras sintéticas de SMOTE— sin transferir esa mejora a validación, mientras que la segunda sobreajusta levemente antes de que el *early stopping* actúe, tras muchas épocas de ajuste lento.
+
+Las brechas más bajas se observan en *2L-16N-lr0.01* (0.0568) y *3L-32N-lr0.01* (0.0578), ambas con tasa de aprendizaje intermedia, lo que sugiere que dentro de este diseño la tasa 0.01 favorece una convergencia más equilibrada que 0.001 —más lenta y con mayor tendencia a sobreajustar antes de detenerse— o que 0.1, que resulta inestable: la configuración *2L-64N-lr0.1* es la única con brecha negativa (−0.0180) y, a la vez, la pérdida de validación más alta de toda la tabla (1.5136), lo que no refleja buena generalización sino un entrenamiento inestable en el que los pasos de actualización, al ser demasiado grandes, no permiten una reducción consistente de la pérdida.
+
+## Conclusión
+
+La comparación sistemática muestra que la arquitectura más simple subajusta, que las arquitecturas de mayor capacidad con tasa de aprendizaje baja tienden a sobreajustar más, y que una tasa de aprendizaje alta produce inestabilidad en la convergencia sin ganancia clara en calibración. El mejor balance según la pérdida de validación se obtuvo con una red de 2 capas y 32 neuronas por capa y tasa de aprendizaje de 0.001. Deben señalarse dos limitaciones del análisis: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje del de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que las diferencias entre configuraciones cercanas deben interpretarse con cautela. Esta selección, hecha exclusivamente con el conjunto de validación, es la que se usa como punto de partida para las preguntas siguientes, reservando el conjunto de prueba para la evaluación final reportada en la Pregunta 7.
+
+# Pregunta 6: Implemente y compare dos criterios para cuantificar el error durante el entrenamiento: entropía cruzada categórica (CCE) y error cuadrático medio (MSE). ¿Cuál es más apropiado para un problema de clasificación múltiple? Fundamente su respuesta tanto teórica como empíricamente.
+
+Se entrenó la arquitectura seleccionada en la Pregunta 5 (*2L-32N-lr0.001*) dos veces, idéntica en todo salvo la función de pérdida: entropía cruzada categórica dispersa (CCE) y error cuadrático medio (MSE) sobre las etiquetas en formato *one-hot*.
+
+## Resultados obtenidos
+
+CCE obtuvo una exactitud de prueba de *0.3438* (11/32) y MSE obtuvo *0.3750* (12/32); MSE superó a CCE por un margen de exactamente una observación sobre 32 casos de prueba. Con un conjunto de prueba de este tamaño, una diferencia de una predicción correcta —cerca de 3 puntos porcentuales— no permite concluir que MSE sea empíricamente superior a CCE en este problema, pues es perfectamente compatible con ruido de muestreo. Reportar que "MSE ganó" como conclusión firme a partir de esta única corrida sería un error metodológico; el resultado empírico debe leerse únicamente como evidencia de que, en este caso, ambas funciones de pérdida producen un desempeño de prueba similar y bajo, no como evidencia de que MSE sea preferible.
+
+## Fundamento teórico
+
+La entropía cruzada categórica es la función de pérdida coherente con la capa de salida *softmax*: maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (*proper scoring rule*), que penaliza de forma creciente la confianza mal ubicada en la clase incorrecta, con gradientes bien escalados incluso cuando la predicción está muy alejada del valor real. El error cuadrático medio, en cambio, fue diseñado para variables continuas; aplicado sobre probabilidades *softmax* con codificación *one-hot*, produce gradientes que se aplanan cuando la salida se acerca a 0 o a 1, ralentizando el aprendizaje justo en los casos de error más claro. Además, MSE trata cada clase como si tuviera una distancia euclidiana equivalente a las demás, sin reconocer ninguna estructura del problema, ni siquiera el orden ordinal de la severidad. En un problema con seis clases desbalanceadas y un tamaño muestral reducido como este, ambas pérdidas terminan limitadas más por el tamaño de muestra y el desbalance que por la elección de la función de pérdida, lo que explica que la diferencia observada entre 11 y 12 aciertos sea tan pequeña.
+
+## Conclusión
+
+Se recomienda la entropía cruzada categórica como función de pérdida para este problema de clasificación múltiple, con fundamento teórico en su coherencia con la salida *softmax*, sus gradientes bien comportados y su interpretación probabilística correcta. La evidencia empírica de esta corrida no es concluyente por el tamaño reducido del conjunto de prueba, por lo que no debe usarse esta comparación puntual como criterio de selección del modelo final, sino como argumento de que la elección de la función de pérdida debe fundamentarse en principios y no únicamente en el resultado de una sola corrida con muestra pequeña.
+
+# Pregunta 7: Para el modelo seleccionado en la Pregunta 5, reporte exactitud global, precisión, sensibilidad y F1 por clase, macro-promedio y promedio ponderado, matriz de confusión con interpretación, y curva ROC/AUC uno-contra-todos. ¿Qué categorías de severidad son más difíciles de clasificar? ¿A qué lo atribuye?
+
+Se evaluó el modelo *2L-32N-lr0.001*, entrenado con entropía cruzada categórica, sobre el conjunto de prueba (n = 32). La exactitud global obtenida fue de *0.3438* (11/32).
+
+## Resultados obtenidos
+
+La matriz de confusión, con filas correspondientes a la severidad real y columnas a la severidad predicha, es la siguiente:
+
+```
+         Pred:  1  2  3  4  5  6
+Real Sev 1   [  4  0  0  0  0  0 ]
+Real Sev 2   [  5  1  1  0  0  0 ]
+Real Sev 3   [  3  0  0  2  0  0 ]
+Real Sev 4   [  0  0  2  2  3  0 ]
+Real Sev 5   [  0  0  0  2  3  2 ]
+Real Sev 6   [  0  0  0  0  1  1 ]
+```
+
+Las métricas por clase, junto con el macro-promedio y el promedio ponderado, se resumen a continuación:
+
+| Clase | Precisión | Sensibilidad | F1 | Soporte |
+|---|---|---|---|---|
+| Sev 1 | 0.33 | 1.00 | 0.50 | 4 |
+| Sev 2 | 1.00 | 0.14 | 0.25 | 7 |
+| Sev 3 | 0.00 | 0.00 | 0.00 | 5 |
+| Sev 4 | 0.33 | 0.29 | 0.31 | 7 |
+| Sev 5 | 0.43 | 0.43 | 0.43 | 7 |
+| Sev 6 | 0.33 | 0.50 | 0.40 | 2 |
+| Macro-promedio | 0.40 | 0.39 | 0.31 | 32 |
+| Promedio ponderado | 0.45 | 0.34 | 0.30 | 32 |
+
+El AUC-ROC uno-contra-todos por clase fue de 1.00 para Sev 1, 0.817 para Sev 2, 0.726 para Sev 3, 0.726 para Sev 4, 0.869 para Sev 5 y 0.833 para Sev 6, con un macro-promedio de *0.828*.
+
+## Interpretación por categoría
+
+La severidad 3 es, con claridad, la categoría más difícil de clasificar: presenta precisión y sensibilidad de 0.00, pues ninguno de los cinco casos reales fue clasificado correctamente (tres se confundieron con Sev 1 y dos con Sev 4), y comparte el AUC-ROC más bajo (0.726) con Sev 4. Al ser una categoría intermedia en la escala ordinal, su señal espectral se superpone con la de sus vecinas más de lo que se diferencia de ellas. La severidad 2 muestra una asimetría reveladora: su precisión es de 1.00 —el único caso que el modelo predijo como Sev 2 efectivamente lo era— pero su sensibilidad es de apenas 0.14, ya que cinco de sus siete casos reales fueron clasificados como Sev 1. Esto sugiere que el modelo tiende a colapsar las severidades más leves hacia la clase Sev 1, posiblemente porque el contraste espectral entre plantas sanas y levemente enfermas es sutil. En la misma línea, la severidad 1 tiene sensibilidad perfecta (1.00) pero precisión baja (0.33), pues el modelo predice "Sev 1" con demasiada frecuencia, capturando erróneamente varios casos de Sev 2 y Sev 3; existe, por tanto, una tendencia sistemática a sobre-predecir la clase sana.
+
+Las severidades 5 y 6, en contraste, se clasifican relativamente mejor (F1 de 0.43 y 0.40, AUC de 0.869 y 0.833), lo que sugiere que el daño más avanzado deja una huella espectral más distintiva y separable del resto. En conjunto, el patrón encontrado es el típico de variables ordinales con clases intermedias: los errores del modelo son casi todos de vecindad —Sev 2 confundida con Sev 1, Sev 3 con Sev 1 o Sev 4, Sev 4 con Sev 3 o Sev 5— y no hay prácticamente ninguna confusión entre extremos alejados de la escala. Esto es alentador desde el punto de vista agronómico, pues el modelo rara vez confunde severidad leve con severidad grave, pero también evidencia que seis clases ordinales resultan demasiado finas para el tamaño de muestra disponible, con soportes de prueba de apenas dos a siete observaciones por clase.
+
+## Conclusión
+
+El desempeño global del modelo multiclase es modesto y desigual entre categorías: las clases extremas (1, 5 y 6) se separan razonablemente bien, mientras que las intermedias (2 y 3) resultan difíciles de distinguir de sus vecinas, en particular Sev 3, que no logra clasificarse correctamente en ningún caso. Esta limitación, más que un defecto puntual de la arquitectura, refleja la dificultad inherente de discriminar seis niveles ordinales con un tamaño muestral de 212 observaciones, y motiva directamente la simplificación a un problema binario que se explora en la Parte II del taller.
+
+# Pregunta 8: Proponga y justifique un criterio para colapsar las categorías de severidad en sano versus enfermo. Discuta si esta agrupación es la más apropiada o si existiría una alternativa mejor fundamentada. ¿Se pierde información relevante?
+
+El criterio adoptado asigna la severidad 1 a la categoría "Sano" (0) y las severidades 2 a 6 a la categoría "Enfermo" (1). Con los datos disponibles, esto produce 27 observaciones sanas y 185 enfermas, una razón de desbalance incluso más marcada que en el problema de seis clases (27/185 ≈ 0.146).
+
+## Criterio adoptado y justificación
+
+Desde el punto de vista agronómico, para un sistema de alerta temprana la decisión operativa relevante no es cuán severa es la infección sino si existe evidencia de infección que amerite intervención. Agrupar cualquier nivel de severidad igual o superior a 2 como "Enfermo" tiene sentido práctico en ese contexto, pues prioriza la sensibilidad de detección sobre la caracterización fina del estado de avance de la enfermedad.
+
+## Alternativas y pérdida de información
+
+Este criterio es defendible, pero no es el único razonable. El análisis de la Pregunta 7 mostró que el modelo confunde sobre todo clases adyacentes —1, 2 y 3 entre sí, y 4, 5 y 6 entre sí—, con muy poca confusión cruzada entre esos dos bloques. Una alternativa con mejor sustento empírico, y no solo agronómico, sería un corte en tres grupos, por ejemplo sano o leve (severidades 1 a 3) frente a avanzado (severidades 4 a 6), que reflejaría mejor la separación espectral observada. Sin embargo, un esquema de tres grupos requeriría un consenso agronómico adicional sobre dónde trazar el límite entre leve y severo, y complicaría la comparación directa con la regresión logística binaria solicitada en la Parte III, por lo que se mantiene el criterio binario sano frente a enfermo pedido en el enunciado, dejando esta alternativa como discusión.
+
+Se pierde información relevante al hacer esta reducción: toda distinción de severidad dentro de "Enfermo" desaparece, y esa categoría concentra el 87 % de la muestra (185 de 212 observaciones) en una sola etiqueta, justo el gradiente de severidad que, según la Pregunta 7, sí presenta una señal espectral parcialmente diferenciable en los extremos. Para un propósito de alerta temprana esta pérdida es aceptable, pero no lo sería para priorizar tratamientos o pronosticar el impacto sobre la cosecha, escenarios en los que una clasificación ordinal, o el esquema de tres grupos propuesto, resultaría más informativa.
+
+## Conclusión
+
+El colapso sano/enfermo es una simplificación razonable y alineada con el objetivo de detección temprana, pero implica una pérdida de información no trivial sobre el gradiente de severidad, y su idoneidad depende del uso que se le dé al modelo: adecuada para alertar sobre la presencia de la enfermedad, insuficiente si el objetivo es apoyar decisiones que dependan del grado de avance.
+
+# Pregunta 9: Entrene un perceptrón multicapa para el problema binario resultante, repitiendo el esquema de partición entrenamiento/validación/prueba. Compare el desempeño con el modelo de clasificación múltiple de la Parte I. ¿Mejora la clasificación al reducir el número de clases?
+
+Se entrenó un perceptrón multicapa binario con la misma arquitectura seleccionada en la Pregunta 5 (2 capas ocultas, 32 neuronas, tasa de aprendizaje 0.001), salida sigmoide y pérdida de entropía cruzada binaria, sobre la partición 70/15/15 del problema binario, con SMOTE aplicado únicamente al conjunto de entrenamiento.
+
+## Resultados obtenidos
+
+Con el umbral por defecto de 0.5, la exactitud de prueba fue de *0.8438* (27/32), con una matriz de confusión de *TN = 4, FP = 0, FN = 5, TP = 23*. Las métricas por clase se resumen a continuación:
+
+| Clase | Precisión | Sensibilidad | F1 | Soporte |
+|---|---|---|---|---|
+| Sano | 0.44 | 1.00 | 0.62 | 4 |
+| Enfermo | 1.00 | 0.82 | 0.90 | 28 |
+| Macro-promedio | 0.72 | 0.91 | 0.76 | 32 |
+| Promedio ponderado | 0.93 | 0.84 | 0.87 | 32 |
+
+## Comparación con el modelo multiclase
+
+La exactitud pasa de *0.3438* en el modelo multiclase a *0.8438* en el binario, y el F1 ponderado de *0.30* a *0.87*, una mejora sustancial que, sin embargo, no debe interpretarse como que el problema binario sea "más fácil" en un sentido profundo. Dos razones estructurales explican buena parte de la diferencia: primero, el azar de referencia cambia, pues con seis clases balanceadas al azar la exactitud esperada es de apenas 17 %, mientras que con dos clases es de 50 %, de modo que parte de la mejora es simplemente aritmética; segundo, colapsar las clases elimina justo los errores que dominaban el modelo multiclase, ya que casi todos ellos eran confusiones entre clases adyacentes (Sev 1 con 2 con 3, y Sev 4 con 5 con 6), que al agruparse en una sola etiqueta "Enfermo" dejan de contar como error.
+
+La comparación tampoco es completamente equivalente, porque la exactitud favorece artificialmente a la clase mayoritaria, que en este caso es "Enfermo" (185 de 212 observaciones, cerca del 87 %). Con solo cuatro observaciones sanas en el conjunto de prueba, el modelo comete cero falsos positivos pero cinco falsos negativos con el umbral por defecto, es decir, cinco plantas realmente enfermas fueron clasificadas como sanas, que es precisamente el error más costoso en este contexto agronómico, como se discute en la Pregunta 10.
+
+## Conclusión
+
+Reducir el número de clases mejora de forma sustancial las métricas globales de exactitud y F1, pero esa mejora debe interpretarse con cautela: refleja en parte un problema estructuralmente más simple y una menor exposición a errores de vecindad ordinal, no necesariamente un modelo mejor calibrado frente al tipo de error que más importa en la práctica fitosanitaria.
+
+# Pregunta 10: Reporte para el modelo binario exactitud, precisión, sensibilidad, especificidad, F1, AUC-ROC y el umbral óptimo según el criterio de Youden. Interprete cada métrica en el contexto fitosanitario: ¿qué es más costoso, un falso negativo o un falso positivo?
+
+Con el umbral por defecto de 0.5, la sensibilidad del modelo binario fue de 23/28 = *0.821* y la especificidad de 4/4 = *1.000*, según se reportó en la Pregunta 9. El umbral óptimo según el criterio de Youden resultó ser *0.2739*, considerablemente más bajo que 0.5.
+
+## Resultados obtenidos
+
+| Métrica | Valor |
+|---|---|
+| Umbral óptimo (Youden) | 0.2739 |
+| Exactitud | 0.9062 |
+| Sensibilidad | 0.8929 |
+| Especificidad | 1.0000 |
+| Precisión | 1.0000 |
+| F1-Score | 0.9434 |
+| AUC-ROC | 0.9464 |
+
+Al bajar el umbral de 0.5 a 0.2739, la matriz de confusión pasa de *(TN=4, FP=0, FN=5, TP=23)* a *(TN=4, FP=0, FN=3, TP=25)*: se recuperan dos de los cinco falsos negativos anteriores sin generar ningún falso positivo adicional, pues la especificidad se mantiene en 1.00. Esto ocurre porque esas dos observaciones tenían una probabilidad predicha de "Enfermo" entre 0.2739 y 0.5, de modo que el modelo ya las ubicaba cerca del límite, pero el umbral por defecto las clasificaba como sanas.
+
+## Interpretación en el contexto fitosanitario
+
+Un falso negativo, es decir, una planta enferma clasificada como sana, es claramente más costoso en este contexto: la planta no recibe tratamiento y la infección por *Verticillium sp.*, al tratarse de un patógeno de suelo con capacidad de dispersión, puede progresar y contagiar el entorno. El costo de un falso positivo, en cambio, es acotado: una inspección o un tratamiento preventivo innecesario, con un costo económico menor y sin riesgo fitosanitario adicional. En esta muestra, el umbral de Youden no solo es matemáticamente óptimo al maximizar la suma de sensibilidad y especificidad, sino que además mejora la sensibilidad sin ningún costo en especificidad, por lo que resulta una elección claramente preferible al umbral por defecto. Dada esta asimetría de costos, incluso valdría la pena considerar un umbral aún más bajo, del orden de 0.15 a 0.20, que sacrifique algo de especificidad a cambio de una sensibilidad cercana a 1.00, aunque esa decisión debería tomarse junto con un agrónomo que cuantifique el costo real de cada tipo de error, y no solo con el criterio estadístico de Youden, que trata ambos errores como igualmente costosos.
+
+## Conclusión
+
+El ajuste del umbral de decisión, más allá del valor por defecto de 0.5, constituye una herramienta simple y efectiva para alinear el modelo con los costos reales del problema: en este caso permite reducir los falsos negativos sin sacrificar especificidad, lo que representa una mejora concreta para un sistema de apoyo a la decisión agronómica orientado a minimizar el riesgo de dejar plantas enfermas sin tratamiento.
+
+# Pregunta 11: Ajuste un modelo de regresión logística binaria usando la misma partición que en la Parte II. Reporte los coeficientes estimados, sus errores estándar, valores p e intervalos de confianza al 95%. ¿Qué variables son estadísticamente significativas? ¿Tienen el signo esperado desde el punto de vista agronómico?
+
+Se ajustó una regresión logística sobre la misma partición binaria utilizada en la Parte II (entrenamiento con SMOTE, sin sobremuestreo en validación ni en prueba), usando los cinco índices espectrales y la altura media, todos estandarizados.
+
+## Resultados obtenidos
+
+| Variable | Coeficiente (β) | OR = exp(β) | Error Std. | Z | p-valor | IC 95% |
+|---|---|---|---|---|---|---|
+| ndvi_med | −0.8753 | 0.417 | 1.3252 | −0.66 | 0.509 | [−3.473, 1.722] |
+| evi_med | −2.1740 | 0.114 | 0.6688 | −3.25 | 0.0012 | [−3.485, −0.863] |
+| ndre_med | −0.7681 | 0.464 | 0.7991 | −0.96 | 0.336 | [−2.334, 0.798] |
+| gli_med | −0.1800 | 0.835 | 1.0853 | −0.17 | 0.868 | [−2.307, 1.947] |
+| height_med | +0.6513 | 1.918 | 0.3169 | 2.06 | 0.0398 | [0.030, 1.272] |
+
+El intercepto estimado fue de 2.1310. Al nivel de significancia α = 0.05, solo el EVI (p = 0.0012) y la altura media (p = 0.0398) resultan estadísticamente significativos. El NDVI, el NDRE y el GLI no lo son en este modelo multivariado, pese a que en el análisis exploratorio de la Pregunta 1 el NDVI (ρ = −0.855) y el NDRE (ρ = −0.817) mostraron las correlaciones univariadas de Spearman más fuertes con la severidad, muy por encima de la altura (ρ = −0.340).
+
+## Interpretación de los coeficientes
+
+La pérdida de significancia de variables con fuerte correlación univariada se explica principalmente por multicolinealidad: el NDVI, el EVI y el NDRE son índices espectrales derivados de combinaciones parcialmente solapadas de bandas de reflectancia, todos sensibles a la actividad fotosintética y al contenido de clorofila, por lo que están altamente correlacionados entre sí. Esto se refleja en los errores estándar de la tabla, donde el NDVI presenta el valor más alto de todas las variables (1.325), mayor incluso que su propio coeficiente en valor absoluto, lo que genera un intervalo de confianza extremadamente amplio que cruza el cero. Cuando varias variables comparten la misma señal subyacente, el modelo reparte el crédito explicativo entre ellas de forma inestable, y cuál de ellas termina apareciendo significativa depende de particularidades de la muestra más que de su relevancia biológica.
+
+En cuanto al signo de los coeficientes, el NDVI, el EVI, el NDRE y el GLI son negativos, lo cual coincide con lo esperado desde el punto de vista agronómico: valores más altos de estos índices reflejan mayor vigor fotosintético y, por tanto, se asocian a una menor probabilidad de estar enfermo. La altura media, en cambio, presenta un coeficiente positivo y significativo, lo que a primera vista resulta contraintuitivo, pues cabría esperar que las plantas más enfermas fueran también más bajas. Sin embargo, esto es consistente con lo observado en el análisis exploratorio: la altura promedio por severidad no decrece de forma monótona, sino que cae entre las severidades 1 y 4 y repunta en las severidades 5 y 6, siendo además la variable con la correlación univariada más débil de las cinco (ρ = −0.340). Es probable que el signo positivo de la altura en el modelo multivariado sea, en parte, un artefacto de esa relación no monótona combinado con la multicolinealidad entre los índices espectrales, por lo que debe señalarse como una limitación de la interpretación causal de este coeficiente y no como una conclusión agronómica firme.
+
+## Conclusión
+
+Según este modelo, el EVI es el predictor individual más fuerte y confiable, con el mayor valor absoluto de Z, el menor p-valor y el intervalo de confianza relativamente más estrecho, seguido de la altura, aunque con la salvedad señalada sobre su signo. El NDVI y el NDRE, pese a ser los índices más prometedores en el análisis univariado, no aportan señal estadísticamente independiente una vez que el EVI está en el modelo, muy probablemente por la colinealidad entre índices espectrales, un punto que conviene retomar en la Pregunta 12 al aplicar selección de variables mediante Lasso, dado que la regularización L1 está diseñada precisamente para lidiar con este tipo de redundancia entre predictores correlacionados.
