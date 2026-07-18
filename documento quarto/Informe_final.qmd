@@ -6,6 +6,13 @@ author:
   - name: "Julian Andres Torres Lozano"
 date: today
 lang: es
+execute:
+  echo: false
+  warning: false
+  message: false
+fig-align: center
+fig-cap-location: bottom
+tbl-cap-location: top
 format:
   html:
     toc: true
@@ -13,13 +20,108 @@ format:
     toc-depth: 3
     number-sections: true
     theme: cosmo
+    smooth-scroll: true
+    code-fold: true
+    df-print: paged
     include-in-header:
       text: |
         <style>
+        :root {
+          --azul-informe: #153f66;
+          --verde-informe: #1f6f5b;
+          --gris-texto: #263238;
+          --gris-suave: #f6f8fa;
+          --borde-suave: #d9e2ec;
+        }
+
         body {
           text-align: justify;
-          margin-left: 2.5cm;
-          margin-right: 2.5cm;
+          color: var(--gris-texto);
+          line-height: 1.65;
+        }
+
+        main.content {
+          max-width: 1080px;
+          margin-left: auto;
+          margin-right: auto;
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
+        }
+
+        .quarto-title-block .title {
+          color: var(--azul-informe);
+          font-weight: 750;
+          letter-spacing: 0;
+        }
+
+        .quarto-title-meta {
+          color: #52616f;
+        }
+
+        h1 {
+          color: var(--azul-informe);
+          border-bottom: 2px solid var(--borde-suave);
+          padding-bottom: 0.35rem;
+          margin-top: 2.2rem;
+          margin-bottom: 1rem;
+          font-weight: 700;
+        }
+
+        h2 {
+          color: var(--verde-informe);
+          margin-top: 1.55rem;
+          margin-bottom: 0.65rem;
+          font-weight: 650;
+        }
+
+        p {
+          margin-bottom: 0.85rem;
+        }
+
+        table {
+          margin: 1.1rem auto;
+          width: auto;
+          font-size: 0.93rem;
+          border-collapse: collapse;
+        }
+
+        thead {
+          border-top: 2px solid var(--azul-informe);
+          border-bottom: 1px solid var(--azul-informe);
+        }
+
+        th, td {
+          padding: 0.45rem 0.7rem;
+        }
+
+        tbody tr:nth-child(even) {
+          background-color: var(--gris-suave);
+        }
+
+        figure {
+          margin-top: 1.35rem;
+          margin-bottom: 1.45rem;
+          text-align: center;
+        }
+
+        figure img {
+          border: 1px solid var(--borde-suave);
+          border-radius: 6px;
+          padding: 4px;
+          background: #ffffff;
+        }
+
+        figcaption {
+          color: #52616f;
+          font-size: 0.92rem;
+          margin-top: 0.45rem;
+        }
+
+        blockquote {
+          border-left: 4px solid var(--verde-informe);
+          background: var(--gris-suave);
+          padding: 0.65rem 1rem;
+          color: #34495e;
         }
         </style>
   pdf:
@@ -28,6 +130,9 @@ format:
     toc-depth: 3
     number-sections: true
     documentclass: report
+    fontsize: 11pt
+    linestretch: 1.12
+    colorlinks: true
     geometry:
       - top=2.5cm
       - bottom=2.5cm
@@ -365,3 +470,282 @@ En cuanto al signo de los coeficientes, el NDVI, el EVI, el NDRE y el GLI son ne
 ## Conclusión
 
 Según este modelo, el EVI es el predictor individual más fuerte y confiable, con el mayor valor absoluto de Z, el menor p-valor y el intervalo de confianza relativamente más estrecho, seguido de la altura, aunque con la salvedad señalada sobre su signo. El NDVI y el NDRE, pese a ser los índices más prometedores en el análisis univariado, no aportan señal estadísticamente independiente una vez que el EVI está en el modelo, muy probablemente por la colinealidad entre índices espectrales, un punto que conviene retomar en la Pregunta 12 al aplicar selección de variables mediante Lasso, dado que la regularización L1 está diseñada precisamente para lidiar con este tipo de redundancia entre predictores correlacionados.
+
+# Pregunta 12: Aplique al menos un método de selección de variables sobre el modelo de regresión logística: puede usar selección paso a paso, regularización Lasso (L1) o Ridge (L2), o criterios de información (AIC/BIC). ¿Cuáles son las variables más relevantes para predecir la severidad según este modelo? Compare este resultado con la importancia de variables obtenida con la red neuronal en la Pregunta 14.
+
+Para la selección de variables se aplicó una regresión logística con penalización Lasso (`L1`) y validación cruzada interna de 5 particiones. Esta estrategia es adecuada para este problema porque combina predicción y selección: al penalizar la suma de los valores absolutos de los coeficientes, puede reducir a cero las variables que no aportan información adicional relevante, especialmente cuando existe colinealidad entre predictores.
+
+El modelo se entrenó con la misma partición binaria utilizada en la Parte II y sobre el conjunto de entrenamiento balanceado mediante SMOTE. Las variables fueron previamente estandarizadas, por lo que la magnitud absoluta de los coeficientes Lasso puede compararse como una aproximación de importancia relativa.
+
+## Resultados obtenidos
+
+| Variable | Coeficiente Lasso | Valor absoluto |
+|---|---:|---:|
+| `evi_med` | -2.0660 | 2.0660 |
+| `ndre_med` | -0.9254 | 0.9254 |
+| `height_med` | 0.4560 | 0.4560 |
+| `ndvi_med` | -0.0046 | 0.0046 |
+| `gli_med` | 0.0000 | 0.0000 |
+
+![Importancia de variables según regresión logística Lasso](../resultados/figuras/13_importancia_lasso.png){#fig-importancia-lasso width="80%"}
+
+El ranking de importancia según Lasso está encabezado por `evi_med`, seguido de `ndre_med` y `height_med`. El `ndvi_med` queda con un coeficiente prácticamente nulo y `gli_med` es eliminado por completo del modelo. Este resultado no implica que el NDVI carezca de relación con la enfermedad; de hecho, en el análisis exploratorio presentó una de las asociaciones univariadas más fuertes con la severidad. Lo que sugiere el Lasso es que, una vez incluidas variables como EVI y NDRE, el NDVI aporta poca información adicional independiente para separar plantas sanas y enfermas.
+
+## Interpretación
+
+El signo negativo de `evi_med` y `ndre_med` es coherente con la interpretación agronómica: valores más altos de estos índices indican mayor vigor fotosintético, mayor actividad de la vegetación y, por tanto, menor probabilidad de pertenecer al grupo enfermo. El coeficiente positivo de `height_med`, al igual que en la regresión logística no penalizada, debe interpretarse con cautela. La altura no mostró una relación estrictamente monótona con la severidad en el análisis exploratorio, por lo que su contribución puede estar capturando patrones residuales de la muestra más que una relación causal directa.
+
+La eliminación de `gli_med` confirma su bajo aporte relativo en este conjunto de datos. En comparación con los demás índices, el GLI mostró menor asociación con la severidad y mayor solapamiento entre categorías, lo que reduce su utilidad dentro de un modelo multivariado.
+
+## Comparación preliminar con la red neuronal
+
+Aunque la comparación formal de importancia en redes neuronales se desarrolla en la Pregunta 14, el resultado del Lasso anticipa un patrón relevante: las variables más útiles se concentran en los índices relacionados con vigor vegetal, especialmente EVI y NDRE, junto con la altura. En cambio, NDVI y GLI quedan relegadas cuando el modelo debe escoger entre predictores parcialmente redundantes.
+
+## Conclusión
+
+Según la regresión logística con regularización Lasso, las variables más relevantes para predecir la condición binaria de severidad son `evi_med`, `ndre_med` y `height_med`. El EVI aparece como el predictor dominante, mientras que NDVI pierde importancia por redundancia con otros índices espectrales y GLI no aporta señal suficiente para permanecer en el modelo. Este resultado refuerza la necesidad de interpretar la importancia de variables desde una perspectiva multivariada y no únicamente a partir de correlaciones individuales.
+
+# Pregunta 13: Compare el modelo de regresión logística con el mejor perceptrón multicapa binario de la Parte II utilizando las mismas métricas de evaluación sobre el mismo conjunto de prueba. Construya una tabla comparativa y argumente cuál modelo elegiría para un sistema de apoyo a la decisión agronómica, considerando no solo el desempeño predictivo sino también la interpretabilidad y el costo computacional.
+
+La regresión logística y el perceptrón multicapa binario se compararon sobre el mismo conjunto de prueba, usando las mismas métricas: exactitud, precisión, sensibilidad, especificidad, F1-score y AUC-ROC. Esta comparación es metodológicamente importante porque evita atribuir diferencias de desempeño a particiones distintas de los datos.
+
+## Resultados comparativos
+
+| Modelo | Accuracy | Precisión | Sensibilidad | Especificidad | F1-score | AUC-ROC |
+|---|---:|---:|---:|---:|---:|---:|
+| MLP binario | 0.8750 | 1.0000 | 0.8571 | 1.0000 | 0.9231 | 0.9107 |
+| Regresión logística | 0.7188 | 1.0000 | 0.6786 | 1.0000 | 0.8085 | 0.9464 |
+
+![Comparación entre MLP binario y regresión logística](../resultados/figuras/14_comparacion_modelos.png){#fig-comparacion-modelos width="90%"}
+
+El MLP binario supera a la regresión logística en exactitud, sensibilidad y F1-score. Esta diferencia es especialmente importante porque la sensibilidad mide la capacidad de detectar plantas enfermas. En el contexto fitosanitario, un falso negativo es el error más costoso: implica dejar sin atención una planta enferma que puede continuar deteriorándose o favorecer la dispersión del patógeno.
+
+Ambos modelos alcanzan una precisión y especificidad de 1.0000 en el conjunto de prueba, lo que indica que ninguno clasificó plantas sanas como enfermas bajo el umbral usado. Sin embargo, la regresión logística deja escapar una mayor proporción de plantas enfermas, como se observa en su menor sensibilidad. Desde una perspectiva operativa, esta diferencia pesa más que la igualdad en especificidad, porque el objetivo principal del sistema es alertar oportunamente sobre enfermedad.
+
+El único indicador donde la regresión logística supera al MLP es el AUC-ROC. Esto significa que, considerando todos los posibles umbrales de clasificación, la regresión logística ordena mejor las observaciones según su probabilidad de estar enfermas. Este resultado es relevante porque sugiere que el desempeño de la regresión logística podría mejorar mediante calibración o ajuste del umbral de decisión, como se discutió en la Pregunta 10. No obstante, con el umbral aplicado en la comparación directa, el MLP ofrece mejores métricas de clasificación efectiva.
+
+## Interpretabilidad y costo computacional
+
+La regresión logística tiene ventajas claras en interpretabilidad: sus coeficientes permiten identificar la dirección y magnitud del efecto de cada predictor, calcular odds ratios y evaluar significancia estadística. Además, su costo computacional es bajo, el entrenamiento es rápido y el modelo es fácil de auditar, lo cual puede ser importante en un sistema de apoyo a decisiones agronómicas donde se requiere explicar por qué una planta fue clasificada como enferma.
+
+El MLP, en cambio, es menos interpretable de forma directa, pero puede capturar relaciones no lineales e interacciones entre variables espectrales y altura. En este conjunto de datos, esa mayor flexibilidad se traduce en mejor sensibilidad y F1-score, dos métricas más alineadas con el objetivo de detección temprana.
+
+## Modelo elegido
+
+Para un sistema de apoyo a la decisión agronómica orientado a reducir el riesgo de no detectar plantas enfermas, elegiría el MLP binario como modelo predictivo principal, acompañado por análisis de importancia de variables para mejorar su interpretabilidad. La razón central es que presenta mejor sensibilidad y F1-score sobre el conjunto de prueba, reduciendo el número de falsos negativos respecto a la regresión logística.
+
+Sin embargo, no descartaría la regresión logística. Su mayor AUC-ROC, su simplicidad y su interpretabilidad la convierten en una línea base muy sólida y en una herramienta complementaria para explicar el comportamiento general de los predictores. En una aplicación práctica, una estrategia razonable sería usar el MLP para la clasificación operativa y la regresión logística como modelo de referencia interpretable para validar la coherencia agronómica de las decisiones.
+
+# Pregunta 14: Implemente al menos una estrategia para evaluar la importancia de las variables predictoras en el perceptrón multicapa binario. Compare el ranking de importancia obtenido con el de la regresión logística. ¿Coinciden las variables más relevantes? ¿Qué implicaciones tiene esto para el monitoreo espectral de la enfermedad?
+
+Para evaluar la importancia de variables en el perceptrón multicapa binario se implementó importancia por permutación de características (*Permutation Feature Importance*, PFI) sobre el conjunto de prueba. Esta estrategia consiste en alterar aleatoriamente los valores de una variable mientras se mantienen las demás sin cambios y medir cuánto cae el desempeño del modelo. Si la caída es grande, la variable es importante; si la caída es pequeña o negativa, el modelo no depende fuertemente de ella para sus predicciones.
+
+Se utilizó la exactitud como métrica base y 30 repeticiones de permutación por variable. Dado el tamaño reducido del conjunto de prueba, los resultados deben interpretarse como una aproximación relativa y no como una medida absoluta definitiva.
+
+## Resultados de importancia por permutación
+
+| Variable | Importancia PFI | Desviación estándar |
+|---|---:|---:|
+| `height_med` | 0.0688 | 0.0317 |
+| `evi_med` | 0.0656 | 0.0561 |
+| `ndre_med` | 0.0365 | 0.0646 |
+| `ndvi_med` | -0.0010 | 0.0205 |
+| `gli_med` | -0.0031 | 0.0219 |
+
+![Comparación de importancia de variables en MLP y Lasso](../resultados/figuras/15_importancia_variables.png){#fig-importancia-variables width="90%"}
+
+El MLP asigna la mayor importancia a `height_med` y `evi_med`, con valores muy cercanos entre sí. En tercer lugar aparece `ndre_med`, mientras que `ndvi_med` y `gli_med` presentan importancias prácticamente nulas o ligeramente negativas. Una importancia negativa no debe interpretarse como que la variable sea perjudicial en sentido causal; más bien indica que, bajo esta partición y este modelo, permutarla no deterioró la exactitud, probablemente porque su información ya estaba contenida en otros predictores correlacionados.
+
+## Comparación con Lasso
+
+El ranking de la regresión logística Lasso fue: `evi_med`, `ndre_med`, `height_med`, `ndvi_med` y `gli_med`. El ranking del MLP fue: `height_med`, `evi_med`, `ndre_med`, `ndvi_med` y `gli_med`. Por tanto, ambos enfoques coinciden en las tres variables más relevantes, aunque difieren en el orden interno: el Lasso prioriza el EVI, mientras que el MLP asigna una importancia ligeramente mayor a la altura.
+
+La coincidencia entre modelos es una señal favorable, porque sugiere que la importancia de EVI, NDRE y altura no depende exclusivamente de una arquitectura particular. Sin embargo, la diferencia en el orden también es informativa: el MLP puede estar capturando interacciones no lineales entre altura e índices espectrales que la regresión logística no representa de manera explícita.
+
+## Implicaciones para el monitoreo espectral
+
+Desde el punto de vista del monitoreo de *Verticillium sp.*, los resultados sugieren que EVI y NDRE son variables prioritarias para detectar cambios asociados al vigor y estrés de la vegetación. La altura también aporta información útil, aunque su interpretación debe hacerse con cautela por el patrón no monótono observado en el análisis exploratorio.
+
+El bajo aporte relativo de GLI indica que, en este conjunto de datos, no sería una variable prioritaria para un sistema de alerta. El caso del NDVI es más delicado: aunque tiene una fuerte relación univariada con la severidad, su baja importancia en Lasso y PFI sugiere redundancia con otros índices, especialmente NDRE y EVI. Por ello, no se debería concluir que el NDVI es irrelevante, sino que su aporte marginal disminuye cuando se cuenta con índices espectrales más informativos dentro del mismo modelo.
+
+## Conclusión
+
+La importancia por permutación en el MLP y la regularización Lasso coinciden en identificar a `evi_med`, `ndre_med` y `height_med` como las variables más relevantes. Esta convergencia fortalece la interpretación de que la detección de la enfermedad está asociada principalmente con señales de vigor vegetal y estructura de la planta. Para un programa de monitoreo espectral, conviene priorizar índices sensibles al estado fisiológico de la vegetación, especialmente EVI y NDRE, complementados con información de altura cuando esté disponible.
+
+# Pregunta 15: Tome una muestra aleatoria de 196 observaciones del conjunto de datos original. Construya una grilla de 14 x 14 celdas y asigne cada observación a una celda de la grilla según sus coordenadas espaciales o mediante asignación aleatoria si las coordenadas no están disponibles, justificando la decisión. Visualice la grilla mostrando la severidad asignada a cada celda con una escala de color apropiada para datos ordinales.
+
+Para incorporar la dimensión espacial solicitada en el taller, se construyó una grilla regular de 14 x 14 celdas, equivalente a 196 posiciones espaciales. Dado que el conjunto de datos disponible no contiene coordenadas reales de campo para cada planta, se tomó una muestra aleatoria sin reemplazo de 196 observaciones del conjunto original y se asignó cada observación a una celda de la grilla de acuerdo con su posición secuencial dentro de la muestra.
+
+La asignación se realizó definiendo dos coordenadas artificiales: `x_coord`, correspondiente a la columna de la grilla, y `y_coord`, correspondiente a la fila. La severidad original de cada observación se conservó como variable ordinal, con valores de 1 a 6, donde 1 representa planta sana y los valores mayores representan mayor severidad de la enfermedad.
+
+## Justificación metodológica
+
+Esta decisión es necesaria porque el archivo no incluye coordenadas espaciales observadas. Por tanto, la grilla no debe interpretarse como una reconstrucción real del cultivo ni como una representación geográfica exacta de la distribución de *Verticillium sp.* en campo. Su función es metodológica: permite explorar cómo se implementaría un análisis espacial ordinal bajo una estructura regular y preparar el cálculo de dependencia espacial solicitado en la Pregunta 16.
+
+La principal limitación es que, al asignar las plantas aleatoriamente a las celdas, se rompe cualquier posible estructura espacial real que pudiera existir en el cultivo. En consecuencia, si no se detecta autocorrelación espacial significativa, esto no demuestra que la enfermedad no tenga dependencia espacial en campo; solo indica que no aparece dependencia bajo la grilla artificial construida con la información disponible.
+
+## Visualización de la grilla
+
+![Grilla 14 x 14 con severidad de Verticillium sp.](../resultados/figuras/16_grilla_severidad.png){#fig-grilla-severidad width="80%"}
+
+La escala de color utilizada es ordinal: los tonos más claros representan niveles bajos de severidad y los tonos más intensos representan severidades altas. Visualmente, no se observa un patrón espacial claramente agrupado de severidades altas o bajas. Las categorías parecen distribuidas de forma dispersa sobre la grilla, lo cual es coherente con el carácter aleatorio de la asignación espacial.
+
+## Conclusión
+
+Se construyó una grilla de 196 observaciones siguiendo la especificación del taller. Sin embargo, debido a la ausencia de coordenadas reales, esta grilla debe entenderse como un ejercicio metodológico y no como evidencia espacial directa del patrón de enfermedad en campo. Para un análisis espacial agronómicamente concluyente sería necesario contar con coordenadas reales de cada planta o, al menos, con la posición relativa de las unidades de muestreo dentro del cultivo.
+
+# Pregunta 16: La severidad es una variable ordinal. Proponga y aplique al menos un método para evaluar la dependencia espacial en esta escala. Reporte el estadístico elegido, su valor p y su interpretación: ¿existe dependencia espacial significativa en la distribución de la severidad?
+
+Para evaluar la dependencia espacial de la severidad se aplicó el índice de Moran global usando rangos de severidad. Esta adaptación es apropiada porque la severidad es una variable ordinal: las categorías tienen un orden natural, pero no necesariamente distancias iguales entre niveles consecutivos. Al trabajar con rangos, el análisis respeta la naturaleza ordinal de la variable y reduce la dependencia de supuestos métricos fuertes.
+
+La matriz de vecindad se construyó sobre la grilla 14 x 14 considerando vecinas las celdas contiguas en las ocho direcciones posibles: horizontal, vertical y diagonal. Posteriormente, la matriz fue normalizada por filas para que cada celda aportara de forma comparable al estadístico, independientemente del número de vecinos disponibles en bordes y esquinas.
+
+## Resultados
+
+| Estadístico | Valor |
+|---|---:|
+| Índice de Moran global (`I`) | -0.0066 |
+| Valor esperado bajo aleatoriedad (`E[I]`) | -0.0051 |
+| Estadístico Z | -0.0382 |
+| p-valor | 0.9695 |
+
+El valor del índice de Moran global es prácticamente cero y muy cercano al valor esperado bajo la hipótesis nula de aleatoriedad espacial. Además, el p-valor de 0.9695 es mucho mayor que 0.05, por lo que no se rechaza la hipótesis nula de ausencia de autocorrelación espacial.
+
+## Interpretación
+
+No existe evidencia estadística de dependencia espacial significativa en la distribución de la severidad dentro de la grilla construida. En términos prácticos, las celdas con severidad alta no tienden a ubicarse sistemáticamente cerca de otras celdas con severidad alta, ni las celdas con severidad baja muestran agrupamientos claros. Tampoco se observa un patrón significativo de dispersión espacial, pues el valor negativo de Moran es extremadamente pequeño.
+
+Esta conclusión debe interpretarse junto con la limitación señalada en la Pregunta 15: como la grilla fue construida mediante asignación aleatoria y no a partir de coordenadas reales, el resultado refleja la ausencia de dependencia espacial en esa representación artificial. No permite descartar que exista autocorrelación espacial real en el cultivo si se dispusiera de coordenadas observadas.
+
+## Conclusión
+
+Bajo la grilla artificial de 14 x 14 y usando rangos ordinales de severidad, el índice de Moran global no detecta dependencia espacial significativa (`I = -0.0066`, `p = 0.9695`). Por tanto, con la información disponible no hay evidencia de agrupamiento espacial de la enfermedad. Para una evaluación espacial definitiva sería indispensable repetir el análisis con coordenadas reales de campo y, preferiblemente, complementarlo con métodos locales como LISA para identificar posibles focos específicos de alta severidad.
+
+# Pregunta 17: Tome el mejor modelo de perceptrón multicapa obtenido en las partes anteriores e incorpore las coordenadas espaciales (x, y) de cada observación como variables de entrada adicionales. Compare el desempeño con el modelo original sin coordenadas. ¿Mejora la clasificación al incluir información espacial explícita?
+
+Para evaluar si la información espacial mejora el desempeño predictivo, se tomó el mejor perceptrón multicapa binario obtenido previamente y se entrenó una nueva versión incorporando dos variables adicionales: `x_coord` y `y_coord`. Estas coordenadas fueron generadas a partir de la posición de cada observación dentro de una grilla artificial, ya que el conjunto de datos no contiene coordenadas reales de campo.
+
+El modelo con coordenadas mantuvo la misma arquitectura seleccionada para el MLP binario base, con el fin de que la comparación reflejara principalmente el efecto de añadir las variables espaciales y no un cambio simultáneo en la configuración de la red.
+
+## Resultados comparativos
+
+| Modelo | Accuracy | AUC-ROC |
+|---|---:|---:|
+| MLP base sin coordenadas | 0.8750 | 0.9107 |
+| MLP con coordenadas `x, y` | 0.9063 | 0.9375 |
+
+Al incluir las coordenadas, la exactitud aumenta de 0.8750 a 0.9063 y el AUC-ROC pasa de 0.9107 a 0.9375. En términos numéricos, esto representa una mejora de 0.0313 puntos en accuracy y de 0.0268 puntos en AUC-ROC.
+
+## Interpretación
+
+Desde el punto de vista estrictamente predictivo, el modelo con coordenadas obtiene un mejor desempeño que el modelo base. Esto sugiere que las variables `x_coord` y `y_coord` contienen alguna señal aprovechable por la red neuronal dentro de esta partición de datos.
+
+Sin embargo, esta mejora debe interpretarse con mucha cautela. Las coordenadas no provienen de mediciones reales en campo, sino que fueron construidas artificialmente a partir del orden de las observaciones. Por tanto, el incremento en desempeño no puede tomarse como evidencia de que exista un patrón espacial real de la enfermedad. Es posible que las coordenadas estén capturando algún patrón asociado al orden de registro de los datos o una estructura inducida por la forma en que se organizó el archivo.
+
+Esta precaución es coherente con el resultado de la Pregunta 16: el índice de Moran global aplicado sobre la grilla artificial no detectó autocorrelación espacial significativa. Por ello, aunque las coordenadas mejoran ligeramente las métricas del MLP, no se puede afirmar que la ubicación espacial real mejore la clasificación sin contar con coordenadas observadas.
+
+## Conclusión
+
+La inclusión de coordenadas artificiales mejora moderadamente el desempeño del MLP binario en el conjunto de prueba (`AUC-ROC = 0.9375` frente a `0.9107`). No obstante, debido a que las coordenadas no son reales, esta mejora debe entenderse como un ejercicio exploratorio y no como una conclusión agronómica definitiva. Para evaluar de forma válida el aporte de la información espacial sería necesario repetir el análisis con coordenadas reales de campo.
+
+# Pregunta 18: Explore dos formas adicionales de incorporar la información espacial: coordenadas como único predictor e interacción multiplicativa entre coordenadas e índices espectrales. Para cada caso reporte las métricas de evaluación y compare con el modelo base sin coordenadas. Concluya sobre la utilidad de cada estrategia.
+
+Se exploraron dos estrategias adicionales para incorporar la información espacial en la red neuronal. La primera consistió en entrenar un MLP usando exclusivamente las coordenadas `x_coord` y `y_coord` como predictores. La segunda consistió en añadir interacciones multiplicativas entre coordenadas e índices espectrales, específicamente `x_coord * ndvi_med`, `y_coord * ndvi_med`, `x_coord * evi_med` y `y_coord * evi_med`, además de los predictores originales.
+
+Estas estrategias buscan responder dos preguntas distintas. El modelo con solo coordenadas evalúa si la ubicación, por sí sola, tiene poder predictivo. El modelo con interacciones evalúa si el efecto de los índices espectrales cambia según la posición espacial dentro de la grilla.
+
+## Resultados comparativos
+
+| Estrategia | Accuracy | AUC-ROC |
+|---|---:|---:|
+| Modelo base sin coordenadas | 0.8750 | 0.9107 |
+| Modelo con coordenadas `x, y` | 0.9063 | 0.9375 |
+| Solo coordenadas | 0.8750 | 0.9107 |
+| Coordenadas + interacciones espaciales | 0.8438 | 0.9107 |
+
+![Efecto de la información espacial en el AUC-ROC](../resultados/figuras/17_espacial_aucroc.png){#fig-espacial-aucroc width="90%"}
+
+## Coordenadas como único predictor
+
+El modelo entrenado únicamente con `x_coord` y `y_coord` alcanza una exactitud de 0.8750 y un AUC-ROC de 0.9107, valores iguales a los del modelo base sin coordenadas. A primera vista, esto sugeriría que las coordenadas tienen poder predictivo por sí solas. Sin embargo, esta interpretación no es confiable porque las coordenadas son artificiales y fueron derivadas del orden de las observaciones, no de posiciones reales en campo.
+
+En un contexto con coordenadas reales, un buen desempeño usando solo ubicación podría indicar focos espaciales de enfermedad, gradientes de infección o zonas del lote con condiciones ambientales favorables al patógeno. En este caso, en cambio, el resultado debe tratarse como una señal metodológica débil: puede reflejar estructura accidental en el orden del archivo, efectos del desbalance binario o variabilidad propia del conjunto de prueba reducido.
+
+## Interacciones espaciales-espectrales
+
+El modelo con interacciones multiplicativas obtiene una exactitud de 0.8438 y un AUC-ROC de 0.9107. En comparación con el modelo base, no mejora la capacidad de discriminación global y reduce la exactitud. Esto sugiere que, bajo la información disponible, las interacciones entre coordenadas artificiales e índices espectrales no aportan una señal adicional estable.
+
+Este resultado es esperable porque las interacciones espaciales solo tienen sentido agronómico cuando las coordenadas representan posiciones reales. Si las coordenadas son artificiales, los productos `x * NDVI`, `y * NDVI`, `x * EVI` y `y * EVI` pueden introducir complejidad adicional sin significado espacial, aumentando el riesgo de sobreajuste en una muestra pequeña.
+
+## Conclusión
+
+De las estrategias evaluadas, el modelo con coordenadas añadidas al conjunto original presenta el mejor desempeño numérico (`Accuracy = 0.9063`, `AUC-ROC = 0.9375`). Sin embargo, al tratarse de coordenadas artificiales, esta mejora no debe interpretarse como evidencia de utilidad espacial real. El modelo con solo coordenadas no permite concluir poder predictivo espacial genuino, y las interacciones multiplicativas no aportan mejoras frente al modelo base.
+
+En consecuencia, la incorporación de información espacial explícita solo sería recomendable en una fase posterior si se dispone de coordenadas reales de campo. Con los datos actuales, las variables espectrales y la altura siguen siendo la fuente principal y más defendible de información predictiva.
+
+# Pregunta 19: Propuesta metodológica propia. Proponga, justifique e implemente al menos una extensión o análisis complementario no solicitado explícitamente en este taller. Documente claramente el objetivo de su propuesta, la metodología empleada, los resultados obtenidos y las conclusiones.
+
+Como propuesta metodológica propia se implementaron dos extensiones complementarias. La primera consistió en evaluar el efecto de la regularización por `dropout` en el perceptrón multicapa binario, manteniendo además el uso de `early stopping`. La segunda consistió en comparar el desempeño de los modelos neuronales con un algoritmo no neuronal, Random Forest, usando las mismas particiones de entrenamiento, validación y prueba.
+
+El objetivo de esta propuesta fue evaluar dos aspectos relevantes para un sistema de apoyo a la decisión agronómica: la robustez del MLP frente al sobreajuste y la conveniencia de contrastar la red neuronal con un modelo alternativo de aprendizaje automático, capaz de capturar relaciones no lineales y entregar una medida directa de importancia de variables.
+
+## Metodología
+
+Para la regularización de la red neuronal se entrenó un MLP binario con la misma arquitectura base seleccionada previamente, pero incorporando capas `Dropout` con una tasa de 0.3 después de cada capa oculta. El entrenamiento usó `early stopping` monitoreando la pérdida de validación, con paciencia de 20 épocas y restauración de los mejores pesos. Esta combinación busca reducir el sobreajuste: `dropout` fuerza a la red a no depender excesivamente de neuronas específicas, mientras que `early stopping` detiene el entrenamiento cuando el desempeño de validación deja de mejorar.
+
+Como modelo alternativo se entrenó un Random Forest de 200 árboles, con `class_weight = "balanced"` para compensar el desequilibrio entre plantas sanas y enfermas. El modelo se ajustó sobre el mismo conjunto de entrenamiento balanceado y se evaluó sobre el mismo conjunto de prueba usado en los modelos anteriores. Se reportaron accuracy y AUC-ROC para mantener la comparación con las secciones previas.
+
+## Resultados comparativos
+
+| Modelo | Accuracy | AUC-ROC |
+|---|---:|---:|
+| Regresión logística | 0.7188 | 0.9464 |
+| MLP binario | 0.8750 | 0.9107 |
+| MLP con Dropout | 0.8125 | 0.8482 |
+| Random Forest | 0.8438 | 0.8929 |
+
+![Efecto del Dropout sobre las curvas de pérdida](../resultados/figuras/18_dropout_comparacion.png){#fig-dropout-comparacion width="90%"}
+
+![Comparación final de modelos](../resultados/figuras/19_comparacion_final.png){#fig-comparacion-final width="90%"}
+
+El MLP binario sin dropout mantiene la mejor exactitud entre los modelos comparados (`Accuracy = 0.8750`). La regresión logística, por su parte, obtiene el mejor AUC-ROC (`0.9464`), lo cual indica una buena capacidad para ordenar las observaciones según su probabilidad de enfermedad, aunque con menor desempeño al aplicar el umbral de clasificación usado en la evaluación. El MLP con dropout no mejora al modelo base en esta corrida: su accuracy baja a 0.8125 y su AUC-ROC a 0.8482. Random Forest obtiene un desempeño intermedio, con `Accuracy = 0.8438` y `AUC-ROC = 0.8929`.
+
+## Efecto de Dropout y Early Stopping
+
+La regularización por dropout no produjo una mejora directa en las métricas finales. Esto sugiere que, para esta muestra y esta arquitectura, el modelo base no se beneficia de una penalización adicional tan fuerte como `dropout = 0.3`. Una explicación probable es el tamaño limitado del conjunto de datos: al apagar aleatoriamente neuronas durante el entrenamiento, la red reduce su capacidad efectiva, y en un problema con pocas observaciones esa pérdida de capacidad puede afectar más que el posible beneficio en generalización.
+
+No obstante, el resultado sigue siendo útil metodológicamente. Permite mostrar que la regularización debe evaluarse empíricamente y no asumirse siempre como una mejora automática. En este caso, `early stopping` ya ofrece un mecanismo de control del sobreajuste, por lo que añadir dropout no aporta una ganancia clara.
+
+## Comparación con Random Forest
+
+Random Forest no supera al MLP binario ni a la regresión logística en AUC-ROC, pero ofrece un desempeño competitivo y una ventaja práctica: permite obtener una importancia de variables basada en la reducción de impureza de los árboles. El ranking obtenido fue:
+
+| Variable | Importancia Random Forest |
+|---|---:|
+| `evi_med` | 0.2943 |
+| `ndre_med` | 0.2819 |
+| `ndvi_med` | 0.1843 |
+| `gli_med` | 0.1248 |
+| `height_med` | 0.1147 |
+
+![Importancia de variables según Random Forest](../resultados/figuras/20_importancia_rf.png){#fig-importancia-rf width="80%"}
+
+El Random Forest identifica como variables más importantes a `evi_med` y `ndre_med`, coincidiendo con los resultados de la regresión logística Lasso y con la importancia por permutación del MLP en que estos índices son predictores centrales. A diferencia del MLP, Random Forest asigna mayor importancia relativa al NDVI y menor importancia a la altura. Esta diferencia puede deberse a que los árboles capturan umbrales y divisiones no lineales sobre los índices espectrales, mientras que el MLP aprovecha combinaciones más distribuidas entre variables.
+
+## Conclusión de la propuesta
+
+La propuesta libre muestra que el MLP binario base sigue siendo una opción fuerte cuando se prioriza la clasificación efectiva con el umbral usado, especialmente por su mayor accuracy frente a las alternativas evaluadas. Sin embargo, la regresión logística conserva el mejor AUC-ROC y la mayor interpretabilidad, por lo que sigue siendo un modelo de referencia valioso. Random Forest aporta una comparación no neuronal útil y confirma la relevancia de los índices EVI y NDRE, aunque no mejora el desempeño global.
+
+El dropout, en esta configuración, no mejora el desempeño del MLP y puede estar reduciendo demasiado la capacidad del modelo para una muestra pequeña. En aplicaciones futuras se recomienda probar tasas menores, como 0.1 o 0.2, junto con validación cruzada o repetición de particiones para confirmar si el efecto observado es estable.
+
+# Conclusiones generales
+
+El análisis desarrollado permitió evaluar la severidad de *Verticillium sp.* desde tres enfoques complementarios: clasificación multiclase, clasificación binaria y análisis espacial exploratorio. En la clasificación múltiple, las categorías de severidad presentan solapamiento, especialmente entre niveles adyacentes, lo que confirma que el problema no es trivial y que una única métrica global puede ocultar errores importantes entre clases.
+
+La recodificación binaria sano/enfermo simplifica el problema y mejora la utilidad práctica del modelo para detección temprana, aunque implica pérdida de información ordinal. Bajo este enfoque, el MLP binario ofrece el mejor desempeño operativo con el umbral evaluado, mientras que la regresión logística aporta interpretabilidad y el mejor AUC-ROC. Esto sugiere que la selección del modelo debe depender del objetivo: detección sensible de plantas enfermas o explicación transparente de los factores asociados.
+
+Los análisis de importancia de variables convergen en la relevancia de los índices asociados al vigor vegetal, especialmente EVI y NDRE. El NDVI muestra una fuerte asociación univariada con la severidad, pero pierde aporte marginal en modelos multivariados debido a su redundancia con otros índices. La altura puede aportar información adicional, aunque su interpretación debe hacerse con cautela por su relación no monótona con la severidad.
+
+El análisis espacial permitió implementar la grilla y calcular el índice de Moran global, pero sus conclusiones están limitadas por la ausencia de coordenadas reales. Con la grilla artificial no se encontró dependencia espacial significativa, y las mejoras observadas al incluir coordenadas en la red neuronal no pueden interpretarse como evidencia agronómica definitiva. Para estudios futuros, la disponibilidad de coordenadas reales permitiría evaluar focos de infección, autocorrelación local y estrategias de manejo espacialmente focalizado.
+
+En conjunto, el trabajo muestra que los datos espectrales contienen señal suficiente para apoyar la detección de severidad de la enfermedad, pero también evidencia la importancia de documentar cuidadosamente las decisiones de preprocesamiento, partición, balanceo de clases, selección de umbral e interpretación de variables antes de usar estos modelos como apoyo a decisiones agronómicas.

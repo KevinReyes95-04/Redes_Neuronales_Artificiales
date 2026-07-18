@@ -40,14 +40,107 @@ ul.task-list li input[type="checkbox"] {
 <script src="Informe_final_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="Informe_final_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="Informe_final_files/libs/bootstrap/bootstrap-67270d1595a62d14f123c043d4fb2f18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
 <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 <style>
+:root {
+  --azul-informe: #153f66;
+  --verde-informe: #1f6f5b;
+  --gris-texto: #263238;
+  --gris-suave: #f6f8fa;
+  --borde-suave: #d9e2ec;
+}
+
 body {
   text-align: justify;
-  margin-left: 2.5cm;
-  margin-right: 2.5cm;
+  color: var(--gris-texto);
+  line-height: 1.65;
+}
+
+main.content {
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.quarto-title-block .title {
+  color: var(--azul-informe);
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.quarto-title-meta {
+  color: #52616f;
+}
+
+h1 {
+  color: var(--azul-informe);
+  border-bottom: 2px solid var(--borde-suave);
+  padding-bottom: 0.35rem;
+  margin-top: 2.2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+h2 {
+  color: var(--verde-informe);
+  margin-top: 1.55rem;
+  margin-bottom: 0.65rem;
+  font-weight: 650;
+}
+
+p {
+  margin-bottom: 0.85rem;
+}
+
+table {
+  margin: 1.1rem auto;
+  width: auto;
+  font-size: 0.93rem;
+  border-collapse: collapse;
+}
+
+thead {
+  border-top: 2px solid var(--azul-informe);
+  border-bottom: 1px solid var(--azul-informe);
+}
+
+th, td {
+  padding: 0.45rem 0.7rem;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--gris-suave);
+}
+
+figure {
+  margin-top: 1.35rem;
+  margin-bottom: 1.45rem;
+  text-align: center;
+}
+
+figure img {
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  padding: 4px;
+  background: #ffffff;
+}
+
+figcaption {
+  color: #52616f;
+  font-size: 0.92rem;
+  margin-top: 0.45rem;
+}
+
+blockquote {
+  border-left: 4px solid var(--verde-informe);
+  background: var(--gris-suave);
+  padding: 0.65rem 1rem;
+  color: #34495e;
 }
 </style>
 
@@ -139,6 +232,60 @@ body {
   <li><a href="#interpretación-de-los-coeficientes" id="toc-interpretación-de-los-coeficientes" class="nav-link" data-scroll-target="#interpretación-de-los-coeficientes"><span class="header-section-number">12.2</span> Interpretación de los coeficientes</a></li>
   <li><a href="#conclusión-9" id="toc-conclusión-9" class="nav-link" data-scroll-target="#conclusión-9"><span class="header-section-number">12.3</span> Conclusión</a></li>
   </ul></li>
+  <li><a href="#pregunta-12-aplique-al-menos-un-método-de-selección-de-variables-sobre-el-modelo-de-regresión-logística-puede-usar-selección-paso-a-paso-regularización-lasso-l1-o-ridge-l2-o-criterios-de-información-aicbic.-cuáles-son-las-variables-más-relevantes-para-predecir-la-severidad-según-este-modelo-compare-este-resultado-con-la-importancia-de-variables-obtenida-con-la-red-neuronal-en-la-pregunta-14." id="toc-pregunta-12-aplique-al-menos-un-método-de-selección-de-variables-sobre-el-modelo-de-regresión-logística-puede-usar-selección-paso-a-paso-regularización-lasso-l1-o-ridge-l2-o-criterios-de-información-aicbic.-cuáles-son-las-variables-más-relevantes-para-predecir-la-severidad-según-este-modelo-compare-este-resultado-con-la-importancia-de-variables-obtenida-con-la-red-neuronal-en-la-pregunta-14." class="nav-link" data-scroll-target="#pregunta-12-aplique-al-menos-un-método-de-selección-de-variables-sobre-el-modelo-de-regresión-logística-puede-usar-selección-paso-a-paso-regularización-lasso-l1-o-ridge-l2-o-criterios-de-información-aicbic.-cuáles-son-las-variables-más-relevantes-para-predecir-la-severidad-según-este-modelo-compare-este-resultado-con-la-importancia-de-variables-obtenida-con-la-red-neuronal-en-la-pregunta-14."><span class="header-section-number">13</span> Pregunta 12: Aplique al menos un método de selección de variables sobre el modelo de regresión logística: puede usar selección paso a paso, regularización Lasso (L1) o Ridge (L2), o criterios de información (AIC/BIC). ¿Cuáles son las variables más relevantes para predecir la severidad según este modelo? Compare este resultado con la importancia de variables obtenida con la red neuronal en la Pregunta 14.</a>
+  <ul class="collapse">
+  <li><a href="#resultados-obtenidos-7" id="toc-resultados-obtenidos-7" class="nav-link" data-scroll-target="#resultados-obtenidos-7"><span class="header-section-number">13.1</span> Resultados obtenidos</a></li>
+  <li><a href="#interpretación" id="toc-interpretación" class="nav-link" data-scroll-target="#interpretación"><span class="header-section-number">13.2</span> Interpretación</a></li>
+  <li><a href="#comparación-preliminar-con-la-red-neuronal" id="toc-comparación-preliminar-con-la-red-neuronal" class="nav-link" data-scroll-target="#comparación-preliminar-con-la-red-neuronal"><span class="header-section-number">13.3</span> Comparación preliminar con la red neuronal</a></li>
+  <li><a href="#conclusión-10" id="toc-conclusión-10" class="nav-link" data-scroll-target="#conclusión-10"><span class="header-section-number">13.4</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-13-compare-el-modelo-de-regresión-logística-con-el-mejor-perceptrón-multicapa-binario-de-la-parte-ii-utilizando-las-mismas-métricas-de-evaluación-sobre-el-mismo-conjunto-de-prueba.-construya-una-tabla-comparativa-y-argumente-cuál-modelo-elegiría-para-un-sistema-de-apoyo-a-la-decisión-agronómica-considerando-no-solo-el-desempeño-predictivo-sino-también-la-interpretabilidad-y-el-costo-computacional." id="toc-pregunta-13-compare-el-modelo-de-regresión-logística-con-el-mejor-perceptrón-multicapa-binario-de-la-parte-ii-utilizando-las-mismas-métricas-de-evaluación-sobre-el-mismo-conjunto-de-prueba.-construya-una-tabla-comparativa-y-argumente-cuál-modelo-elegiría-para-un-sistema-de-apoyo-a-la-decisión-agronómica-considerando-no-solo-el-desempeño-predictivo-sino-también-la-interpretabilidad-y-el-costo-computacional." class="nav-link" data-scroll-target="#pregunta-13-compare-el-modelo-de-regresión-logística-con-el-mejor-perceptrón-multicapa-binario-de-la-parte-ii-utilizando-las-mismas-métricas-de-evaluación-sobre-el-mismo-conjunto-de-prueba.-construya-una-tabla-comparativa-y-argumente-cuál-modelo-elegiría-para-un-sistema-de-apoyo-a-la-decisión-agronómica-considerando-no-solo-el-desempeño-predictivo-sino-también-la-interpretabilidad-y-el-costo-computacional."><span class="header-section-number">14</span> Pregunta 13: Compare el modelo de regresión logística con el mejor perceptrón multicapa binario de la Parte II utilizando las mismas métricas de evaluación sobre el mismo conjunto de prueba. Construya una tabla comparativa y argumente cuál modelo elegiría para un sistema de apoyo a la decisión agronómica, considerando no solo el desempeño predictivo sino también la interpretabilidad y el costo computacional.</a>
+  <ul class="collapse">
+  <li><a href="#resultados-comparativos" id="toc-resultados-comparativos" class="nav-link" data-scroll-target="#resultados-comparativos"><span class="header-section-number">14.1</span> Resultados comparativos</a></li>
+  <li><a href="#interpretabilidad-y-costo-computacional" id="toc-interpretabilidad-y-costo-computacional" class="nav-link" data-scroll-target="#interpretabilidad-y-costo-computacional"><span class="header-section-number">14.2</span> Interpretabilidad y costo computacional</a></li>
+  <li><a href="#modelo-elegido" id="toc-modelo-elegido" class="nav-link" data-scroll-target="#modelo-elegido"><span class="header-section-number">14.3</span> Modelo elegido</a></li>
+  </ul></li>
+  <li><a href="#pregunta-14-implemente-al-menos-una-estrategia-para-evaluar-la-importancia-de-las-variables-predictoras-en-el-perceptrón-multicapa-binario.-compare-el-ranking-de-importancia-obtenido-con-el-de-la-regresión-logística.-coinciden-las-variables-más-relevantes-qué-implicaciones-tiene-esto-para-el-monitoreo-espectral-de-la-enfermedad" id="toc-pregunta-14-implemente-al-menos-una-estrategia-para-evaluar-la-importancia-de-las-variables-predictoras-en-el-perceptrón-multicapa-binario.-compare-el-ranking-de-importancia-obtenido-con-el-de-la-regresión-logística.-coinciden-las-variables-más-relevantes-qué-implicaciones-tiene-esto-para-el-monitoreo-espectral-de-la-enfermedad" class="nav-link" data-scroll-target="#pregunta-14-implemente-al-menos-una-estrategia-para-evaluar-la-importancia-de-las-variables-predictoras-en-el-perceptrón-multicapa-binario.-compare-el-ranking-de-importancia-obtenido-con-el-de-la-regresión-logística.-coinciden-las-variables-más-relevantes-qué-implicaciones-tiene-esto-para-el-monitoreo-espectral-de-la-enfermedad"><span class="header-section-number">15</span> Pregunta 14: Implemente al menos una estrategia para evaluar la importancia de las variables predictoras en el perceptrón multicapa binario. Compare el ranking de importancia obtenido con el de la regresión logística. ¿Coinciden las variables más relevantes? ¿Qué implicaciones tiene esto para el monitoreo espectral de la enfermedad?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-de-importancia-por-permutación" id="toc-resultados-de-importancia-por-permutación" class="nav-link" data-scroll-target="#resultados-de-importancia-por-permutación"><span class="header-section-number">15.1</span> Resultados de importancia por permutación</a></li>
+  <li><a href="#comparación-con-lasso" id="toc-comparación-con-lasso" class="nav-link" data-scroll-target="#comparación-con-lasso"><span class="header-section-number">15.2</span> Comparación con Lasso</a></li>
+  <li><a href="#implicaciones-para-el-monitoreo-espectral" id="toc-implicaciones-para-el-monitoreo-espectral" class="nav-link" data-scroll-target="#implicaciones-para-el-monitoreo-espectral"><span class="header-section-number">15.3</span> Implicaciones para el monitoreo espectral</a></li>
+  <li><a href="#conclusión-11" id="toc-conclusión-11" class="nav-link" data-scroll-target="#conclusión-11"><span class="header-section-number">15.4</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-15-tome-una-muestra-aleatoria-de-196-observaciones-del-conjunto-de-datos-original.-construya-una-grilla-de-14-x-14-celdas-y-asigne-cada-observación-a-una-celda-de-la-grilla-según-sus-coordenadas-espaciales-o-mediante-asignación-aleatoria-si-las-coordenadas-no-están-disponibles-justificando-la-decisión.-visualice-la-grilla-mostrando-la-severidad-asignada-a-cada-celda-con-una-escala-de-color-apropiada-para-datos-ordinales." id="toc-pregunta-15-tome-una-muestra-aleatoria-de-196-observaciones-del-conjunto-de-datos-original.-construya-una-grilla-de-14-x-14-celdas-y-asigne-cada-observación-a-una-celda-de-la-grilla-según-sus-coordenadas-espaciales-o-mediante-asignación-aleatoria-si-las-coordenadas-no-están-disponibles-justificando-la-decisión.-visualice-la-grilla-mostrando-la-severidad-asignada-a-cada-celda-con-una-escala-de-color-apropiada-para-datos-ordinales." class="nav-link" data-scroll-target="#pregunta-15-tome-una-muestra-aleatoria-de-196-observaciones-del-conjunto-de-datos-original.-construya-una-grilla-de-14-x-14-celdas-y-asigne-cada-observación-a-una-celda-de-la-grilla-según-sus-coordenadas-espaciales-o-mediante-asignación-aleatoria-si-las-coordenadas-no-están-disponibles-justificando-la-decisión.-visualice-la-grilla-mostrando-la-severidad-asignada-a-cada-celda-con-una-escala-de-color-apropiada-para-datos-ordinales."><span class="header-section-number">16</span> Pregunta 15: Tome una muestra aleatoria de 196 observaciones del conjunto de datos original. Construya una grilla de 14 x 14 celdas y asigne cada observación a una celda de la grilla según sus coordenadas espaciales o mediante asignación aleatoria si las coordenadas no están disponibles, justificando la decisión. Visualice la grilla mostrando la severidad asignada a cada celda con una escala de color apropiada para datos ordinales.</a>
+  <ul class="collapse">
+  <li><a href="#justificación-metodológica" id="toc-justificación-metodológica" class="nav-link" data-scroll-target="#justificación-metodológica"><span class="header-section-number">16.1</span> Justificación metodológica</a></li>
+  <li><a href="#visualización-de-la-grilla" id="toc-visualización-de-la-grilla" class="nav-link" data-scroll-target="#visualización-de-la-grilla"><span class="header-section-number">16.2</span> Visualización de la grilla</a></li>
+  <li><a href="#conclusión-12" id="toc-conclusión-12" class="nav-link" data-scroll-target="#conclusión-12"><span class="header-section-number">16.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-16-la-severidad-es-una-variable-ordinal.-proponga-y-aplique-al-menos-un-método-para-evaluar-la-dependencia-espacial-en-esta-escala.-reporte-el-estadístico-elegido-su-valor-p-y-su-interpretación-existe-dependencia-espacial-significativa-en-la-distribución-de-la-severidad" id="toc-pregunta-16-la-severidad-es-una-variable-ordinal.-proponga-y-aplique-al-menos-un-método-para-evaluar-la-dependencia-espacial-en-esta-escala.-reporte-el-estadístico-elegido-su-valor-p-y-su-interpretación-existe-dependencia-espacial-significativa-en-la-distribución-de-la-severidad" class="nav-link" data-scroll-target="#pregunta-16-la-severidad-es-una-variable-ordinal.-proponga-y-aplique-al-menos-un-método-para-evaluar-la-dependencia-espacial-en-esta-escala.-reporte-el-estadístico-elegido-su-valor-p-y-su-interpretación-existe-dependencia-espacial-significativa-en-la-distribución-de-la-severidad"><span class="header-section-number">17</span> Pregunta 16: La severidad es una variable ordinal. Proponga y aplique al menos un método para evaluar la dependencia espacial en esta escala. Reporte el estadístico elegido, su valor p y su interpretación: ¿existe dependencia espacial significativa en la distribución de la severidad?</a>
+  <ul class="collapse">
+  <li><a href="#resultados" id="toc-resultados" class="nav-link" data-scroll-target="#resultados"><span class="header-section-number">17.1</span> Resultados</a></li>
+  <li><a href="#interpretación-1" id="toc-interpretación-1" class="nav-link" data-scroll-target="#interpretación-1"><span class="header-section-number">17.2</span> Interpretación</a></li>
+  <li><a href="#conclusión-13" id="toc-conclusión-13" class="nav-link" data-scroll-target="#conclusión-13"><span class="header-section-number">17.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-17-tome-el-mejor-modelo-de-perceptrón-multicapa-obtenido-en-las-partes-anteriores-e-incorpore-las-coordenadas-espaciales-x-y-de-cada-observación-como-variables-de-entrada-adicionales.-compare-el-desempeño-con-el-modelo-original-sin-coordenadas.-mejora-la-clasificación-al-incluir-información-espacial-explícita" id="toc-pregunta-17-tome-el-mejor-modelo-de-perceptrón-multicapa-obtenido-en-las-partes-anteriores-e-incorpore-las-coordenadas-espaciales-x-y-de-cada-observación-como-variables-de-entrada-adicionales.-compare-el-desempeño-con-el-modelo-original-sin-coordenadas.-mejora-la-clasificación-al-incluir-información-espacial-explícita" class="nav-link" data-scroll-target="#pregunta-17-tome-el-mejor-modelo-de-perceptrón-multicapa-obtenido-en-las-partes-anteriores-e-incorpore-las-coordenadas-espaciales-x-y-de-cada-observación-como-variables-de-entrada-adicionales.-compare-el-desempeño-con-el-modelo-original-sin-coordenadas.-mejora-la-clasificación-al-incluir-información-espacial-explícita"><span class="header-section-number">18</span> Pregunta 17: Tome el mejor modelo de perceptrón multicapa obtenido en las partes anteriores e incorpore las coordenadas espaciales (x, y) de cada observación como variables de entrada adicionales. Compare el desempeño con el modelo original sin coordenadas. ¿Mejora la clasificación al incluir información espacial explícita?</a>
+  <ul class="collapse">
+  <li><a href="#resultados-comparativos-1" id="toc-resultados-comparativos-1" class="nav-link" data-scroll-target="#resultados-comparativos-1"><span class="header-section-number">18.1</span> Resultados comparativos</a></li>
+  <li><a href="#interpretación-2" id="toc-interpretación-2" class="nav-link" data-scroll-target="#interpretación-2"><span class="header-section-number">18.2</span> Interpretación</a></li>
+  <li><a href="#conclusión-14" id="toc-conclusión-14" class="nav-link" data-scroll-target="#conclusión-14"><span class="header-section-number">18.3</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-18-explore-dos-formas-adicionales-de-incorporar-la-información-espacial-coordenadas-como-único-predictor-e-interacción-multiplicativa-entre-coordenadas-e-índices-espectrales.-para-cada-caso-reporte-las-métricas-de-evaluación-y-compare-con-el-modelo-base-sin-coordenadas.-concluya-sobre-la-utilidad-de-cada-estrategia." id="toc-pregunta-18-explore-dos-formas-adicionales-de-incorporar-la-información-espacial-coordenadas-como-único-predictor-e-interacción-multiplicativa-entre-coordenadas-e-índices-espectrales.-para-cada-caso-reporte-las-métricas-de-evaluación-y-compare-con-el-modelo-base-sin-coordenadas.-concluya-sobre-la-utilidad-de-cada-estrategia." class="nav-link" data-scroll-target="#pregunta-18-explore-dos-formas-adicionales-de-incorporar-la-información-espacial-coordenadas-como-único-predictor-e-interacción-multiplicativa-entre-coordenadas-e-índices-espectrales.-para-cada-caso-reporte-las-métricas-de-evaluación-y-compare-con-el-modelo-base-sin-coordenadas.-concluya-sobre-la-utilidad-de-cada-estrategia."><span class="header-section-number">19</span> Pregunta 18: Explore dos formas adicionales de incorporar la información espacial: coordenadas como único predictor e interacción multiplicativa entre coordenadas e índices espectrales. Para cada caso reporte las métricas de evaluación y compare con el modelo base sin coordenadas. Concluya sobre la utilidad de cada estrategia.</a>
+  <ul class="collapse">
+  <li><a href="#resultados-comparativos-2" id="toc-resultados-comparativos-2" class="nav-link" data-scroll-target="#resultados-comparativos-2"><span class="header-section-number">19.1</span> Resultados comparativos</a></li>
+  <li><a href="#coordenadas-como-único-predictor" id="toc-coordenadas-como-único-predictor" class="nav-link" data-scroll-target="#coordenadas-como-único-predictor"><span class="header-section-number">19.2</span> Coordenadas como único predictor</a></li>
+  <li><a href="#interacciones-espaciales-espectrales" id="toc-interacciones-espaciales-espectrales" class="nav-link" data-scroll-target="#interacciones-espaciales-espectrales"><span class="header-section-number">19.3</span> Interacciones espaciales-espectrales</a></li>
+  <li><a href="#conclusión-15" id="toc-conclusión-15" class="nav-link" data-scroll-target="#conclusión-15"><span class="header-section-number">19.4</span> Conclusión</a></li>
+  </ul></li>
+  <li><a href="#pregunta-19-propuesta-metodológica-propia.-proponga-justifique-e-implemente-al-menos-una-extensión-o-análisis-complementario-no-solicitado-explícitamente-en-este-taller.-documente-claramente-el-objetivo-de-su-propuesta-la-metodología-empleada-los-resultados-obtenidos-y-las-conclusiones." id="toc-pregunta-19-propuesta-metodológica-propia.-proponga-justifique-e-implemente-al-menos-una-extensión-o-análisis-complementario-no-solicitado-explícitamente-en-este-taller.-documente-claramente-el-objetivo-de-su-propuesta-la-metodología-empleada-los-resultados-obtenidos-y-las-conclusiones." class="nav-link" data-scroll-target="#pregunta-19-propuesta-metodológica-propia.-proponga-justifique-e-implemente-al-menos-una-extensión-o-análisis-complementario-no-solicitado-explícitamente-en-este-taller.-documente-claramente-el-objetivo-de-su-propuesta-la-metodología-empleada-los-resultados-obtenidos-y-las-conclusiones."><span class="header-section-number">20</span> Pregunta 19: Propuesta metodológica propia. Proponga, justifique e implemente al menos una extensión o análisis complementario no solicitado explícitamente en este taller. Documente claramente el objetivo de su propuesta, la metodología empleada, los resultados obtenidos y las conclusiones.</a>
+  <ul class="collapse">
+  <li><a href="#metodología" id="toc-metodología" class="nav-link" data-scroll-target="#metodología"><span class="header-section-number">20.1</span> Metodología</a></li>
+  <li><a href="#resultados-comparativos-3" id="toc-resultados-comparativos-3" class="nav-link" data-scroll-target="#resultados-comparativos-3"><span class="header-section-number">20.2</span> Resultados comparativos</a></li>
+  <li><a href="#efecto-de-dropout-y-early-stopping" id="toc-efecto-de-dropout-y-early-stopping" class="nav-link" data-scroll-target="#efecto-de-dropout-y-early-stopping"><span class="header-section-number">20.3</span> Efecto de Dropout y Early Stopping</a></li>
+  <li><a href="#comparación-con-random-forest" id="toc-comparación-con-random-forest" class="nav-link" data-scroll-target="#comparación-con-random-forest"><span class="header-section-number">20.4</span> Comparación con Random Forest</a></li>
+  <li><a href="#conclusión-de-la-propuesta" id="toc-conclusión-de-la-propuesta" class="nav-link" data-scroll-target="#conclusión-de-la-propuesta"><span class="header-section-number">20.5</span> Conclusión de la propuesta</a></li>
+  </ul></li>
+  <li><a href="#conclusiones-generales" id="toc-conclusiones-generales" class="nav-link" data-scroll-target="#conclusiones-generales"><span class="header-section-number">21</span> Conclusiones generales</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Otros formatos</h2><ul><li><a href="..\Informe_final.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
@@ -165,7 +312,7 @@ body {
     <div>
     <div class="quarto-title-meta-heading">Fecha de publicación</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">16 de julio de 2026</p>
+      <p class="date">18 de julio de 2026</p>
     </div>
   </div>
   
@@ -189,8 +336,8 @@ body {
 <p>El conjunto contiene 212 observaciones y seis categorias ordinales de severidad, codificadas de 1 a 6. La variable 1 corresponde a plantas sanas y los valores mayores representan niveles crecientes de severidad.</p>
 <p>El archivo incluye cinco predictores: cuatro indices espectrales (<code>NDVI</code>, <code>EVI</code>, <code>NDRE</code> y <code>GLI</code>) y la altura media. Esto difiere del enunciado, que menciona cinco indices espectrales mas la altura. Ademas, la altura aparece entre 0.0005 y 0.8472, por lo que probablemente ya se encuentra normalizada y no expresada directamente en centimetros. Ambas diferencias deben aclararse con la fuente de los datos.</p>
 <p>La tabla completa con media, desviacion estandar, minimo y maximo para cada predictor y categoria se muestra a continuación en:</p>
-<div id="ad5a5281" class="cell" data-execution_count="1">
-<div class="cell-output cell-output-display" data-execution_count="1">
+<div id="197747e2" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-display" data-execution_count="4">
 <div>
 
 
@@ -550,8 +697,8 @@ body {
 <h2 data-number="2.2" class="anchored" data-anchor-id="calidad-de-los-datos"><span class="header-section-number">2.2</span> Calidad de los datos</h2>
 <p>No se encontraron valores faltantes ni infinitos. Se identifico una fila duplicada: las filas originales 174 y 175 contienen exactamente los mismos valores.</p>
 <p>En 48 observaciones, los valores de <code>EVI</code>, <code>GLI</code> y altura son exactamente iguales. Esta coincidencia ocurre principalmente en las severidades 3 y 4 y es poco esperable para tres variables obtenidas de manera independiente. No se modificaron ni eliminaron estas observaciones, pero deben verificarse contra los datos de origen antes de entrenar los modelos.</p>
-<div id="7776e57e" class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display" data-execution_count="2">
+<div id="51650e1e" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 
 
@@ -632,8 +779,8 @@ body {
 <section id="relacion-entre-predictores" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="relacion-entre-predictores"><span class="header-section-number">2.4</span> Relacion entre predictores</h2>
 <p>NDVI y NDRE presentan una correlacion de Spearman muy alta (<code>rho = 0.94</code>), lo cual indica que contienen informacion parcialmente redundante. EVI tambien se relaciona con GLI (<code>rho = 0.71</code>) y con la altura (<code>rho = 0.66</code>). Estas asociaciones no impiden utilizar las variables en una red neuronal, pero deben considerarse al interpretar su importancia.</p>
-<div id="34676418" class="cell" data-execution_count="3">
-<div class="cell-output cell-output-display" data-execution_count="3">
+<div id="281a540b" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="6">
 <div>
 
 
@@ -1254,6 +1401,519 @@ Real Sev 6   [  0  0  0  0  1  1 ]</code></pre>
 <p>Según este modelo, el EVI es el predictor individual más fuerte y confiable, con el mayor valor absoluto de Z, el menor p-valor y el intervalo de confianza relativamente más estrecho, seguido de la altura, aunque con la salvedad señalada sobre su signo. El NDVI y el NDRE, pese a ser los índices más prometedores en el análisis univariado, no aportan señal estadísticamente independiente una vez que el EVI está en el modelo, muy probablemente por la colinealidad entre índices espectrales, un punto que conviene retomar en la Pregunta 12 al aplicar selección de variables mediante Lasso, dado que la regularización L1 está diseñada precisamente para lidiar con este tipo de redundancia entre predictores correlacionados.</p>
 </section>
 </section>
+<section id="pregunta-12-aplique-al-menos-un-método-de-selección-de-variables-sobre-el-modelo-de-regresión-logística-puede-usar-selección-paso-a-paso-regularización-lasso-l1-o-ridge-l2-o-criterios-de-información-aicbic.-cuáles-son-las-variables-más-relevantes-para-predecir-la-severidad-según-este-modelo-compare-este-resultado-con-la-importancia-de-variables-obtenida-con-la-red-neuronal-en-la-pregunta-14." class="level1" data-number="13">
+<h1 data-number="13"><span class="header-section-number">13</span> Pregunta 12: Aplique al menos un método de selección de variables sobre el modelo de regresión logística: puede usar selección paso a paso, regularización Lasso (L1) o Ridge (L2), o criterios de información (AIC/BIC). ¿Cuáles son las variables más relevantes para predecir la severidad según este modelo? Compare este resultado con la importancia de variables obtenida con la red neuronal en la Pregunta 14.</h1>
+<p>Para la selección de variables se aplicó una regresión logística con penalización Lasso (<code>L1</code>) y validación cruzada interna de 5 particiones. Esta estrategia es adecuada para este problema porque combina predicción y selección: al penalizar la suma de los valores absolutos de los coeficientes, puede reducir a cero las variables que no aportan información adicional relevante, especialmente cuando existe colinealidad entre predictores.</p>
+<p>El modelo se entrenó con la misma partición binaria utilizada en la Parte II y sobre el conjunto de entrenamiento balanceado mediante SMOTE. Las variables fueron previamente estandarizadas, por lo que la magnitud absoluta de los coeficientes Lasso puede compararse como una aproximación de importancia relativa.</p>
+<section id="resultados-obtenidos-7" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="resultados-obtenidos-7"><span class="header-section-number">13.1</span> Resultados obtenidos</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th style="text-align: right;">Coeficiente Lasso</th>
+<th style="text-align: right;">Valor absoluto</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>evi_med</code></td>
+<td style="text-align: right;">-2.0660</td>
+<td style="text-align: right;">2.0660</td>
+</tr>
+<tr class="even">
+<td><code>ndre_med</code></td>
+<td style="text-align: right;">-0.9254</td>
+<td style="text-align: right;">0.9254</td>
+</tr>
+<tr class="odd">
+<td><code>height_med</code></td>
+<td style="text-align: right;">0.4560</td>
+<td style="text-align: right;">0.4560</td>
+</tr>
+<tr class="even">
+<td><code>ndvi_med</code></td>
+<td style="text-align: right;">-0.0046</td>
+<td style="text-align: right;">0.0046</td>
+</tr>
+<tr class="odd">
+<td><code>gli_med</code></td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">0.0000</td>
+</tr>
+</tbody>
+</table>
+<div id="fig-importancia-lasso" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-importancia-lasso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/13_importancia_lasso.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-importancia-lasso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;3: Importancia de variables según regresión logística Lasso
+</figcaption>
+</figure>
+</div>
+<p>El ranking de importancia según Lasso está encabezado por <code>evi_med</code>, seguido de <code>ndre_med</code> y <code>height_med</code>. El <code>ndvi_med</code> queda con un coeficiente prácticamente nulo y <code>gli_med</code> es eliminado por completo del modelo. Este resultado no implica que el NDVI carezca de relación con la enfermedad; de hecho, en el análisis exploratorio presentó una de las asociaciones univariadas más fuertes con la severidad. Lo que sugiere el Lasso es que, una vez incluidas variables como EVI y NDRE, el NDVI aporta poca información adicional independiente para separar plantas sanas y enfermas.</p>
+</section>
+<section id="interpretación" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="interpretación"><span class="header-section-number">13.2</span> Interpretación</h2>
+<p>El signo negativo de <code>evi_med</code> y <code>ndre_med</code> es coherente con la interpretación agronómica: valores más altos de estos índices indican mayor vigor fotosintético, mayor actividad de la vegetación y, por tanto, menor probabilidad de pertenecer al grupo enfermo. El coeficiente positivo de <code>height_med</code>, al igual que en la regresión logística no penalizada, debe interpretarse con cautela. La altura no mostró una relación estrictamente monótona con la severidad en el análisis exploratorio, por lo que su contribución puede estar capturando patrones residuales de la muestra más que una relación causal directa.</p>
+<p>La eliminación de <code>gli_med</code> confirma su bajo aporte relativo en este conjunto de datos. En comparación con los demás índices, el GLI mostró menor asociación con la severidad y mayor solapamiento entre categorías, lo que reduce su utilidad dentro de un modelo multivariado.</p>
+</section>
+<section id="comparación-preliminar-con-la-red-neuronal" class="level2" data-number="13.3">
+<h2 data-number="13.3" class="anchored" data-anchor-id="comparación-preliminar-con-la-red-neuronal"><span class="header-section-number">13.3</span> Comparación preliminar con la red neuronal</h2>
+<p>Aunque la comparación formal de importancia en redes neuronales se desarrolla en la Pregunta 14, el resultado del Lasso anticipa un patrón relevante: las variables más útiles se concentran en los índices relacionados con vigor vegetal, especialmente EVI y NDRE, junto con la altura. En cambio, NDVI y GLI quedan relegadas cuando el modelo debe escoger entre predictores parcialmente redundantes.</p>
+</section>
+<section id="conclusión-10" class="level2" data-number="13.4">
+<h2 data-number="13.4" class="anchored" data-anchor-id="conclusión-10"><span class="header-section-number">13.4</span> Conclusión</h2>
+<p>Según la regresión logística con regularización Lasso, las variables más relevantes para predecir la condición binaria de severidad son <code>evi_med</code>, <code>ndre_med</code> y <code>height_med</code>. El EVI aparece como el predictor dominante, mientras que NDVI pierde importancia por redundancia con otros índices espectrales y GLI no aporta señal suficiente para permanecer en el modelo. Este resultado refuerza la necesidad de interpretar la importancia de variables desde una perspectiva multivariada y no únicamente a partir de correlaciones individuales.</p>
+</section>
+</section>
+<section id="pregunta-13-compare-el-modelo-de-regresión-logística-con-el-mejor-perceptrón-multicapa-binario-de-la-parte-ii-utilizando-las-mismas-métricas-de-evaluación-sobre-el-mismo-conjunto-de-prueba.-construya-una-tabla-comparativa-y-argumente-cuál-modelo-elegiría-para-un-sistema-de-apoyo-a-la-decisión-agronómica-considerando-no-solo-el-desempeño-predictivo-sino-también-la-interpretabilidad-y-el-costo-computacional." class="level1" data-number="14">
+<h1 data-number="14"><span class="header-section-number">14</span> Pregunta 13: Compare el modelo de regresión logística con el mejor perceptrón multicapa binario de la Parte II utilizando las mismas métricas de evaluación sobre el mismo conjunto de prueba. Construya una tabla comparativa y argumente cuál modelo elegiría para un sistema de apoyo a la decisión agronómica, considerando no solo el desempeño predictivo sino también la interpretabilidad y el costo computacional.</h1>
+<p>La regresión logística y el perceptrón multicapa binario se compararon sobre el mismo conjunto de prueba, usando las mismas métricas: exactitud, precisión, sensibilidad, especificidad, F1-score y AUC-ROC. Esta comparación es metodológicamente importante porque evita atribuir diferencias de desempeño a particiones distintas de los datos.</p>
+<section id="resultados-comparativos" class="level2" data-number="14.1">
+<h2 data-number="14.1" class="anchored" data-anchor-id="resultados-comparativos"><span class="header-section-number">14.1</span> Resultados comparativos</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Modelo</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">Precisión</th>
+<th style="text-align: right;">Sensibilidad</th>
+<th style="text-align: right;">Especificidad</th>
+<th style="text-align: right;">F1-score</th>
+<th style="text-align: right;">AUC-ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MLP binario</td>
+<td style="text-align: right;">0.8750</td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.8571</td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.9231</td>
+<td style="text-align: right;">0.9107</td>
+</tr>
+<tr class="even">
+<td>Regresión logística</td>
+<td style="text-align: right;">0.7188</td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.6786</td>
+<td style="text-align: right;">1.0000</td>
+<td style="text-align: right;">0.8085</td>
+<td style="text-align: right;">0.9464</td>
+</tr>
+</tbody>
+</table>
+<div id="fig-comparacion-modelos" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comparacion-modelos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/14_comparacion_modelos.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comparacion-modelos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;4: Comparación entre MLP binario y regresión logística
+</figcaption>
+</figure>
+</div>
+<p>El MLP binario supera a la regresión logística en exactitud, sensibilidad y F1-score. Esta diferencia es especialmente importante porque la sensibilidad mide la capacidad de detectar plantas enfermas. En el contexto fitosanitario, un falso negativo es el error más costoso: implica dejar sin atención una planta enferma que puede continuar deteriorándose o favorecer la dispersión del patógeno.</p>
+<p>Ambos modelos alcanzan una precisión y especificidad de 1.0000 en el conjunto de prueba, lo que indica que ninguno clasificó plantas sanas como enfermas bajo el umbral usado. Sin embargo, la regresión logística deja escapar una mayor proporción de plantas enfermas, como se observa en su menor sensibilidad. Desde una perspectiva operativa, esta diferencia pesa más que la igualdad en especificidad, porque el objetivo principal del sistema es alertar oportunamente sobre enfermedad.</p>
+<p>El único indicador donde la regresión logística supera al MLP es el AUC-ROC. Esto significa que, considerando todos los posibles umbrales de clasificación, la regresión logística ordena mejor las observaciones según su probabilidad de estar enfermas. Este resultado es relevante porque sugiere que el desempeño de la regresión logística podría mejorar mediante calibración o ajuste del umbral de decisión, como se discutió en la Pregunta 10. No obstante, con el umbral aplicado en la comparación directa, el MLP ofrece mejores métricas de clasificación efectiva.</p>
+</section>
+<section id="interpretabilidad-y-costo-computacional" class="level2" data-number="14.2">
+<h2 data-number="14.2" class="anchored" data-anchor-id="interpretabilidad-y-costo-computacional"><span class="header-section-number">14.2</span> Interpretabilidad y costo computacional</h2>
+<p>La regresión logística tiene ventajas claras en interpretabilidad: sus coeficientes permiten identificar la dirección y magnitud del efecto de cada predictor, calcular odds ratios y evaluar significancia estadística. Además, su costo computacional es bajo, el entrenamiento es rápido y el modelo es fácil de auditar, lo cual puede ser importante en un sistema de apoyo a decisiones agronómicas donde se requiere explicar por qué una planta fue clasificada como enferma.</p>
+<p>El MLP, en cambio, es menos interpretable de forma directa, pero puede capturar relaciones no lineales e interacciones entre variables espectrales y altura. En este conjunto de datos, esa mayor flexibilidad se traduce en mejor sensibilidad y F1-score, dos métricas más alineadas con el objetivo de detección temprana.</p>
+</section>
+<section id="modelo-elegido" class="level2" data-number="14.3">
+<h2 data-number="14.3" class="anchored" data-anchor-id="modelo-elegido"><span class="header-section-number">14.3</span> Modelo elegido</h2>
+<p>Para un sistema de apoyo a la decisión agronómica orientado a reducir el riesgo de no detectar plantas enfermas, elegiría el MLP binario como modelo predictivo principal, acompañado por análisis de importancia de variables para mejorar su interpretabilidad. La razón central es que presenta mejor sensibilidad y F1-score sobre el conjunto de prueba, reduciendo el número de falsos negativos respecto a la regresión logística.</p>
+<p>Sin embargo, no descartaría la regresión logística. Su mayor AUC-ROC, su simplicidad y su interpretabilidad la convierten en una línea base muy sólida y en una herramienta complementaria para explicar el comportamiento general de los predictores. En una aplicación práctica, una estrategia razonable sería usar el MLP para la clasificación operativa y la regresión logística como modelo de referencia interpretable para validar la coherencia agronómica de las decisiones.</p>
+</section>
+</section>
+<section id="pregunta-14-implemente-al-menos-una-estrategia-para-evaluar-la-importancia-de-las-variables-predictoras-en-el-perceptrón-multicapa-binario.-compare-el-ranking-de-importancia-obtenido-con-el-de-la-regresión-logística.-coinciden-las-variables-más-relevantes-qué-implicaciones-tiene-esto-para-el-monitoreo-espectral-de-la-enfermedad" class="level1" data-number="15">
+<h1 data-number="15"><span class="header-section-number">15</span> Pregunta 14: Implemente al menos una estrategia para evaluar la importancia de las variables predictoras en el perceptrón multicapa binario. Compare el ranking de importancia obtenido con el de la regresión logística. ¿Coinciden las variables más relevantes? ¿Qué implicaciones tiene esto para el monitoreo espectral de la enfermedad?</h1>
+<p>Para evaluar la importancia de variables en el perceptrón multicapa binario se implementó importancia por permutación de características (<em>Permutation Feature Importance</em>, PFI) sobre el conjunto de prueba. Esta estrategia consiste en alterar aleatoriamente los valores de una variable mientras se mantienen las demás sin cambios y medir cuánto cae el desempeño del modelo. Si la caída es grande, la variable es importante; si la caída es pequeña o negativa, el modelo no depende fuertemente de ella para sus predicciones.</p>
+<p>Se utilizó la exactitud como métrica base y 30 repeticiones de permutación por variable. Dado el tamaño reducido del conjunto de prueba, los resultados deben interpretarse como una aproximación relativa y no como una medida absoluta definitiva.</p>
+<section id="resultados-de-importancia-por-permutación" class="level2" data-number="15.1">
+<h2 data-number="15.1" class="anchored" data-anchor-id="resultados-de-importancia-por-permutación"><span class="header-section-number">15.1</span> Resultados de importancia por permutación</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th style="text-align: right;">Importancia PFI</th>
+<th style="text-align: right;">Desviación estándar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>height_med</code></td>
+<td style="text-align: right;">0.0688</td>
+<td style="text-align: right;">0.0317</td>
+</tr>
+<tr class="even">
+<td><code>evi_med</code></td>
+<td style="text-align: right;">0.0656</td>
+<td style="text-align: right;">0.0561</td>
+</tr>
+<tr class="odd">
+<td><code>ndre_med</code></td>
+<td style="text-align: right;">0.0365</td>
+<td style="text-align: right;">0.0646</td>
+</tr>
+<tr class="even">
+<td><code>ndvi_med</code></td>
+<td style="text-align: right;">-0.0010</td>
+<td style="text-align: right;">0.0205</td>
+</tr>
+<tr class="odd">
+<td><code>gli_med</code></td>
+<td style="text-align: right;">-0.0031</td>
+<td style="text-align: right;">0.0219</td>
+</tr>
+</tbody>
+</table>
+<div id="fig-importancia-variables" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-importancia-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/15_importancia_variables.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-importancia-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;5: Comparación de importancia de variables en MLP y Lasso
+</figcaption>
+</figure>
+</div>
+<p>El MLP asigna la mayor importancia a <code>height_med</code> y <code>evi_med</code>, con valores muy cercanos entre sí. En tercer lugar aparece <code>ndre_med</code>, mientras que <code>ndvi_med</code> y <code>gli_med</code> presentan importancias prácticamente nulas o ligeramente negativas. Una importancia negativa no debe interpretarse como que la variable sea perjudicial en sentido causal; más bien indica que, bajo esta partición y este modelo, permutarla no deterioró la exactitud, probablemente porque su información ya estaba contenida en otros predictores correlacionados.</p>
+</section>
+<section id="comparación-con-lasso" class="level2" data-number="15.2">
+<h2 data-number="15.2" class="anchored" data-anchor-id="comparación-con-lasso"><span class="header-section-number">15.2</span> Comparación con Lasso</h2>
+<p>El ranking de la regresión logística Lasso fue: <code>evi_med</code>, <code>ndre_med</code>, <code>height_med</code>, <code>ndvi_med</code> y <code>gli_med</code>. El ranking del MLP fue: <code>height_med</code>, <code>evi_med</code>, <code>ndre_med</code>, <code>ndvi_med</code> y <code>gli_med</code>. Por tanto, ambos enfoques coinciden en las tres variables más relevantes, aunque difieren en el orden interno: el Lasso prioriza el EVI, mientras que el MLP asigna una importancia ligeramente mayor a la altura.</p>
+<p>La coincidencia entre modelos es una señal favorable, porque sugiere que la importancia de EVI, NDRE y altura no depende exclusivamente de una arquitectura particular. Sin embargo, la diferencia en el orden también es informativa: el MLP puede estar capturando interacciones no lineales entre altura e índices espectrales que la regresión logística no representa de manera explícita.</p>
+</section>
+<section id="implicaciones-para-el-monitoreo-espectral" class="level2" data-number="15.3">
+<h2 data-number="15.3" class="anchored" data-anchor-id="implicaciones-para-el-monitoreo-espectral"><span class="header-section-number">15.3</span> Implicaciones para el monitoreo espectral</h2>
+<p>Desde el punto de vista del monitoreo de <em>Verticillium sp.</em>, los resultados sugieren que EVI y NDRE son variables prioritarias para detectar cambios asociados al vigor y estrés de la vegetación. La altura también aporta información útil, aunque su interpretación debe hacerse con cautela por el patrón no monótono observado en el análisis exploratorio.</p>
+<p>El bajo aporte relativo de GLI indica que, en este conjunto de datos, no sería una variable prioritaria para un sistema de alerta. El caso del NDVI es más delicado: aunque tiene una fuerte relación univariada con la severidad, su baja importancia en Lasso y PFI sugiere redundancia con otros índices, especialmente NDRE y EVI. Por ello, no se debería concluir que el NDVI es irrelevante, sino que su aporte marginal disminuye cuando se cuenta con índices espectrales más informativos dentro del mismo modelo.</p>
+</section>
+<section id="conclusión-11" class="level2" data-number="15.4">
+<h2 data-number="15.4" class="anchored" data-anchor-id="conclusión-11"><span class="header-section-number">15.4</span> Conclusión</h2>
+<p>La importancia por permutación en el MLP y la regularización Lasso coinciden en identificar a <code>evi_med</code>, <code>ndre_med</code> y <code>height_med</code> como las variables más relevantes. Esta convergencia fortalece la interpretación de que la detección de la enfermedad está asociada principalmente con señales de vigor vegetal y estructura de la planta. Para un programa de monitoreo espectral, conviene priorizar índices sensibles al estado fisiológico de la vegetación, especialmente EVI y NDRE, complementados con información de altura cuando esté disponible.</p>
+</section>
+</section>
+<section id="pregunta-15-tome-una-muestra-aleatoria-de-196-observaciones-del-conjunto-de-datos-original.-construya-una-grilla-de-14-x-14-celdas-y-asigne-cada-observación-a-una-celda-de-la-grilla-según-sus-coordenadas-espaciales-o-mediante-asignación-aleatoria-si-las-coordenadas-no-están-disponibles-justificando-la-decisión.-visualice-la-grilla-mostrando-la-severidad-asignada-a-cada-celda-con-una-escala-de-color-apropiada-para-datos-ordinales." class="level1" data-number="16">
+<h1 data-number="16"><span class="header-section-number">16</span> Pregunta 15: Tome una muestra aleatoria de 196 observaciones del conjunto de datos original. Construya una grilla de 14 x 14 celdas y asigne cada observación a una celda de la grilla según sus coordenadas espaciales o mediante asignación aleatoria si las coordenadas no están disponibles, justificando la decisión. Visualice la grilla mostrando la severidad asignada a cada celda con una escala de color apropiada para datos ordinales.</h1>
+<p>Para incorporar la dimensión espacial solicitada en el taller, se construyó una grilla regular de 14 x 14 celdas, equivalente a 196 posiciones espaciales. Dado que el conjunto de datos disponible no contiene coordenadas reales de campo para cada planta, se tomó una muestra aleatoria sin reemplazo de 196 observaciones del conjunto original y se asignó cada observación a una celda de la grilla de acuerdo con su posición secuencial dentro de la muestra.</p>
+<p>La asignación se realizó definiendo dos coordenadas artificiales: <code>x_coord</code>, correspondiente a la columna de la grilla, y <code>y_coord</code>, correspondiente a la fila. La severidad original de cada observación se conservó como variable ordinal, con valores de 1 a 6, donde 1 representa planta sana y los valores mayores representan mayor severidad de la enfermedad.</p>
+<section id="justificación-metodológica" class="level2" data-number="16.1">
+<h2 data-number="16.1" class="anchored" data-anchor-id="justificación-metodológica"><span class="header-section-number">16.1</span> Justificación metodológica</h2>
+<p>Esta decisión es necesaria porque el archivo no incluye coordenadas espaciales observadas. Por tanto, la grilla no debe interpretarse como una reconstrucción real del cultivo ni como una representación geográfica exacta de la distribución de <em>Verticillium sp.</em> en campo. Su función es metodológica: permite explorar cómo se implementaría un análisis espacial ordinal bajo una estructura regular y preparar el cálculo de dependencia espacial solicitado en la Pregunta 16.</p>
+<p>La principal limitación es que, al asignar las plantas aleatoriamente a las celdas, se rompe cualquier posible estructura espacial real que pudiera existir en el cultivo. En consecuencia, si no se detecta autocorrelación espacial significativa, esto no demuestra que la enfermedad no tenga dependencia espacial en campo; solo indica que no aparece dependencia bajo la grilla artificial construida con la información disponible.</p>
+</section>
+<section id="visualización-de-la-grilla" class="level2" data-number="16.2">
+<h2 data-number="16.2" class="anchored" data-anchor-id="visualización-de-la-grilla"><span class="header-section-number">16.2</span> Visualización de la grilla</h2>
+<div id="fig-grilla-severidad" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-grilla-severidad-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/16_grilla_severidad.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-grilla-severidad-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;6: Grilla 14 x 14 con severidad de Verticillium sp.
+</figcaption>
+</figure>
+</div>
+<p>La escala de color utilizada es ordinal: los tonos más claros representan niveles bajos de severidad y los tonos más intensos representan severidades altas. Visualmente, no se observa un patrón espacial claramente agrupado de severidades altas o bajas. Las categorías parecen distribuidas de forma dispersa sobre la grilla, lo cual es coherente con el carácter aleatorio de la asignación espacial.</p>
+</section>
+<section id="conclusión-12" class="level2" data-number="16.3">
+<h2 data-number="16.3" class="anchored" data-anchor-id="conclusión-12"><span class="header-section-number">16.3</span> Conclusión</h2>
+<p>Se construyó una grilla de 196 observaciones siguiendo la especificación del taller. Sin embargo, debido a la ausencia de coordenadas reales, esta grilla debe entenderse como un ejercicio metodológico y no como evidencia espacial directa del patrón de enfermedad en campo. Para un análisis espacial agronómicamente concluyente sería necesario contar con coordenadas reales de cada planta o, al menos, con la posición relativa de las unidades de muestreo dentro del cultivo.</p>
+</section>
+</section>
+<section id="pregunta-16-la-severidad-es-una-variable-ordinal.-proponga-y-aplique-al-menos-un-método-para-evaluar-la-dependencia-espacial-en-esta-escala.-reporte-el-estadístico-elegido-su-valor-p-y-su-interpretación-existe-dependencia-espacial-significativa-en-la-distribución-de-la-severidad" class="level1" data-number="17">
+<h1 data-number="17"><span class="header-section-number">17</span> Pregunta 16: La severidad es una variable ordinal. Proponga y aplique al menos un método para evaluar la dependencia espacial en esta escala. Reporte el estadístico elegido, su valor p y su interpretación: ¿existe dependencia espacial significativa en la distribución de la severidad?</h1>
+<p>Para evaluar la dependencia espacial de la severidad se aplicó el índice de Moran global usando rangos de severidad. Esta adaptación es apropiada porque la severidad es una variable ordinal: las categorías tienen un orden natural, pero no necesariamente distancias iguales entre niveles consecutivos. Al trabajar con rangos, el análisis respeta la naturaleza ordinal de la variable y reduce la dependencia de supuestos métricos fuertes.</p>
+<p>La matriz de vecindad se construyó sobre la grilla 14 x 14 considerando vecinas las celdas contiguas en las ocho direcciones posibles: horizontal, vertical y diagonal. Posteriormente, la matriz fue normalizada por filas para que cada celda aportara de forma comparable al estadístico, independientemente del número de vecinos disponibles en bordes y esquinas.</p>
+<section id="resultados" class="level2" data-number="17.1">
+<h2 data-number="17.1" class="anchored" data-anchor-id="resultados"><span class="header-section-number">17.1</span> Resultados</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Estadístico</th>
+<th style="text-align: right;">Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Índice de Moran global (<code>I</code>)</td>
+<td style="text-align: right;">-0.0066</td>
+</tr>
+<tr class="even">
+<td>Valor esperado bajo aleatoriedad (<code>E[I]</code>)</td>
+<td style="text-align: right;">-0.0051</td>
+</tr>
+<tr class="odd">
+<td>Estadístico Z</td>
+<td style="text-align: right;">-0.0382</td>
+</tr>
+<tr class="even">
+<td>p-valor</td>
+<td style="text-align: right;">0.9695</td>
+</tr>
+</tbody>
+</table>
+<p>El valor del índice de Moran global es prácticamente cero y muy cercano al valor esperado bajo la hipótesis nula de aleatoriedad espacial. Además, el p-valor de 0.9695 es mucho mayor que 0.05, por lo que no se rechaza la hipótesis nula de ausencia de autocorrelación espacial.</p>
+</section>
+<section id="interpretación-1" class="level2" data-number="17.2">
+<h2 data-number="17.2" class="anchored" data-anchor-id="interpretación-1"><span class="header-section-number">17.2</span> Interpretación</h2>
+<p>No existe evidencia estadística de dependencia espacial significativa en la distribución de la severidad dentro de la grilla construida. En términos prácticos, las celdas con severidad alta no tienden a ubicarse sistemáticamente cerca de otras celdas con severidad alta, ni las celdas con severidad baja muestran agrupamientos claros. Tampoco se observa un patrón significativo de dispersión espacial, pues el valor negativo de Moran es extremadamente pequeño.</p>
+<p>Esta conclusión debe interpretarse junto con la limitación señalada en la Pregunta 15: como la grilla fue construida mediante asignación aleatoria y no a partir de coordenadas reales, el resultado refleja la ausencia de dependencia espacial en esa representación artificial. No permite descartar que exista autocorrelación espacial real en el cultivo si se dispusiera de coordenadas observadas.</p>
+</section>
+<section id="conclusión-13" class="level2" data-number="17.3">
+<h2 data-number="17.3" class="anchored" data-anchor-id="conclusión-13"><span class="header-section-number">17.3</span> Conclusión</h2>
+<p>Bajo la grilla artificial de 14 x 14 y usando rangos ordinales de severidad, el índice de Moran global no detecta dependencia espacial significativa (<code>I = -0.0066</code>, <code>p = 0.9695</code>). Por tanto, con la información disponible no hay evidencia de agrupamiento espacial de la enfermedad. Para una evaluación espacial definitiva sería indispensable repetir el análisis con coordenadas reales de campo y, preferiblemente, complementarlo con métodos locales como LISA para identificar posibles focos específicos de alta severidad.</p>
+</section>
+</section>
+<section id="pregunta-17-tome-el-mejor-modelo-de-perceptrón-multicapa-obtenido-en-las-partes-anteriores-e-incorpore-las-coordenadas-espaciales-x-y-de-cada-observación-como-variables-de-entrada-adicionales.-compare-el-desempeño-con-el-modelo-original-sin-coordenadas.-mejora-la-clasificación-al-incluir-información-espacial-explícita" class="level1" data-number="18">
+<h1 data-number="18"><span class="header-section-number">18</span> Pregunta 17: Tome el mejor modelo de perceptrón multicapa obtenido en las partes anteriores e incorpore las coordenadas espaciales (x, y) de cada observación como variables de entrada adicionales. Compare el desempeño con el modelo original sin coordenadas. ¿Mejora la clasificación al incluir información espacial explícita?</h1>
+<p>Para evaluar si la información espacial mejora el desempeño predictivo, se tomó el mejor perceptrón multicapa binario obtenido previamente y se entrenó una nueva versión incorporando dos variables adicionales: <code>x_coord</code> y <code>y_coord</code>. Estas coordenadas fueron generadas a partir de la posición de cada observación dentro de una grilla artificial, ya que el conjunto de datos no contiene coordenadas reales de campo.</p>
+<p>El modelo con coordenadas mantuvo la misma arquitectura seleccionada para el MLP binario base, con el fin de que la comparación reflejara principalmente el efecto de añadir las variables espaciales y no un cambio simultáneo en la configuración de la red.</p>
+<section id="resultados-comparativos-1" class="level2" data-number="18.1">
+<h2 data-number="18.1" class="anchored" data-anchor-id="resultados-comparativos-1"><span class="header-section-number">18.1</span> Resultados comparativos</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Modelo</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">AUC-ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MLP base sin coordenadas</td>
+<td style="text-align: right;">0.8750</td>
+<td style="text-align: right;">0.9107</td>
+</tr>
+<tr class="even">
+<td>MLP con coordenadas <code>x, y</code></td>
+<td style="text-align: right;">0.9063</td>
+<td style="text-align: right;">0.9375</td>
+</tr>
+</tbody>
+</table>
+<p>Al incluir las coordenadas, la exactitud aumenta de 0.8750 a 0.9063 y el AUC-ROC pasa de 0.9107 a 0.9375. En términos numéricos, esto representa una mejora de 0.0313 puntos en accuracy y de 0.0268 puntos en AUC-ROC.</p>
+</section>
+<section id="interpretación-2" class="level2" data-number="18.2">
+<h2 data-number="18.2" class="anchored" data-anchor-id="interpretación-2"><span class="header-section-number">18.2</span> Interpretación</h2>
+<p>Desde el punto de vista estrictamente predictivo, el modelo con coordenadas obtiene un mejor desempeño que el modelo base. Esto sugiere que las variables <code>x_coord</code> y <code>y_coord</code> contienen alguna señal aprovechable por la red neuronal dentro de esta partición de datos.</p>
+<p>Sin embargo, esta mejora debe interpretarse con mucha cautela. Las coordenadas no provienen de mediciones reales en campo, sino que fueron construidas artificialmente a partir del orden de las observaciones. Por tanto, el incremento en desempeño no puede tomarse como evidencia de que exista un patrón espacial real de la enfermedad. Es posible que las coordenadas estén capturando algún patrón asociado al orden de registro de los datos o una estructura inducida por la forma en que se organizó el archivo.</p>
+<p>Esta precaución es coherente con el resultado de la Pregunta 16: el índice de Moran global aplicado sobre la grilla artificial no detectó autocorrelación espacial significativa. Por ello, aunque las coordenadas mejoran ligeramente las métricas del MLP, no se puede afirmar que la ubicación espacial real mejore la clasificación sin contar con coordenadas observadas.</p>
+</section>
+<section id="conclusión-14" class="level2" data-number="18.3">
+<h2 data-number="18.3" class="anchored" data-anchor-id="conclusión-14"><span class="header-section-number">18.3</span> Conclusión</h2>
+<p>La inclusión de coordenadas artificiales mejora moderadamente el desempeño del MLP binario en el conjunto de prueba (<code>AUC-ROC = 0.9375</code> frente a <code>0.9107</code>). No obstante, debido a que las coordenadas no son reales, esta mejora debe entenderse como un ejercicio exploratorio y no como una conclusión agronómica definitiva. Para evaluar de forma válida el aporte de la información espacial sería necesario repetir el análisis con coordenadas reales de campo.</p>
+</section>
+</section>
+<section id="pregunta-18-explore-dos-formas-adicionales-de-incorporar-la-información-espacial-coordenadas-como-único-predictor-e-interacción-multiplicativa-entre-coordenadas-e-índices-espectrales.-para-cada-caso-reporte-las-métricas-de-evaluación-y-compare-con-el-modelo-base-sin-coordenadas.-concluya-sobre-la-utilidad-de-cada-estrategia." class="level1" data-number="19">
+<h1 data-number="19"><span class="header-section-number">19</span> Pregunta 18: Explore dos formas adicionales de incorporar la información espacial: coordenadas como único predictor e interacción multiplicativa entre coordenadas e índices espectrales. Para cada caso reporte las métricas de evaluación y compare con el modelo base sin coordenadas. Concluya sobre la utilidad de cada estrategia.</h1>
+<p>Se exploraron dos estrategias adicionales para incorporar la información espacial en la red neuronal. La primera consistió en entrenar un MLP usando exclusivamente las coordenadas <code>x_coord</code> y <code>y_coord</code> como predictores. La segunda consistió en añadir interacciones multiplicativas entre coordenadas e índices espectrales, específicamente <code>x_coord * ndvi_med</code>, <code>y_coord * ndvi_med</code>, <code>x_coord * evi_med</code> y <code>y_coord * evi_med</code>, además de los predictores originales.</p>
+<p>Estas estrategias buscan responder dos preguntas distintas. El modelo con solo coordenadas evalúa si la ubicación, por sí sola, tiene poder predictivo. El modelo con interacciones evalúa si el efecto de los índices espectrales cambia según la posición espacial dentro de la grilla.</p>
+<section id="resultados-comparativos-2" class="level2" data-number="19.1">
+<h2 data-number="19.1" class="anchored" data-anchor-id="resultados-comparativos-2"><span class="header-section-number">19.1</span> Resultados comparativos</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Estrategia</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">AUC-ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Modelo base sin coordenadas</td>
+<td style="text-align: right;">0.8750</td>
+<td style="text-align: right;">0.9107</td>
+</tr>
+<tr class="even">
+<td>Modelo con coordenadas <code>x, y</code></td>
+<td style="text-align: right;">0.9063</td>
+<td style="text-align: right;">0.9375</td>
+</tr>
+<tr class="odd">
+<td>Solo coordenadas</td>
+<td style="text-align: right;">0.8750</td>
+<td style="text-align: right;">0.9107</td>
+</tr>
+<tr class="even">
+<td>Coordenadas + interacciones espaciales</td>
+<td style="text-align: right;">0.8438</td>
+<td style="text-align: right;">0.9107</td>
+</tr>
+</tbody>
+</table>
+<div id="fig-espacial-aucroc" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-espacial-aucroc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/17_espacial_aucroc.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-espacial-aucroc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;7: Efecto de la información espacial en el AUC-ROC
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="coordenadas-como-único-predictor" class="level2" data-number="19.2">
+<h2 data-number="19.2" class="anchored" data-anchor-id="coordenadas-como-único-predictor"><span class="header-section-number">19.2</span> Coordenadas como único predictor</h2>
+<p>El modelo entrenado únicamente con <code>x_coord</code> y <code>y_coord</code> alcanza una exactitud de 0.8750 y un AUC-ROC de 0.9107, valores iguales a los del modelo base sin coordenadas. A primera vista, esto sugeriría que las coordenadas tienen poder predictivo por sí solas. Sin embargo, esta interpretación no es confiable porque las coordenadas son artificiales y fueron derivadas del orden de las observaciones, no de posiciones reales en campo.</p>
+<p>En un contexto con coordenadas reales, un buen desempeño usando solo ubicación podría indicar focos espaciales de enfermedad, gradientes de infección o zonas del lote con condiciones ambientales favorables al patógeno. En este caso, en cambio, el resultado debe tratarse como una señal metodológica débil: puede reflejar estructura accidental en el orden del archivo, efectos del desbalance binario o variabilidad propia del conjunto de prueba reducido.</p>
+</section>
+<section id="interacciones-espaciales-espectrales" class="level2" data-number="19.3">
+<h2 data-number="19.3" class="anchored" data-anchor-id="interacciones-espaciales-espectrales"><span class="header-section-number">19.3</span> Interacciones espaciales-espectrales</h2>
+<p>El modelo con interacciones multiplicativas obtiene una exactitud de 0.8438 y un AUC-ROC de 0.9107. En comparación con el modelo base, no mejora la capacidad de discriminación global y reduce la exactitud. Esto sugiere que, bajo la información disponible, las interacciones entre coordenadas artificiales e índices espectrales no aportan una señal adicional estable.</p>
+<p>Este resultado es esperable porque las interacciones espaciales solo tienen sentido agronómico cuando las coordenadas representan posiciones reales. Si las coordenadas son artificiales, los productos <code>x * NDVI</code>, <code>y * NDVI</code>, <code>x * EVI</code> y <code>y * EVI</code> pueden introducir complejidad adicional sin significado espacial, aumentando el riesgo de sobreajuste en una muestra pequeña.</p>
+</section>
+<section id="conclusión-15" class="level2" data-number="19.4">
+<h2 data-number="19.4" class="anchored" data-anchor-id="conclusión-15"><span class="header-section-number">19.4</span> Conclusión</h2>
+<p>De las estrategias evaluadas, el modelo con coordenadas añadidas al conjunto original presenta el mejor desempeño numérico (<code>Accuracy = 0.9063</code>, <code>AUC-ROC = 0.9375</code>). Sin embargo, al tratarse de coordenadas artificiales, esta mejora no debe interpretarse como evidencia de utilidad espacial real. El modelo con solo coordenadas no permite concluir poder predictivo espacial genuino, y las interacciones multiplicativas no aportan mejoras frente al modelo base.</p>
+<p>En consecuencia, la incorporación de información espacial explícita solo sería recomendable en una fase posterior si se dispone de coordenadas reales de campo. Con los datos actuales, las variables espectrales y la altura siguen siendo la fuente principal y más defendible de información predictiva.</p>
+</section>
+</section>
+<section id="pregunta-19-propuesta-metodológica-propia.-proponga-justifique-e-implemente-al-menos-una-extensión-o-análisis-complementario-no-solicitado-explícitamente-en-este-taller.-documente-claramente-el-objetivo-de-su-propuesta-la-metodología-empleada-los-resultados-obtenidos-y-las-conclusiones." class="level1" data-number="20">
+<h1 data-number="20"><span class="header-section-number">20</span> Pregunta 19: Propuesta metodológica propia. Proponga, justifique e implemente al menos una extensión o análisis complementario no solicitado explícitamente en este taller. Documente claramente el objetivo de su propuesta, la metodología empleada, los resultados obtenidos y las conclusiones.</h1>
+<p>Como propuesta metodológica propia se implementaron dos extensiones complementarias. La primera consistió en evaluar el efecto de la regularización por <code>dropout</code> en el perceptrón multicapa binario, manteniendo además el uso de <code>early stopping</code>. La segunda consistió en comparar el desempeño de los modelos neuronales con un algoritmo no neuronal, Random Forest, usando las mismas particiones de entrenamiento, validación y prueba.</p>
+<p>El objetivo de esta propuesta fue evaluar dos aspectos relevantes para un sistema de apoyo a la decisión agronómica: la robustez del MLP frente al sobreajuste y la conveniencia de contrastar la red neuronal con un modelo alternativo de aprendizaje automático, capaz de capturar relaciones no lineales y entregar una medida directa de importancia de variables.</p>
+<section id="metodología" class="level2" data-number="20.1">
+<h2 data-number="20.1" class="anchored" data-anchor-id="metodología"><span class="header-section-number">20.1</span> Metodología</h2>
+<p>Para la regularización de la red neuronal se entrenó un MLP binario con la misma arquitectura base seleccionada previamente, pero incorporando capas <code>Dropout</code> con una tasa de 0.3 después de cada capa oculta. El entrenamiento usó <code>early stopping</code> monitoreando la pérdida de validación, con paciencia de 20 épocas y restauración de los mejores pesos. Esta combinación busca reducir el sobreajuste: <code>dropout</code> fuerza a la red a no depender excesivamente de neuronas específicas, mientras que <code>early stopping</code> detiene el entrenamiento cuando el desempeño de validación deja de mejorar.</p>
+<p>Como modelo alternativo se entrenó un Random Forest de 200 árboles, con <code>class_weight = "balanced"</code> para compensar el desequilibrio entre plantas sanas y enfermas. El modelo se ajustó sobre el mismo conjunto de entrenamiento balanceado y se evaluó sobre el mismo conjunto de prueba usado en los modelos anteriores. Se reportaron accuracy y AUC-ROC para mantener la comparación con las secciones previas.</p>
+</section>
+<section id="resultados-comparativos-3" class="level2" data-number="20.2">
+<h2 data-number="20.2" class="anchored" data-anchor-id="resultados-comparativos-3"><span class="header-section-number">20.2</span> Resultados comparativos</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Modelo</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">AUC-ROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Regresión logística</td>
+<td style="text-align: right;">0.7188</td>
+<td style="text-align: right;">0.9464</td>
+</tr>
+<tr class="even">
+<td>MLP binario</td>
+<td style="text-align: right;">0.8750</td>
+<td style="text-align: right;">0.9107</td>
+</tr>
+<tr class="odd">
+<td>MLP con Dropout</td>
+<td style="text-align: right;">0.8125</td>
+<td style="text-align: right;">0.8482</td>
+</tr>
+<tr class="even">
+<td>Random Forest</td>
+<td style="text-align: right;">0.8438</td>
+<td style="text-align: right;">0.8929</td>
+</tr>
+</tbody>
+</table>
+<div id="fig-dropout-comparacion" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dropout-comparacion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/18_dropout_comparacion.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dropout-comparacion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;8: Efecto del Dropout sobre las curvas de pérdida
+</figcaption>
+</figure>
+</div>
+<div id="fig-comparacion-final" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comparacion-final-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/19_comparacion_final.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comparacion-final-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;9: Comparación final de modelos
+</figcaption>
+</figure>
+</div>
+<p>El MLP binario sin dropout mantiene la mejor exactitud entre los modelos comparados (<code>Accuracy = 0.8750</code>). La regresión logística, por su parte, obtiene el mejor AUC-ROC (<code>0.9464</code>), lo cual indica una buena capacidad para ordenar las observaciones según su probabilidad de enfermedad, aunque con menor desempeño al aplicar el umbral de clasificación usado en la evaluación. El MLP con dropout no mejora al modelo base en esta corrida: su accuracy baja a 0.8125 y su AUC-ROC a 0.8482. Random Forest obtiene un desempeño intermedio, con <code>Accuracy = 0.8438</code> y <code>AUC-ROC = 0.8929</code>.</p>
+</section>
+<section id="efecto-de-dropout-y-early-stopping" class="level2" data-number="20.3">
+<h2 data-number="20.3" class="anchored" data-anchor-id="efecto-de-dropout-y-early-stopping"><span class="header-section-number">20.3</span> Efecto de Dropout y Early Stopping</h2>
+<p>La regularización por dropout no produjo una mejora directa en las métricas finales. Esto sugiere que, para esta muestra y esta arquitectura, el modelo base no se beneficia de una penalización adicional tan fuerte como <code>dropout = 0.3</code>. Una explicación probable es el tamaño limitado del conjunto de datos: al apagar aleatoriamente neuronas durante el entrenamiento, la red reduce su capacidad efectiva, y en un problema con pocas observaciones esa pérdida de capacidad puede afectar más que el posible beneficio en generalización.</p>
+<p>No obstante, el resultado sigue siendo útil metodológicamente. Permite mostrar que la regularización debe evaluarse empíricamente y no asumirse siempre como una mejora automática. En este caso, <code>early stopping</code> ya ofrece un mecanismo de control del sobreajuste, por lo que añadir dropout no aporta una ganancia clara.</p>
+</section>
+<section id="comparación-con-random-forest" class="level2" data-number="20.4">
+<h2 data-number="20.4" class="anchored" data-anchor-id="comparación-con-random-forest"><span class="header-section-number">20.4</span> Comparación con Random Forest</h2>
+<p>Random Forest no supera al MLP binario ni a la regresión logística en AUC-ROC, pero ofrece un desempeño competitivo y una ventaja práctica: permite obtener una importancia de variables basada en la reducción de impureza de los árboles. El ranking obtenido fue:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th style="text-align: right;">Importancia Random Forest</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>evi_med</code></td>
+<td style="text-align: right;">0.2943</td>
+</tr>
+<tr class="even">
+<td><code>ndre_med</code></td>
+<td style="text-align: right;">0.2819</td>
+</tr>
+<tr class="odd">
+<td><code>ndvi_med</code></td>
+<td style="text-align: right;">0.1843</td>
+</tr>
+<tr class="even">
+<td><code>gli_med</code></td>
+<td style="text-align: right;">0.1248</td>
+</tr>
+<tr class="odd">
+<td><code>height_med</code></td>
+<td style="text-align: right;">0.1147</td>
+</tr>
+</tbody>
+</table>
+<div id="fig-importancia-rf" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-importancia-rf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../resultados/figuras/20_importancia_rf.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-importancia-rf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;10: Importancia de variables según Random Forest
+</figcaption>
+</figure>
+</div>
+<p>El Random Forest identifica como variables más importantes a <code>evi_med</code> y <code>ndre_med</code>, coincidiendo con los resultados de la regresión logística Lasso y con la importancia por permutación del MLP en que estos índices son predictores centrales. A diferencia del MLP, Random Forest asigna mayor importancia relativa al NDVI y menor importancia a la altura. Esta diferencia puede deberse a que los árboles capturan umbrales y divisiones no lineales sobre los índices espectrales, mientras que el MLP aprovecha combinaciones más distribuidas entre variables.</p>
+</section>
+<section id="conclusión-de-la-propuesta" class="level2" data-number="20.5">
+<h2 data-number="20.5" class="anchored" data-anchor-id="conclusión-de-la-propuesta"><span class="header-section-number">20.5</span> Conclusión de la propuesta</h2>
+<p>La propuesta libre muestra que el MLP binario base sigue siendo una opción fuerte cuando se prioriza la clasificación efectiva con el umbral usado, especialmente por su mayor accuracy frente a las alternativas evaluadas. Sin embargo, la regresión logística conserva el mejor AUC-ROC y la mayor interpretabilidad, por lo que sigue siendo un modelo de referencia valioso. Random Forest aporta una comparación no neuronal útil y confirma la relevancia de los índices EVI y NDRE, aunque no mejora el desempeño global.</p>
+<p>El dropout, en esta configuración, no mejora el desempeño del MLP y puede estar reduciendo demasiado la capacidad del modelo para una muestra pequeña. En aplicaciones futuras se recomienda probar tasas menores, como 0.1 o 0.2, junto con validación cruzada o repetición de particiones para confirmar si el efecto observado es estable.</p>
+</section>
+</section>
+<section id="conclusiones-generales" class="level1" data-number="21">
+<h1 data-number="21"><span class="header-section-number">21</span> Conclusiones generales</h1>
+<p>El análisis desarrollado permitió evaluar la severidad de <em>Verticillium sp.</em> desde tres enfoques complementarios: clasificación multiclase, clasificación binaria y análisis espacial exploratorio. En la clasificación múltiple, las categorías de severidad presentan solapamiento, especialmente entre niveles adyacentes, lo que confirma que el problema no es trivial y que una única métrica global puede ocultar errores importantes entre clases.</p>
+<p>La recodificación binaria sano/enfermo simplifica el problema y mejora la utilidad práctica del modelo para detección temprana, aunque implica pérdida de información ordinal. Bajo este enfoque, el MLP binario ofrece el mejor desempeño operativo con el umbral evaluado, mientras que la regresión logística aporta interpretabilidad y el mejor AUC-ROC. Esto sugiere que la selección del modelo debe depender del objetivo: detección sensible de plantas enfermas o explicación transparente de los factores asociados.</p>
+<p>Los análisis de importancia de variables convergen en la relevancia de los índices asociados al vigor vegetal, especialmente EVI y NDRE. El NDVI muestra una fuerte asociación univariada con la severidad, pero pierde aporte marginal en modelos multivariados debido a su redundancia con otros índices. La altura puede aportar información adicional, aunque su interpretación debe hacerse con cautela por su relación no monótona con la severidad.</p>
+<p>El análisis espacial permitió implementar la grilla y calcular el índice de Moran global, pero sus conclusiones están limitadas por la ausencia de coordenadas reales. Con la grilla artificial no se encontró dependencia espacial significativa, y las mejoras observadas al incluir coordenadas en la red neuronal no pueden interpretarse como evidencia agronómica definitiva. Para estudios futuros, la disponibilidad de coordenadas reales permitiría evaluar focos de infección, autocorrelación local y estrategias de manejo espacialmente focalizado.</p>
+<p>En conjunto, el trabajo muestra que los datos espectrales contienen señal suficiente para apoyar la detección de severidad de la enfermedad, pero también evidencia la importancia de documentar cuidadosamente las decisiones de preprocesamiento, partición, balanceo de clases, selección de umbral e interpretación de variables antes de usar estos modelos como apoyo a decisiones agronómicas.</p>
+</section>
 
 </main>
 <!-- /main column -->
@@ -1662,4 +2322,5 @@ Real Sev 6   [  0  0  0  0  1  1 ]</code></pre>
 
 
 
+<script src="Informe_final_files/libs/quarto-html/zenscroll-min.js"></script>
 </body></html>
