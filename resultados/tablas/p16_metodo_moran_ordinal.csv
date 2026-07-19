@@ -1,0 +1,8 @@
+﻿Caracteristica,Valor
+Metodo elegido,Indice de Moran global
+Tratamiento de la severidad ordinal,Rangos de severidad
+Grilla,14 x 14
+Numero de celdas evaluadas,196
+Criterio de vecindad,Reina: 8 direcciones
+Normalizacion de pesos,Por filas
+Nivel de significancia,0.05

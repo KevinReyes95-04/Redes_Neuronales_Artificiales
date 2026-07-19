@@ -1,0 +1,9 @@
+﻿Clase,Precision,Sensibilidad,F1-score,Soporte
+Sev 1,0.0,0.0,0.0,4
+Sev 2,0.4615,0.8571,0.6,7
+Sev 3,0.2857,0.4,0.3333,5
+Sev 4,0.4,0.2857,0.3333,7
+Sev 5,0.6667,0.5714,0.6154,7
+Sev 6,0.0,0.0,0.0,2
+Macro-promedio,0.3023,0.3524,0.3137,32
+Promedio ponderado,0.3789,0.4375,0.3909,32

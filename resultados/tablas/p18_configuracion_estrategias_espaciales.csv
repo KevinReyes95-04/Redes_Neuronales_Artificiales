@@ -1,0 +1,5 @@
+﻿Estrategia,Predictores,Numero predictores,Descripcion
+Modelo base sin coordenadas,"ndvi_med, evi_med, ndre_med, gli_med, height_med",5,MLP binario base con indices espectrales y altura
+"Modelo con coordenadas x,y","ndvi_med, evi_med, ndre_med, gli_med, height_med, x_coord, y_coord",7,MLP base agregando coordenadas artificiales
+Solo coordenadas,"x_coord, y_coord",2,MLP entrenado exclusivamente con x_coord y y_coord
+Coordenadas + interacciones espaciales,"ndvi_med, evi_med, ndre_med, gli_med, height_med, x_coord, y_coord, x_ndvi, y_ndvi, x_evi, y_evi",11,MLP base con coordenadas e interacciones x/y con NDVI y EVI

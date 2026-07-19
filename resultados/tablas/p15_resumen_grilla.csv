@@ -1,0 +1,8 @@
+﻿Indicador,Valor
+Observaciones disponibles,212
+Observaciones seleccionadas,196
+Dimension de la grilla,14 x 14
+Celdas de la grilla,196
+Coordenadas reales disponibles,No
+Metodo de asignacion,Muestra aleatoria sin reemplazo y ubicacion secuencial en la grilla
+Semilla reproducible,np.random.seed(42) definida en 00_configuracion.py

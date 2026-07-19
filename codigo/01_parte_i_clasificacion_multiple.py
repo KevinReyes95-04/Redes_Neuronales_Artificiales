@@ -338,6 +338,38 @@ X_scaled = scaler.fit_transform(X)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Funciones auxiliares para construir y entrenar modelos Keras (multiclase)
+# ─────────────────────────────────────────────────────────────────────────────
+def build_mlp(n_inputs, n_classes, hidden_layers, neurons, lr=0.01,
+              loss="sparse_categorical_crossentropy"):
+    """Construye un MLP con capas ocultas de activación ReLU."""
+    model = keras.Sequential()
+    model.add(layers.Input(shape=(n_inputs,)))
+    for _ in range(hidden_layers):
+        model.add(layers.Dense(neurons, activation="relu"))
+    model.add(layers.Dense(n_classes, activation="softmax"))
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=lr),
+        loss=loss,
+        metrics=["accuracy"]
+    )
+    return model
+
+
+def train_model(model, X_tr, y_tr, X_val, y_val, epochs=150, batch_size=16):
+    """Entrena el modelo con early stopping sobre perdida de validación."""
+    cb = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=20,
+                                         restore_best_weights=True)]
+    hist = model.fit(
+        X_tr, y_tr,
+        validation_data=(X_val, y_val),
+        epochs=epochs, batch_size=batch_size,
+        verbose=0, callbacks=cb
+    )
+    return hist
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # PREGUNTA 3 – Dos esquemas de partición
 # ─────────────────────────────────────────────────────────────────────────────
 print("="*70)
@@ -372,6 +404,84 @@ try:
 except Exception:
     X_trainB_sm, y_trainB_sm = X_trainB, y_trainB
 
+balance_smote_train = pd.DataFrame({
+    "severidad": classes_orig,
+    "entrenamiento_antes_smote": [
+        int(np.sum(y_trainB == label_map[severity])) for severity in classes_orig
+    ],
+    "entrenamiento_despues_smote": [
+        int(np.sum(y_trainB_sm == label_map[severity])) for severity in classes_orig
+    ],
+})
+save_csv(balance_smote_train, "06_p2_balance_smote_entrenamiento.csv")
+print("\nBalance del entrenamiento antes y despues de SMOTE:")
+print(balance_smote_train.to_string(index=False))
+
+# Entrenamiento comparativo con una misma arquitectura inicial
+p3_hidden_layers = 1
+p3_neurons = 16
+p3_lr = 0.001
+p3_epochs = 150
+p3_batch_size = 16
+
+keras.backend.clear_session()
+tf.random.set_seed(42)
+mlp_p3_a = build_mlp(len(FEATURES), n_classes, p3_hidden_layers, p3_neurons, p3_lr)
+h_p3_a = mlp_p3_a.fit(
+    X_trainA_sm, y_trainA_sm,
+    epochs=p3_epochs,
+    batch_size=p3_batch_size,
+    verbose=0,
+)
+loss_train_a, acc_train_a = mlp_p3_a.evaluate(X_trainA_sm, y_trainA_sm, verbose=0)
+loss_test_a, acc_test_a = mlp_p3_a.evaluate(X_testA, y_testA, verbose=0)
+
+keras.backend.clear_session()
+tf.random.set_seed(42)
+mlp_p3_b = build_mlp(len(FEATURES), n_classes, p3_hidden_layers, p3_neurons, p3_lr)
+h_p3_b = train_model(
+    mlp_p3_b,
+    X_trainB_sm, y_trainB_sm,
+    X_valB, y_valB,
+    epochs=p3_epochs,
+    batch_size=p3_batch_size,
+)
+loss_train_b, acc_train_b = mlp_p3_b.evaluate(X_trainB_sm, y_trainB_sm, verbose=0)
+loss_val_b, acc_val_b = mlp_p3_b.evaluate(X_valB, y_valB, verbose=0)
+loss_test_b, acc_test_b = mlp_p3_b.evaluate(X_testB, y_testB, verbose=0)
+
+p3_comparison = pd.DataFrame([
+    {
+        "Esquema": "80/20",
+        "Arquitectura inicial": "1 capa oculta, 16 neuronas, lr=0.001",
+        "Entrenamiento": int(len(y_trainA_sm)),
+        "Validacion": 0,
+        "Prueba": int(len(y_testA)),
+        "Epocas ejecutadas": len(h_p3_a.history["loss"]),
+        "Accuracy entrenamiento": round(float(acc_train_a), 4),
+        "Accuracy validacion": np.nan,
+        "Accuracy prueba": round(float(acc_test_a), 4),
+        "Loss prueba": round(float(loss_test_a), 6),
+        "Uso metodologico": "No permite seleccionar hiperparametros sin tocar prueba",
+    },
+    {
+        "Esquema": "70/15/15",
+        "Arquitectura inicial": "1 capa oculta, 16 neuronas, lr=0.001",
+        "Entrenamiento": int(len(y_trainB_sm)),
+        "Validacion": int(len(y_valB)),
+        "Prueba": int(len(y_testB)),
+        "Epocas ejecutadas": len(h_p3_b.history["loss"]),
+        "Accuracy entrenamiento": round(float(acc_train_b), 4),
+        "Accuracy validacion": round(float(acc_val_b), 4),
+        "Accuracy prueba": round(float(acc_test_b), 4),
+        "Loss prueba": round(float(loss_test_b), 6),
+        "Uso metodologico": "Permite ajustar hiperparametros con validacion independiente",
+    },
+])
+save_csv(p3_comparison, "p3_comparacion_esquemas_particion.csv")
+print("\nComparacion experimental de esquemas con MLP inicial:")
+print(p3_comparison.to_string(index=False))
+
 print("""
 Ventaja del esquema de tres particiones:
   • El conjunto de VALIDACIÓN permite ajustar hiperparámetros (capas, neuronas,
@@ -389,55 +499,110 @@ print("="*70)
 print("PREGUNTA 4 – Validación cruzada k-fold (k=5) como complemento")
 print("="*70)
 
-# Usamos un modelo logístico como proxy rápido para ilustrar k-fold;
-# la red se evalúa por cv en la sección de arquitectura.
-from sklearn.linear_model import LogisticRegression as LR_kfold
-lr_kf = LR_kfold(max_iter=1000, solver='lbfgs', random_state=42)
-kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-cv_scores = cross_val_score(lr_kf, X_scaled, y_enc, cv=kf, scoring='accuracy')
+p3_b_pred = np.argmax(mlp_p3_b.predict(X_testB, verbose=0), axis=1)
+p3_b_f1_macro = f1_score(y_testB, p3_b_pred, average="macro", zero_division=0)
 
-print(f"\nAccuracy por fold (regresión logística como proxy): {np.round(cv_scores,4)}")
-print(f"Media ± std: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+p4_fold_results = []
+
+for fold, (train_idx, val_idx) in enumerate(kf.split(X, y_enc), start=1):
+    X_train_fold_raw, X_val_fold_raw = X[train_idx], X[val_idx]
+    y_train_fold, y_val_fold = y_enc[train_idx], y_enc[val_idx]
+
+    fold_scaler = StandardScaler()
+    X_train_fold = fold_scaler.fit_transform(X_train_fold_raw)
+    X_val_fold = fold_scaler.transform(X_val_fold_raw)
+
+    try:
+        sm_fold = SMOTE(random_state=42)
+        X_train_fold_sm, y_train_fold_sm = sm_fold.fit_resample(
+            X_train_fold, y_train_fold
+        )
+        smote_status = "Si"
+    except Exception:
+        X_train_fold_sm, y_train_fold_sm = X_train_fold, y_train_fold
+        smote_status = "No"
+
+    keras.backend.clear_session()
+    keras.utils.set_random_seed(42 + fold)
+    mlp_fold = build_mlp(
+        len(FEATURES), n_classes, p3_hidden_layers, p3_neurons, p3_lr
+    )
+    hist_fold = train_model(
+        mlp_fold,
+        X_train_fold_sm,
+        y_train_fold_sm,
+        X_val_fold,
+        y_val_fold,
+        epochs=p3_epochs,
+        batch_size=p3_batch_size,
+    )
+
+    y_pred_fold = np.argmax(mlp_fold.predict(X_val_fold, verbose=0), axis=1)
+    loss_train_fold, acc_train_fold = mlp_fold.evaluate(
+        X_train_fold_sm, y_train_fold_sm, verbose=0
+    )
+    loss_val_fold, acc_val_fold = mlp_fold.evaluate(
+        X_val_fold, y_val_fold, verbose=0
+    )
+    f1_macro_fold = f1_score(
+        y_val_fold, y_pred_fold, average="macro", zero_division=0
+    )
+
+    p4_fold_results.append({
+        "Fold": fold,
+        "Entrenamiento original": int(len(y_train_fold)),
+        "Entrenamiento usado": int(len(y_train_fold_sm)),
+        "Validacion": int(len(y_val_fold)),
+        "SMOTE aplicado": smote_status,
+        "Epocas ejecutadas": len(hist_fold.history["loss"]),
+        "Accuracy entrenamiento": round(float(acc_train_fold), 4),
+        "Accuracy validacion": round(float(acc_val_fold), 4),
+        "F1 macro validacion": round(float(f1_macro_fold), 4),
+        "Loss validacion": round(float(loss_val_fold), 6),
+    })
+
+p4_kfold = pd.DataFrame(p4_fold_results)
+save_csv(p4_kfold, "p4_kfold_mlp_por_fold.csv")
+
+p4_comparison = pd.DataFrame([
+    {
+        "Estrategia": "Particion fija 70/15/15",
+        "Modelo": "MLP inicial",
+        "Conjunto evaluado": "Prueba independiente",
+        "Accuracy medio": round(float(acc_test_b), 4),
+        "Desviacion accuracy": np.nan,
+        "F1 macro medio": round(float(p3_b_f1_macro), 4),
+        "Desviacion F1 macro": np.nan,
+        "Uso recomendado": "Evaluacion final trazable",
+    },
+    {
+        "Estrategia": "K-fold estratificado (k=5)",
+        "Modelo": "MLP inicial",
+        "Conjunto evaluado": "Validaciones internas",
+        "Accuracy medio": round(float(p4_kfold["Accuracy validacion"].mean()), 4),
+        "Desviacion accuracy": round(float(p4_kfold["Accuracy validacion"].std(ddof=1)), 4),
+        "F1 macro medio": round(float(p4_kfold["F1 macro validacion"].mean()), 4),
+        "Desviacion F1 macro": round(float(p4_kfold["F1 macro validacion"].std(ddof=1)), 4),
+        "Uso recomendado": "Estimacion de variabilidad y apoyo a hiperparametros",
+    },
+])
+save_csv(p4_comparison, "p4_comparacion_kfold_particion_fija.csv")
+
+print("\nResultados k-fold del MLP inicial por fold:")
+print(p4_kfold.to_string(index=False))
+print("\nComparacion entre particion fija y k-fold:")
+print(p4_comparison.to_string(index=False))
 print("""
 Conclusión P4:
   • Con n ≈ 200 la varianza de la estimación con una sola partición puede ser
-    alta. K-fold (k=5) es una alternativa eficiente para estimación del error
-    de generalización, aunque cuesta más cómputo para redes neuronales.
-  • Se recomienda usar k-fold para la selección de hiperparámetros y la
-    partición fija para la evaluación final reportada.
+    alta. K-fold (k=5) permite medir esa variabilidad con el mismo tipo de
+    modelo usado en el taller.
+  • El escalador y SMOTE se ajustan dentro de cada fold usando solo el
+    entrenamiento correspondiente, evitando fuga de información.
+  • Se recomienda usar k-fold como complemento para seleccionar
+    hiperparámetros y conservar la partición fija para la evaluación final.
 """)
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Función auxiliar para construir y entrenar modelos Keras (multiclase)
-# ─────────────────────────────────────────────────────────────────────────────
-def build_mlp(n_inputs, n_classes, hidden_layers, neurons, lr=0.01,
-              loss="sparse_categorical_crossentropy"):
-    """Construye un MLP con capas ocultas de activación ReLU."""
-    model = keras.Sequential()
-    model.add(layers.Input(shape=(n_inputs,)))
-    for _ in range(hidden_layers):
-        model.add(layers.Dense(neurons, activation="relu"))
-    model.add(layers.Dense(n_classes, activation="softmax"))
-    model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=lr),
-        loss=loss,
-        metrics=["accuracy"]
-    )
-    return model
-
-
-def train_model(model, X_tr, y_tr, X_val, y_val, epochs=150, batch_size=16):
-    """Entrena el modelo y retorna el historial."""
-    cb = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=20,
-                                         restore_best_weights=True)]
-    hist = model.fit(
-        X_tr, y_tr,
-        validation_data=(X_val, y_val),
-        epochs=epochs, batch_size=batch_size,
-        verbose=0, callbacks=cb
-    )
-    return hist
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -446,6 +611,10 @@ def train_model(model, X_tr, y_tr, X_val, y_val, epochs=150, batch_size=16):
 print("="*70)
 print("PREGUNTA 5 – Comparación de arquitecturas del MLP")
 print("="*70)
+
+keras.backend.clear_session()
+np.random.seed(42)
+tf.random.set_seed(42)
 
 # NOTA METODOLÓGICA:
 # Este bloque evalúa un conjunto dirigido de configuraciones, no un grid factorial
@@ -601,8 +770,44 @@ h_mse = m_mse.fit(X_trainB_sm, y_tr_oh, validation_data=(X_valB, y_val_oh),
                    callbacks=[keras.callbacks.EarlyStopping(
                        monitor="val_loss", patience=20, restore_best_weights=True)])
 
-acc_cce = accuracy_score(y_testB, np.argmax(m_cce.predict(X_testB, verbose=0), axis=1))
-acc_mse = accuracy_score(y_testB, np.argmax(m_mse.predict(X_testB, verbose=0), axis=1))
+y_pred_cce_p6 = np.argmax(m_cce.predict(X_testB, verbose=0), axis=1)
+y_pred_mse_p6 = np.argmax(m_mse.predict(X_testB, verbose=0), axis=1)
+acc_cce = accuracy_score(y_testB, y_pred_cce_p6)
+acc_mse = accuracy_score(y_testB, y_pred_mse_p6)
+
+p6_comparison = pd.DataFrame([
+    {
+        "Funcion perdida": "Entropia cruzada categorica",
+        "Implementacion": "sparse_categorical_crossentropy",
+        "Arquitectura": best_cfg,
+        "Formato etiquetas": "Enteras",
+        "Epocas ejecutadas": len(h_cce.history["loss"]),
+        "Loss Train minima": round(float(min(h_cce.history["loss"])), 6),
+        "Loss Val minima": round(float(min(h_cce.history["val_loss"])), 6),
+        "Acc Train max": round(float(max(h_cce.history["accuracy"])), 4),
+        "Acc Val max": round(float(max(h_cce.history["val_accuracy"])), 4),
+        "Accuracy prueba": round(float(acc_cce), 4),
+        "Aciertos prueba": int(np.sum(y_pred_cce_p6 == y_testB)),
+        "Total prueba": int(len(y_testB)),
+        "Decision metodologica": "Recomendada para clasificacion multiclase con softmax",
+    },
+    {
+        "Funcion perdida": "Error cuadratico medio",
+        "Implementacion": "mean_squared_error",
+        "Arquitectura": best_cfg,
+        "Formato etiquetas": "One-hot",
+        "Epocas ejecutadas": len(h_mse.history["loss"]),
+        "Loss Train minima": round(float(min(h_mse.history["loss"])), 6),
+        "Loss Val minima": round(float(min(h_mse.history["val_loss"])), 6),
+        "Acc Train max": round(float(max(h_mse.history["accuracy"])), 4),
+        "Acc Val max": round(float(max(h_mse.history["val_accuracy"])), 4),
+        "Accuracy prueba": round(float(acc_mse), 4),
+        "Aciertos prueba": int(np.sum(y_pred_mse_p6 == y_testB)),
+        "Total prueba": int(len(y_testB)),
+        "Decision metodologica": "Comparativa; no recomendada como criterio principal",
+    },
+])
+save_csv(p6_comparison, "p6_comparacion_funciones_perdida.csv")
 
 print(f"\n  CCE – Accuracy en prueba: {acc_cce:.4f}")
 print(f"  MSE – Accuracy en prueba: {acc_mse:.4f}")
@@ -645,13 +850,48 @@ print("="*70)
 y_pred_multi = np.argmax(best_model_multi.predict(X_testB, verbose=0), axis=1)
 y_prob_multi = best_model_multi.predict(X_testB, verbose=0)
 
-print(f"\nExactitud global (Test): {accuracy_score(y_testB, y_pred_multi):.4f}")
-print("\nReporte de clasificación:")
 target_names = [f"Sev {c}" for c in classes_orig]
-print(classification_report(y_testB, y_pred_multi, target_names=target_names))
+acc_multi = accuracy_score(y_testB, y_pred_multi)
+report_multi = classification_report(
+    y_testB,
+    y_pred_multi,
+    target_names=target_names,
+    output_dict=True,
+    zero_division=0,
+)
+
+p7_metrics_rows = []
+for class_name in target_names:
+    p7_metrics_rows.append({
+        "Clase": class_name,
+        "Precision": round(float(report_multi[class_name]["precision"]), 4),
+        "Sensibilidad": round(float(report_multi[class_name]["recall"]), 4),
+        "F1-score": round(float(report_multi[class_name]["f1-score"]), 4),
+        "Soporte": int(report_multi[class_name]["support"]),
+    })
+for avg_name, label in [
+    ("macro avg", "Macro-promedio"),
+    ("weighted avg", "Promedio ponderado"),
+]:
+    p7_metrics_rows.append({
+        "Clase": label,
+        "Precision": round(float(report_multi[avg_name]["precision"]), 4),
+        "Sensibilidad": round(float(report_multi[avg_name]["recall"]), 4),
+        "F1-score": round(float(report_multi[avg_name]["f1-score"]), 4),
+        "Soporte": int(report_multi[avg_name]["support"]),
+    })
+p7_metrics = pd.DataFrame(p7_metrics_rows)
+save_csv(p7_metrics, "p7_metricas_clasificacion_multiclase.csv")
+
+print(f"\nExactitud global (Test): {acc_multi:.4f}")
+print("\nReporte de clasificación:")
+print(classification_report(y_testB, y_pred_multi, target_names=target_names, zero_division=0))
 
 fig, ax = plt.subplots(figsize=(7, 5))
 cm = confusion_matrix(y_testB, y_pred_multi)
+cm_table = pd.DataFrame(cm, columns=target_names)
+cm_table.insert(0, "Real\\Predicho", target_names)
+save_csv(cm_table, "p7_matriz_confusion_multiclase.csv")
 sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
             xticklabels=target_names, yticklabels=target_names, ax=ax, linewidths=0.5)
 ax.set_xlabel("Predicho", fontsize=11)
@@ -667,13 +907,36 @@ if n_classes == 2:
 
 fig, ax = plt.subplots(figsize=(7, 5))
 auc_scores = []
+auc_rows = []
 for i, cls in enumerate(classes_orig):
     if y_bin_test[:, i].sum() == 0:
         continue
     fpr, tpr, _ = roc_curve(y_bin_test[:, i], y_prob_multi[:, i])
     auc_val = auc(fpr, tpr)
     auc_scores.append(auc_val)
+    auc_rows.append({
+        "Clase": f"Sev {cls}",
+        "AUC-ROC": round(float(auc_val), 4),
+        "Esquema": "One-vs-rest",
+    })
     ax.plot(fpr, tpr, lw=1.8, label=f"Sev {cls} (AUC={auc_val:.2f})")
+
+p7_auc = pd.DataFrame(auc_rows)
+save_csv(p7_auc, "p7_auc_roc_ovr_multiclase.csv")
+p7_summary = pd.DataFrame([{
+    "Modelo": best_cfg,
+    "Accuracy": round(float(acc_multi), 4),
+    "Aciertos": int(np.sum(y_pred_multi == y_testB)),
+    "Total prueba": int(len(y_testB)),
+    "Precision macro": round(float(report_multi["macro avg"]["precision"]), 4),
+    "Sensibilidad macro": round(float(report_multi["macro avg"]["recall"]), 4),
+    "F1 macro": round(float(report_multi["macro avg"]["f1-score"]), 4),
+    "Precision ponderada": round(float(report_multi["weighted avg"]["precision"]), 4),
+    "Sensibilidad ponderada": round(float(report_multi["weighted avg"]["recall"]), 4),
+    "F1 ponderado": round(float(report_multi["weighted avg"]["f1-score"]), 4),
+    "AUC-ROC macro": round(float(np.mean(auc_scores)), 4),
+}])
+save_csv(p7_summary, "p7_resumen_metricas_multiclase.csv")
 
 ax.plot([0, 1], [0, 1], "k--", lw=1)
 ax.set_xlabel("Tasa de Falsos Positivos")

@@ -1,18 +1,68 @@
 # Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, ¿considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.
 
-Con un tamaño muestral de n = 212, la estimación del error de generalización a partir de una única partición fija está sujeta a una varianza considerable, pues la composición específica del conjunto de prueba influye de forma no despreciable sobre las métricas reportadas. Para cuantificar esta variabilidad se implementó una validación cruzada estratificada con k = 5 folds, utilizando una regresión logística como modelo proxy. El uso de un modelo lineal en lugar del MLP responde a una razón de eficiencia computacional: entrenar la red neuronal en cada fold y para múltiples configuraciones de hiperparámetros resultaría prohibitivo con los recursos disponibles. La estratificación garantiza que la proporción de cada categoría de severidad se preserve en todos los subconjuntos, condición especialmente relevante dado el desequilibrio identificado en la Pregunta 2.
+Con un tamaño muestral de n = 212, la estimación del error de generalización a partir de una única partición fija está sujeta a una varianza considerable, pues la composición específica del conjunto de prueba influye de forma no despreciable sobre las métricas reportadas. Por esta razón, se considera apropiado usar validación cruzada estratificada k-fold como complemento del esquema 70/15/15, no como reemplazo de la evaluación final.
 
-## Resultados obtenidos
+Se implementó una validación cruzada estratificada con k = 5 folds usando el mismo tipo de modelo de la Parte I: un perceptrón multicapa con una capa oculta de 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. Para evitar fuga de información, en cada fold el escalador se ajustó únicamente con el subconjunto de entrenamiento y luego se aplicó al subconjunto de validación; de igual forma, SMOTE se aplicó solo sobre el entrenamiento de cada fold, manteniendo intacta la validación.
 
-La accuracy por fold fue de *0.4419, 0.4186, 0.5000, 0.5000 y 0.4286*, con una media de *0.4578 ± 0.0352*. Interpretado en su contexto, este valor supera ampliamente la línea base de un clasificador aleatorio para seis clases (*≈ 16.7 %*), lo que indica que los índices espectrales y la altura media contienen información discriminativa real. Sin embargo, el nivel moderado del accuracy anticipa que la frontera de separación entre categorías no es lineal, lo que justifica el uso de redes neuronales con mayor capacidad de representación.
+## Resultados por fold
 
-La desviación estándar de *0.0352* refleja una variabilidad moderada entre folds: el peor desempeño (*fold 2, 0.4186*) y el mejor (*folds 3 y 4, 0.5000*) difieren en casi 8 puntos porcentuales. Esta oscilación confirma que una evaluación basada en una única partición puede ser poco representativa del desempeño real del modelo, y que promediar sobre múltiples subconjuntos produce estimaciones más robustas y confiables.
+```{python}
+#| echo: false
+#| tbl-cap: "Validación cruzada estratificada k-fold con MLP inicial."
+import pandas as pd
+
+tabla_p4_folds = pd.read_csv("../resultados/tablas/p4_kfold_mlp_por_fold.csv")
+tabla_p4_folds = tabla_p4_folds[
+    [
+        "Fold",
+        "Entrenamiento original",
+        "Entrenamiento usado",
+        "Validacion",
+        "SMOTE aplicado",
+        "Epocas ejecutadas",
+        "Accuracy validacion",
+        "F1 macro validacion",
+        "Loss validacion",
+    ]
+].rename(
+    columns={
+        "Validacion": "Validación",
+        "Epocas ejecutadas": "Épocas ejecutadas",
+        "Accuracy validacion": "Accuracy validación",
+        "F1 macro validacion": "F1 macro validación",
+        "Loss validacion": "Loss validación",
+    }
+)
+tabla_p4_folds
+```
+
+Los resultados muestran accuracies de validación entre *0.4048* y *0.5476*, con una media de *0.4763* y una desviación estándar de *0.0526*. Esta variabilidad confirma que, con una muestra de 212 observaciones, el desempeño estimado depende de forma apreciable de la composición del subconjunto usado para evaluar. El F1 macro medio fue de *0.4563 ± 0.0318*, lo cual es especialmente relevante porque el problema presenta desequilibrio entre categorías y la exactitud global puede ocultar errores en clases minoritarias.
+
+## Comparación con la partición fija
+
+```{python}
+#| echo: false
+#| tbl-cap: "Comparación entre partición fija y validación cruzada k-fold."
+import pandas as pd
+
+tabla_p4_comp = pd.read_csv("../resultados/tablas/p4_comparacion_kfold_particion_fija.csv")
+tabla_p4_comp = tabla_p4_comp.rename(
+    columns={
+        "Accuracy medio": "Accuracy",
+        "Desviacion accuracy": "Desv. accuracy",
+        "F1 macro medio": "F1 macro",
+        "Desviacion F1 macro": "Desv. F1 macro",
+    }
+)
+tabla_p4_comp.fillna("-")
+```
+
+La partición fija 70/15/15 obtuvo una exactitud de prueba de *0.4375* para el MLP inicial, mientras que la validación cruzada k-fold estimó una exactitud media de *0.4763*. La diferencia no debe interpretarse como superioridad absoluta de una estrategia sobre la otra, porque evalúan de manera distinta: la partición fija reserva un conjunto de prueba único para el reporte final, mientras que k-fold promedia cinco evaluaciones internas y ofrece una medida más estable de variabilidad.
 
 ## Rol metodológico en la estrategia global
 
-La validación cruzada k-fold no sustituye al esquema *70/15/15* adoptado en la Pregunta 3, sino que lo complementa con funciones diferenciadas. El k-fold resulta especialmente útil durante la selección de hiperparámetros —número de capas, neuronas y tasa de aprendizaje— al promediar el desempeño sobre múltiples particiones y reducir el riesgo de elegir una configuración que funcione bien solo para una división particular de los datos. La partición fija, por su parte, se reserva para el reporte final de métricas, garantizando comparabilidad entre modelos y transparencia metodológica.
-Cabe señalar además que el accuracy de *0.4578* corresponde a un modelo lineal y debe interpretarse como una cota inferior de referencia: si el MLP no supera consistentemente este valor, sería indicativo de sobreajuste o de una configuración arquitectónica inadecuada.
+La validación cruzada k-fold resulta útil como complemento durante la selección de hiperparámetros, porque reduce el riesgo de elegir una configuración que funcione bien únicamente para una división específica de los datos. Sin embargo, no sustituye la partición fija 70/15/15 adoptada en la Pregunta 3, ya que esta conserva un conjunto de prueba independiente y trazable para reportar las métricas finales del modelo seleccionado.
 
 ## Conclusión
 
-La validación cruzada k-fold con *k = 5* evidenció que el error de generalización estimado con una única partición fija está sujeto a variaciones de hasta 8 puntos porcentuales dependiendo de la composición del conjunto de prueba, lo que subraya la importancia de estrategias de evaluación más robustas cuando el tamaño muestral es reducido. El accuracy medio de *0.4578* obtenido con la regresión logística confirma la presencia de información discriminativa en las variables espectrales, aunque su naturaleza no lineal demanda modelos de mayor capacidad como el MLP. En el marco de este taller, el k-fold se adopta como herramienta de selección de hiperparámetros, mientras que la partición fija *70/15/15* se mantiene como referencia para la evaluación final, combinando así la robustez estadística del primero con la trazabilidad y comparabilidad que ofrece el segundo.
+La validación cruzada estratificada con *k = 5* es apropiada para este problema como herramienta complementaria. Sus resultados confirman que el error de generalización presenta variabilidad no despreciable entre particiones, pero también que los predictores espectrales contienen señal suficiente para superar ampliamente una clasificación aleatoria de seis clases. En el marco del taller, k-fold se utiliza para estimar la estabilidad del desempeño y apoyar la selección de hiperparámetros, mientras que la partición fija 70/15/15 se mantiene como referencia para la evaluación final.

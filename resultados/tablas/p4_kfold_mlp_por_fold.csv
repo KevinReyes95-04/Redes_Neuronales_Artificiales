@@ -1,0 +1,6 @@
+﻿Fold,Entrenamiento original,Entrenamiento usado,Validacion,SMOTE aplicado,Epocas ejecutadas,Accuracy entrenamiento,Accuracy validacion,F1 macro validacion,Loss validacion
+1,169,222,43,Si,150,0.5946,0.4884,0.496,1.056441
+2,169,222,43,Si,150,0.5586,0.4884,0.4847,1.24036
+3,170,228,42,Si,150,0.6404,0.5476,0.4397,1.102141
+4,170,228,42,Si,92,0.5395,0.4048,0.4258,1.202904
+5,170,228,42,Si,79,0.5526,0.4524,0.4352,1.274792

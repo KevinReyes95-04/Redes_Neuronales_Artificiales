@@ -35,6 +35,37 @@ df_grid["col"]     = df_grid.index %  GRID_N
 df_grid["x_coord"] = df_grid["col"]
 df_grid["y_coord"] = df_grid["row"]
 
+save_csv(
+    pd.DataFrame([
+        {"Indicador": "Observaciones disponibles", "Valor": len(df)},
+        {"Indicador": "Observaciones seleccionadas", "Valor": len(df_grid)},
+        {"Indicador": "Dimension de la grilla", "Valor": f"{GRID_N} x {GRID_N}"},
+        {"Indicador": "Celdas de la grilla", "Valor": N_SAMPLE},
+        {"Indicador": "Coordenadas reales disponibles", "Valor": "No"},
+        {
+            "Indicador": "Metodo de asignacion",
+            "Valor": "Muestra aleatoria sin reemplazo y ubicacion secuencial en la grilla",
+        },
+        {
+            "Indicador": "Semilla reproducible",
+            "Valor": "np.random.seed(42) definida en 00_configuracion.py",
+        },
+    ]),
+    "p15_resumen_grilla.csv",
+)
+save_csv(
+    df_grid[TARGET]
+    .value_counts()
+    .sort_index()
+    .rename_axis("Severidad")
+    .reset_index(name="Frecuencia"),
+    "p15_distribucion_severidad_grilla.csv",
+)
+save_csv(
+    df_grid[["row", "col", "x_coord", "y_coord", TARGET]],
+    "p15_asignacion_grilla.csv",
+)
+
 grid_sev = df_grid.pivot(index="row", columns="col", values=TARGET).values.astype(float)
 n_sev    = int(df[TARGET].max())
 cmap_sev = plt.colormaps["YlOrRd"].resampled(n_sev)
@@ -98,6 +129,27 @@ print(f"\n  {'★ Existe autocorrelación espacial positiva significativa (p<0.0
 
 save_csv(pd.DataFrame({"I": [I], "E_I": [E_I], "Z": [Z], "p_valor": [pval]}),
          "10_moran_global.csv")
+save_csv(
+    pd.DataFrame([
+        {"Caracteristica": "Metodo elegido", "Valor": "Indice de Moran global"},
+        {"Caracteristica": "Tratamiento de la severidad ordinal", "Valor": "Rangos de severidad"},
+        {"Caracteristica": "Grilla", "Valor": f"{GRID_N} x {GRID_N}"},
+        {"Caracteristica": "Numero de celdas evaluadas", "Valor": N_SAMPLE},
+        {"Caracteristica": "Criterio de vecindad", "Valor": "Reina: 8 direcciones"},
+        {"Caracteristica": "Normalizacion de pesos", "Valor": "Por filas"},
+        {"Caracteristica": "Nivel de significancia", "Valor": "0.05"},
+    ]),
+    "p16_metodo_moran_ordinal.csv",
+)
+save_csv(
+    pd.DataFrame([
+        {"Estadistico": "Indice de Moran global (I)", "Valor": I},
+        {"Estadistico": "Valor esperado bajo aleatoriedad (E[I])", "Valor": E_I},
+        {"Estadistico": "Estadistico Z", "Valor": Z},
+        {"Estadistico": "p-valor", "Valor": pval},
+    ]).round(6),
+    "p16_moran_global_ordinal.csv",
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -140,6 +192,54 @@ auc_base  = roc_auc_score(y_te_b, y_prob_bin)
 print(f"\n  Modelo SIN coordenadas – Acc: {acc_base:.4f} | AUC: {auc_base:.4f}")
 print(f"  Modelo CON coordenadas – Acc: {acc_sp:.4f}   | AUC: {auc_sp:.4f}")
 print(f"  Δ AUC = {auc_sp - auc_base:+.4f}")
+save_csv(
+    pd.DataFrame([
+        {"Caracteristica": "Clasificacion usada", "Valor": "Binaria: sano vs. enfermo"},
+        {
+            "Caracteristica": "Arquitectura base",
+            "Valor": f"{capas_best} capas ocultas, {neuronas_best} neuronas/capa, lr={lr_best}",
+        },
+        {
+            "Caracteristica": "Predictores base",
+            "Valor": ", ".join(FEATURES),
+        },
+        {
+            "Caracteristica": "Predictores espaciales agregados",
+            "Valor": "x_coord, y_coord",
+        },
+        {
+            "Caracteristica": "Origen de coordenadas",
+            "Valor": "Coordenadas artificiales derivadas del orden de las observaciones",
+        },
+        {
+            "Caracteristica": "Balanceo",
+            "Valor": "SMOTE aplicado solo sobre entrenamiento",
+        },
+        {"Caracteristica": "Umbral de clasificacion", "Valor": "0.5"},
+    ]),
+    "p17_configuracion_mlp_coordenadas.csv",
+)
+save_csv(
+    pd.DataFrame([
+        {
+            "Modelo": "MLP base sin coordenadas",
+            "Numero predictores": len(FEATURES),
+            "Accuracy": acc_base,
+            "AUC-ROC": auc_base,
+            "Delta Accuracy vs base": 0.0,
+            "Delta AUC vs base": 0.0,
+        },
+        {
+            "Modelo": "MLP con coordenadas x,y",
+            "Numero predictores": len(FEATURES_SPATIAL),
+            "Accuracy": acc_sp,
+            "AUC-ROC": auc_sp,
+            "Delta Accuracy vs base": acc_sp - acc_base,
+            "Delta AUC vs base": auc_sp - auc_base,
+        },
+    ]).round(6),
+    "p17_comparacion_mlp_coordenadas.csv",
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -195,6 +295,69 @@ y_prob_i = m_inter.predict(X_te_i, verbose=0).flatten()
 acc_i    = accuracy_score(y_te_i, (y_prob_i >= 0.5).astype(int))
 auc_i    = roc_auc_score(y_te_i, y_prob_i)
 print(f"  18b) Interacciones espaciales – Acc: {acc_i:.4f} | AUC: {auc_i:.4f}")
+
+save_csv(
+    pd.DataFrame([
+        {
+            "Estrategia": "Modelo base sin coordenadas",
+            "Predictores": ", ".join(FEATURES),
+            "Numero predictores": len(FEATURES),
+            "Descripcion": "MLP binario base con indices espectrales y altura",
+        },
+        {
+            "Estrategia": "Modelo con coordenadas x,y",
+            "Predictores": ", ".join(FEATURES_SPATIAL),
+            "Numero predictores": len(FEATURES_SPATIAL),
+            "Descripcion": "MLP base agregando coordenadas artificiales",
+        },
+        {
+            "Estrategia": "Solo coordenadas",
+            "Predictores": ", ".join(FEAT_COORDS),
+            "Numero predictores": len(FEAT_COORDS),
+            "Descripcion": "MLP entrenado exclusivamente con x_coord y y_coord",
+        },
+        {
+            "Estrategia": "Coordenadas + interacciones espaciales",
+            "Predictores": ", ".join(FEAT_INTER),
+            "Numero predictores": len(FEAT_INTER),
+            "Descripcion": "MLP base con coordenadas e interacciones x/y con NDVI y EVI",
+        },
+    ]),
+    "p18_configuracion_estrategias_espaciales.csv",
+)
+save_csv(
+    pd.DataFrame([
+        {
+            "Estrategia": "Modelo base sin coordenadas",
+            "Accuracy": acc_base,
+            "AUC-ROC": auc_base,
+            "Delta Accuracy vs base": 0.0,
+            "Delta AUC vs base": 0.0,
+        },
+        {
+            "Estrategia": "Modelo con coordenadas x,y",
+            "Accuracy": acc_sp,
+            "AUC-ROC": auc_sp,
+            "Delta Accuracy vs base": acc_sp - acc_base,
+            "Delta AUC vs base": auc_sp - auc_base,
+        },
+        {
+            "Estrategia": "Solo coordenadas",
+            "Accuracy": acc_c,
+            "AUC-ROC": auc_c,
+            "Delta Accuracy vs base": acc_c - acc_base,
+            "Delta AUC vs base": auc_c - auc_base,
+        },
+        {
+            "Estrategia": "Coordenadas + interacciones espaciales",
+            "Accuracy": acc_i,
+            "AUC-ROC": auc_i,
+            "Delta Accuracy vs base": acc_i - acc_base,
+            "Delta AUC vs base": auc_i - auc_base,
+        },
+    ]).round(6),
+    "p18_comparacion_estrategias_espaciales.csv",
+)
 
 fig, ax = plt.subplots(figsize=(9, 4))
 modelos_sp = ["Base\n(sin coords)", "Con\ncoordenadas", "Solo\ncoordenadas", "Con\ninteracciones"]

@@ -1,0 +1,5 @@
+﻿Estrategia,Accuracy,AUC-ROC,Delta Accuracy vs base,Delta AUC vs base
+Modelo base sin coordenadas,0.78125,0.834821,0.0,0.0
+"Modelo con coordenadas x,y",0.65625,0.919643,-0.125,0.084821
+Solo coordenadas,0.875,0.892857,0.09375,0.058036
+Coordenadas + interacciones espaciales,0.8125,0.897321,0.03125,0.0625

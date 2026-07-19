@@ -1,0 +1,6 @@
+﻿Variable,Ranking Lasso,Coef. Lasso,Abs(Coef),Ranking MLP PFI,Importancia PFI,Std
+evi_med,1,-2.066038,2.066038,2,0.010417,0.051875
+ndre_med,2,-0.925372,0.925372,3,0.005208,0.051084
+height_med,3,0.456039,0.456039,1,0.035417,0.035843
+ndvi_med,4,-0.004566,0.004566,5,-0.05,0.022244
+gli_med,5,0.0,0.0,4,-0.034375,0.027183

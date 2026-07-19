@@ -1,0 +1,2 @@
+﻿Modelo,Accuracy,Aciertos,Total prueba,Precision macro,Sensibilidad macro,F1 macro,Precision ponderada,Sensibilidad ponderada,F1 ponderado,AUC-ROC macro
+2L-64N-lr0.1,0.4375,14,32,0.3023,0.3524,0.3137,0.3789,0.4375,0.3909,0.7588

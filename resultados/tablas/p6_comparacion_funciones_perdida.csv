@@ -1,0 +1,3 @@
+﻿Funcion perdida,Implementacion,Arquitectura,Formato etiquetas,Epocas ejecutadas,Loss Train minima,Loss Val minima,Acc Train max,Acc Val max,Accuracy prueba,Aciertos prueba,Total prueba,Decision metodologica
+Entropia cruzada categorica,sparse_categorical_crossentropy,2L-64N-lr0.1,Enteras,42,0.88136,0.988649,0.5758,0.5938,0.4375,14,32,Recomendada para clasificacion multiclase con softmax
+Error cuadratico medio,mean_squared_error,2L-64N-lr0.1,One-hot,25,0.09888,0.121849,0.5354,0.4062,0.2188,7,32,Comparativa; no recomendada como criterio principal

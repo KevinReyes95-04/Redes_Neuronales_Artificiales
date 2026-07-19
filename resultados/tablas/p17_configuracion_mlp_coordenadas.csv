@@ -1,0 +1,8 @@
+﻿Caracteristica,Valor
+Clasificacion usada,Binaria: sano vs. enfermo
+Arquitectura base,"2 capas ocultas, 64 neuronas/capa, lr=0.1"
+Predictores base,"ndvi_med, evi_med, ndre_med, gli_med, height_med"
+Predictores espaciales agregados,"x_coord, y_coord"
+Origen de coordenadas,Coordenadas artificiales derivadas del orden de las observaciones
+Balanceo,SMOTE aplicado solo sobre entrenamiento
+Umbral de clasificacion,0.5

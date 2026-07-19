@@ -1,0 +1,5 @@
+﻿Conjunto,Total,Sano,Enfermo
+Entrenamiento original,148,19,129
+Entrenamiento con SMOTE,258,129,129
+Validacion,32,4,28
+Prueba,32,4,28

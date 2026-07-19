@@ -1,6 +1,14 @@
 # Pregunta 8: Proponga y justifique un criterio para colapsar las categorías de severidad en sano versus enfermo. Discuta si esta agrupación es la más apropiada o si existiría una alternativa mejor fundamentada. ¿Se pierde información relevante?
 
-El criterio adoptado asigna la severidad 1 a la categoría "Sano" (0) y las severidades 2 a 6 a la categoría "Enfermo" (1). Con los datos disponibles, esto produce 27 observaciones sanas y 185 enfermas, una razón de desbalance incluso más marcada que en el problema de seis clases (27/185 ≈ 0.146).
+El criterio adoptado asigna la severidad 1 a la categoría "Sano" (0) y las severidades 2 a 6 a la categoría "Enfermo" (1). Con los datos disponibles, esto produce una distribución binaria fuertemente desbalanceada:
+
+```{python}
+#| echo: false
+#| tbl-cap: "Distribución de clases después del colapso binario."
+import pandas as pd
+
+pd.read_csv("../resultados/tablas/p8_distribucion_binaria.csv")
+```
 
 ## Criterio adoptado y justificación
 
@@ -8,9 +16,11 @@ Desde el punto de vista agronómico, para un sistema de alerta temprana la decis
 
 ## Alternativas y pérdida de información
 
-Este criterio es defendible, pero no es el único razonable. El análisis de la Pregunta 7 mostró que el modelo confunde sobre todo clases adyacentes —1, 2 y 3 entre sí, y 4, 5 y 6 entre sí—, con muy poca confusión cruzada entre esos dos bloques. Una alternativa con mejor sustento empírico, y no solo agronómico, sería un corte en tres grupos, por ejemplo sano o leve (severidades 1 a 3) frente a avanzado (severidades 4 a 6), que reflejaría mejor la separación espectral observada. Sin embargo, un esquema de tres grupos requeriría un consenso agronómico adicional sobre dónde trazar el límite entre leve y severo, y complicaría la comparación directa con la regresión logística binaria solicitada en la Parte III, por lo que se mantiene el criterio binario sano frente a enfermo pedido en el enunciado, dejando esta alternativa como discusión.
+Este criterio es defendible, pero no es el único razonable. Los resultados actualizados de la Pregunta 7 muestran que el modelo multiclase tiene dificultades importantes en los extremos Sev 1 y Sev 6, ambas con F1-score igual a 0, y también en Sev 4 por su baja separación probabilística. En particular, los cuatro casos reales de Sev 1 fueron clasificados como Sev 2, lo que indica que separar estrictamente sano de severidad leve es difícil con la información disponible.
 
-Se pierde información relevante al hacer esta reducción: toda distinción de severidad dentro de "Enfermo" desaparece, y esa categoría concentra el 87 % de la muestra (185 de 212 observaciones) en una sola etiqueta, justo el gradiente de severidad que, según la Pregunta 7, sí presenta una señal espectral parcialmente diferenciable en los extremos. Para un propósito de alerta temprana esta pérdida es aceptable, pero no lo sería para priorizar tratamientos o pronosticar el impacto sobre la cosecha, escenarios en los que una clasificación ordinal, o el esquema de tres grupos propuesto, resultaría más informativa.
+Desde ese punto de vista, una alternativa mejor fundamentada para algunos usos agronómicos sería trabajar con tres grupos ordinales: sano (Sev 1), enfermedad leve o intermedia (Sev 2 a 4) y enfermedad avanzada (Sev 5 a 6). Esta alternativa conservaría parte del gradiente de severidad y evitaría mezclar en una sola clase "Enfermo" casos muy distintos, desde síntomas leves hasta daño avanzado. Sin embargo, como el enunciado solicita explícitamente una clasificación binaria sano versus enfermo, y como en un sistema de alerta temprana la prioridad es detectar cualquier indicio de infección, se mantiene el colapso Sev 1 frente a Sev 2-6.
+
+Sí se pierde información relevante al hacer esta reducción: toda distinción de severidad dentro de "Enfermo" desaparece, y esa categoría concentra el 87.26 % de la muestra (185 de 212 observaciones). La pérdida no es menor, porque Sev 2 y Sev 5 tuvieron desempeños bastante diferentes en la Pregunta 7: Sev 2 alcanzó alta sensibilidad, mientras que Sev 5 obtuvo el mejor F1-score y el mayor AUC. Al fusionarlas, el modelo binario deja de informar si la enfermedad es leve, intermedia o avanzada.
 
 ## Conclusión
 

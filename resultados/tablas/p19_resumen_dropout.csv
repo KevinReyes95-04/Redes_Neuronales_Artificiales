@@ -1,0 +1,3 @@
+﻿Modelo,Epocas entrenadas,Loss train final,Loss val final,Loss val minima,Epoca mejor val_loss
+MLP binario base,40,0.27135,0.322622,0.236524,20
+MLP con Dropout,23,0.387122,0.400698,0.334668,3

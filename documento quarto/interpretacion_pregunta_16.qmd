@@ -1,0 +1,34 @@
+# Pregunta 16: Dependencia espacial para severidad ordinal
+
+Para evaluar la dependencia espacial de la severidad se aplicó el índice de Moran global usando rangos de severidad. Esta adaptación es apropiada porque la severidad es una variable ordinal: las categorías tienen un orden natural, pero no necesariamente distancias iguales entre niveles consecutivos. Al trabajar con rangos, el análisis respeta la naturaleza ordinal de la variable y reduce la dependencia de supuestos métricos fuertes.
+
+La matriz de vecindad se construyó sobre la grilla 14 x 14 considerando vecinas las celdas contiguas en las ocho direcciones posibles: horizontal, vertical y diagonal. Posteriormente, la matriz fue normalizada por filas para que cada celda aportara de forma comparable al estadístico, independientemente del número de vecinos disponibles en bordes y esquinas.
+
+El método aplicado se resume en la siguiente tabla:
+
+```{python}
+#| echo: false
+#| tbl-cap: "Configuración del índice de Moran global para severidad ordinal."
+import pandas as pd
+pd.read_csv("../resultados/tablas/p16_metodo_moran_ordinal.csv")
+```
+
+## Resultados
+
+```{python}
+#| echo: false
+#| tbl-cap: "Resultados del índice de Moran global usando rangos de severidad."
+pd.read_csv("../resultados/tablas/p16_moran_global_ordinal.csv").round(4)
+```
+
+El valor del índice de Moran global es prácticamente cero y muy cercano al valor esperado bajo la hipótesis nula de aleatoriedad espacial. Además, el p-valor de 0.9695 es mucho mayor que 0.05, por lo que no se rechaza la hipótesis nula de ausencia de autocorrelación espacial.
+
+## Interpretación
+
+No existe evidencia estadística de dependencia espacial significativa en la distribución de la severidad dentro de la grilla construida. En términos prácticos, las celdas con severidad alta no tienden a ubicarse sistemáticamente cerca de otras celdas con severidad alta, ni las celdas con severidad baja muestran agrupamientos claros. Tampoco se observa un patrón significativo de dispersión espacial, pues el valor negativo de Moran es extremadamente pequeño.
+
+Esta conclusión debe interpretarse junto con la limitación señalada en la Pregunta 15: como la grilla fue construida mediante asignación aleatoria y no a partir de coordenadas reales, el resultado refleja la ausencia de dependencia espacial en esa representación artificial. No permite descartar que exista autocorrelación espacial real en el cultivo si se dispusiera de coordenadas observadas.
+
+## Conclusión
+
+Bajo la grilla artificial de 14 x 14 y usando rangos ordinales de severidad, el índice de Moran global no detecta dependencia espacial significativa (`I = -0.0066`, `p = 0.9695`). Por tanto, con la información disponible no hay evidencia de agrupamiento espacial de la enfermedad. Para una evaluación espacial definitiva sería indispensable repetir el análisis con coordenadas reales de campo y, preferiblemente, complementarlo con métodos locales como LISA para identificar posibles focos específicos de alta severidad.

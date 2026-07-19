@@ -1,25 +1,35 @@
 # Pregunta 10: Reporte para el modelo binario exactitud, precisión, sensibilidad, especificidad, F1, AUC-ROC y el umbral óptimo según el criterio de Youden. Interprete cada métrica en el contexto fitosanitario: ¿qué es más costoso, un falso negativo o un falso positivo?
 
-Con el umbral por defecto de 0.5, la sensibilidad del modelo binario fue de 23/28 = *0.821* y la especificidad de 4/4 = *1.000*, según se reportó en la Pregunta 9. El umbral óptimo según el criterio de Youden resultó ser *0.2739*, considerablemente más bajo que 0.5.
+Con el umbral por defecto de 0.5, la sensibilidad del modelo binario fue de 22/28 = *0.7857* y la especificidad de 3/4 = *0.7500*, según se reportó en la Pregunta 9. El umbral óptimo según el criterio de Youden resultó ser *0.9226*, más alto que 0.5.
 
 ## Resultados obtenidos
 
-| Métrica | Valor |
-|---|---|
-| Umbral óptimo (Youden) | 0.2739 |
-| Exactitud | 0.9062 |
-| Sensibilidad | 0.8929 |
-| Especificidad | 1.0000 |
-| Precisión | 1.0000 |
-| F1-Score | 0.9434 |
-| AUC-ROC | 0.9464 |
+```{python}
+#| echo: false
+#| tbl-cap: "Métricas del modelo binario usando el umbral óptimo de Youden."
+import pandas as pd
 
-Al bajar el umbral de 0.5 a 0.2739, la matriz de confusión pasa de *(TN=4, FP=0, FN=5, TP=23)* a *(TN=4, FP=0, FN=3, TP=25)*: se recuperan dos de los cinco falsos negativos anteriores sin generar ningún falso positivo adicional, pues la especificidad se mantiene en 1.00. Esto ocurre porque esas dos observaciones tenían una probabilidad predicha de "Enfermo" entre 0.2739 y 0.5, de modo que el modelo ya las ubicaba cerca del límite, pero el umbral por defecto las clasificaba como sanas.
+pd.read_csv("../resultados/tablas/p10_metricas_umbral_youden.csv")
+```
+
+También se comparó el umbral por defecto de 0.5 con el umbral óptimo de Youden:
+
+```{python}
+#| echo: false
+#| tbl-cap: "Comparación entre umbral por defecto y umbral de Youden."
+import pandas as pd
+
+pd.read_csv("../resultados/tablas/p10_comparacion_umbrales.csv")
+```
+
+Al subir el umbral de 0.5 a 0.9226, la matriz de confusión pasa de *(TN=3, FP=1, FN=6, TP=22)* a *(TN=4, FP=0, FN=6, TP=22)*. En esta corrida, el criterio de Youden elimina el único falso positivo y aumenta la especificidad de 0.75 a 1.00, pero no recupera falsos negativos: la sensibilidad se mantiene en 0.7857. Esto muestra que el umbral óptimo según Youden mejora el equilibrio estadístico entre sensibilidad y especificidad, aunque no necesariamente maximiza el objetivo fitosanitario de detectar todas las plantas enfermas.
+
+![Curva ROC binaria con umbral óptimo de Youden](../resultados/figuras/11_roc_binario.png){#fig-roc-binario width="80%"}
 
 ## Interpretación en el contexto fitosanitario
 
-Un falso negativo, es decir, una planta enferma clasificada como sana, es claramente más costoso en este contexto: la planta no recibe tratamiento y la infección por *Verticillium sp.*, al tratarse de un patógeno de suelo con capacidad de dispersión, puede progresar y contagiar el entorno. El costo de un falso positivo, en cambio, es acotado: una inspección o un tratamiento preventivo innecesario, con un costo económico menor y sin riesgo fitosanitario adicional. En esta muestra, el umbral de Youden no solo es matemáticamente óptimo al maximizar la suma de sensibilidad y especificidad, sino que además mejora la sensibilidad sin ningún costo en especificidad, por lo que resulta una elección claramente preferible al umbral por defecto. Dada esta asimetría de costos, incluso valdría la pena considerar un umbral aún más bajo, del orden de 0.15 a 0.20, que sacrifique algo de especificidad a cambio de una sensibilidad cercana a 1.00, aunque esa decisión debería tomarse junto con un agrónomo que cuantifique el costo real de cada tipo de error, y no solo con el criterio estadístico de Youden, que trata ambos errores como igualmente costosos.
+Un falso negativo, es decir, una planta enferma clasificada como sana, es claramente más costoso en este contexto: la planta no recibe tratamiento y la infección por *Verticillium sp.*, al tratarse de un patógeno de suelo con capacidad de dispersión, puede progresar y contagiar el entorno. El costo de un falso positivo, en cambio, es acotado: una inspección o un tratamiento preventivo innecesario, con un costo económico menor y sin riesgo fitosanitario adicional. En esta muestra, el umbral de Youden mejora la exactitud y la especificidad, pero no reduce los falsos negativos frente al umbral 0.5. Por tanto, aunque es un criterio estadístico útil, para un sistema de alerta temprana convendría evaluar umbrales alternativos definidos por una sensibilidad mínima deseada, junto con un agrónomo que cuantifique el costo real de cada tipo de error.
 
 ## Conclusión
 
-El ajuste del umbral de decisión, más allá del valor por defecto de 0.5, constituye una herramienta simple y efectiva para alinear el modelo con los costos reales del problema: en este caso permite reducir los falsos negativos sin sacrificar especificidad, lo que representa una mejora concreta para un sistema de apoyo a la decisión agronómica orientado a minimizar el riesgo de dejar plantas enfermas sin tratamiento.
+El ajuste del umbral de decisión, más allá del valor por defecto de 0.5, constituye una herramienta simple para alinear el modelo con los costos reales del problema. En esta corrida, Youden mejora la especificidad y elimina falsos positivos, pero mantiene 6 falsos negativos. Por ello, la selección final del umbral no debería depender solo de Youden: si el objetivo operativo es minimizar plantas enfermas no detectadas, debe priorizarse explícitamente la sensibilidad.

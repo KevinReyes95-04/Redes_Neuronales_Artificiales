@@ -4,15 +4,43 @@ Se ajustó una regresión logística sobre la misma partición binaria utilizada
 
 ## Resultados obtenidos
 
-| Variable | Coeficiente (β) | OR = exp(β) | Error Std. | Z | p-valor | IC 95% |
-|---|---|---|---|---|---|---|
-| ndvi_med | −0.8753 | 0.417 | 1.3252 | −0.66 | 0.509 | [−3.473, 1.722] |
-| evi_med | −2.1740 | 0.114 | 0.6688 | −3.25 | 0.0012 | [−3.485, −0.863] |
-| ndre_med | −0.7681 | 0.464 | 0.7991 | −0.96 | 0.336 | [−2.334, 0.798] |
-| gli_med | −0.1800 | 0.835 | 1.0853 | −0.17 | 0.868 | [−2.307, 1.947] |
-| height_med | +0.6513 | 1.918 | 0.3169 | 2.06 | 0.0398 | [0.030, 1.272] |
+```{python}
+#| echo: false
+import pandas as pd
+tabla_p11 = pd.read_csv("../resultados/tablas/p11_coeficientes_logisticos_inferencia.csv")
+tabla_p11_mostrar = tabla_p11.copy()
+tabla_p11_mostrar["IC 95%"] = tabla_p11_mostrar.apply(
+    lambda fila: f"[{fila['IC95 Inf']:.3f}, {fila['IC95 Sup']:.3f}]",
+    axis=1,
+)
+tabla_p11_mostrar = tabla_p11_mostrar[
+    [
+        "Variable",
+        "Coeficiente",
+        "OR (exp(β))",
+        "Error Std",
+        "Z",
+        "p-valor",
+        "IC 95%",
+        "Significativa (alpha=0.05)",
+        "Signo esperado",
+    ]
+]
+for columna in ["Coeficiente", "OR (exp(β))", "Error Std", "Z", "p-valor"]:
+    tabla_p11_mostrar[columna] = tabla_p11_mostrar[columna].round(4)
+tabla_p11_mostrar
+```
 
-El intercepto estimado fue de 2.1310. Al nivel de significancia α = 0.05, solo el EVI (p = 0.0012) y la altura media (p = 0.0398) resultan estadísticamente significativos. El NDVI, el NDRE y el GLI no lo son en este modelo multivariado, pese a que en el análisis exploratorio de la Pregunta 1 el NDVI (ρ = −0.855) y el NDRE (ρ = −0.817) mostraron las correlaciones univariadas de Spearman más fuertes con la severidad, muy por encima de la altura (ρ = −0.340).
+El intercepto estimado fue:
+
+```{python}
+#| echo: false
+pd.read_csv("../resultados/tablas/p11_intercepto_logistico.csv").round(4)
+```
+
+![Coeficientes estimados de la regresión logística binaria con intervalos de confianza al 95%.](../resultados/figuras/12_coeficientes_logisticos.png){#fig-p11-coeficientes-logisticos width="80%"}
+
+Al nivel de significancia α = 0.05, solo el EVI (p = 0.0012) y la altura media (p = 0.0398) resultan estadísticamente significativos. El NDVI, el NDRE y el GLI no lo son en este modelo multivariado, pese a que en el análisis exploratorio de la Pregunta 1 el NDVI (ρ = −0.855) y el NDRE (ρ = −0.817) mostraron las correlaciones univariadas de Spearman más fuertes con la severidad, muy por encima de la altura (ρ = −0.340).
 
 ## Interpretación de los coeficientes
 

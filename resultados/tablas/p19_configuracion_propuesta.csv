@@ -1,0 +1,3 @@
+﻿Extension,Objetivo,Implementacion
+Regularizacion por Dropout,Evaluar si dropout reduce sobreajuste y mejora generalizacion del MLP binario,Dropout 0.3 despues de cada capa oculta y early stopping
+Comparacion con Random Forest,Contrastar el MLP con un algoritmo no neuronal usando la misma particion y metricas,Random Forest con 200 arboles y class_weight='balanced'

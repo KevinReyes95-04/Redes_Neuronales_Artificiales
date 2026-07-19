@@ -1,0 +1,40 @@
+# Pregunta 15: Construcción de grilla 14 x 14 y asignación de severidad
+
+Para incorporar la dimensión espacial solicitada en el taller, se construyó una grilla regular de 14 x 14 celdas, equivalente a 196 posiciones espaciales. Dado que el conjunto de datos disponible no contiene coordenadas reales de campo para cada planta, se tomó una muestra aleatoria sin reemplazo de 196 observaciones del conjunto original y se asignó cada observación a una celda de la grilla de acuerdo con su posición secuencial dentro de la muestra.
+
+La asignación se realizó definiendo dos coordenadas artificiales: `x_coord`, correspondiente a la columna de la grilla, y `y_coord`, correspondiente a la fila. La severidad original de cada observación se conservó como variable ordinal, con valores de 1 a 6, donde 1 representa planta sana y los valores mayores representan mayor severidad de la enfermedad.
+
+El resumen de la construcción de la grilla se presenta a continuación:
+
+```{python}
+#| echo: false
+#| tbl-cap: "Resumen de la construcción de la grilla 14 x 14."
+import pandas as pd
+pd.read_csv("../resultados/tablas/p15_resumen_grilla.csv")
+```
+
+La muestra de 196 observaciones conserva representación de todos los niveles de severidad:
+
+```{python}
+#| echo: false
+#| tbl-cap: "Distribución de severidad en la muestra asignada a la grilla."
+pd.read_csv("../resultados/tablas/p15_distribucion_severidad_grilla.csv")
+```
+
+La asignación completa de cada observación a su fila y columna de la grilla se guardó en `resultados/tablas/p15_asignacion_grilla.csv`.
+
+## Justificación metodológica
+
+Esta decisión es necesaria porque el archivo no incluye coordenadas espaciales observadas. Por tanto, la grilla no debe interpretarse como una reconstrucción real del cultivo ni como una representación geográfica exacta de la distribución de *Verticillium sp.* en campo. Su función es metodológica: permite explorar cómo se implementaría un análisis espacial ordinal bajo una estructura regular y preparar el cálculo de dependencia espacial solicitado en la Pregunta 16.
+
+La principal limitación es que, al asignar las plantas aleatoriamente a las celdas, se rompe cualquier posible estructura espacial real que pudiera existir en el cultivo. En consecuencia, si no se detecta autocorrelación espacial significativa, esto no demuestra que la enfermedad no tenga dependencia espacial en campo; solo indica que no aparece dependencia bajo la grilla artificial construida con la información disponible.
+
+## Visualización de la grilla
+
+![Grilla 14 x 14 con severidad de Verticillium sp.](../resultados/figuras/16_grilla_severidad.png){#fig-grilla-severidad width="80%"}
+
+La escala de color utilizada es ordinal: los tonos más claros representan niveles bajos de severidad y los tonos más intensos representan severidades altas. Visualmente, no se observa un patrón espacial claramente agrupado de severidades altas o bajas. Las categorías parecen distribuidas de forma dispersa sobre la grilla, lo cual es coherente con el carácter aleatorio de la asignación espacial.
+
+## Conclusión
+
+Se construyó una grilla de 196 observaciones siguiendo la especificación del taller. Sin embargo, debido a la ausencia de coordenadas reales, esta grilla debe entenderse como un ejercicio metodológico y no como evidencia espacial directa del patrón de enfermedad en campo. Para un análisis espacial agronómicamente concluyente sería necesario contar con coordenadas reales de cada planta o, al menos, con la posición relativa de las unidades de muestreo dentro del cultivo.

@@ -1,0 +1,3 @@
+﻿Modelo,Criterio umbral,Umbral,Accuracy,Precision,Sensibilidad,Especificidad,F1-score,AUC-ROC,TN,FP,FN,TP
+MLP Binario,Por defecto,0.5,0.7812,0.9565,0.7857,0.75,0.8627,0.8348,3,1,6,22
+Regresión Logística,Por defecto,0.5,0.7188,1.0,0.6786,1.0,0.8085,0.9464,4,0,9,19

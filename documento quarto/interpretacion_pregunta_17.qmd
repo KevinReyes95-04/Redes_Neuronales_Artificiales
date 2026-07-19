@@ -1,0 +1,36 @@
+# Pregunta 17: MLP binario con coordenadas espaciales
+
+Para evaluar si la información espacial mejora el desempeño predictivo, se tomó el mejor perceptrón multicapa binario obtenido previamente y se entrenó una nueva versión incorporando dos variables adicionales: `x_coord` y `y_coord`. Estas coordenadas fueron generadas a partir de la posición de cada observación dentro de una grilla artificial, ya que el conjunto de datos no contiene coordenadas reales de campo.
+
+El modelo con coordenadas mantuvo la misma arquitectura seleccionada para el MLP binario base, con el fin de que la comparación reflejara principalmente el efecto de añadir las variables espaciales y no un cambio simultáneo en la configuración de la red.
+
+La configuración del experimento fue:
+
+```{python}
+#| echo: false
+#| tbl-cap: "Configuración del MLP con coordenadas espaciales."
+import pandas as pd
+pd.read_csv("../resultados/tablas/p17_configuracion_mlp_coordenadas.csv")
+```
+
+## Resultados comparativos
+
+```{python}
+#| echo: false
+#| tbl-cap: "Comparación entre MLP binario base y MLP con coordenadas artificiales."
+pd.read_csv("../resultados/tablas/p17_comparacion_mlp_coordenadas.csv").round(4)
+```
+
+Al incluir las coordenadas, la exactitud disminuye de 0.7812 a 0.6562, lo que representa una caída de 0.1250 puntos. Sin embargo, el AUC-ROC aumenta de 0.8348 a 0.9196, con una diferencia de 0.0848 puntos. Por tanto, el efecto no es uniforme: las coordenadas artificiales empeoran la clasificación discreta bajo el umbral 0.5, pero mejoran la capacidad global de ordenamiento probabilístico del modelo.
+
+## Interpretación
+
+Desde el punto de vista estrictamente predictivo, el modelo con coordenadas obtiene menor exactitud que el modelo base, pero un AUC-ROC claramente mayor. Esto sugiere que las variables `x_coord` y `y_coord` pueden ayudar a ordenar mejor las observaciones según su probabilidad de enfermedad, aunque el umbral de clasificación usado no convierte esa mejor discriminación probabilística en más aciertos directos.
+
+Sin embargo, esta mejora debe interpretarse con mucha cautela. Las coordenadas no provienen de mediciones reales en campo, sino que fueron construidas artificialmente a partir del orden de las observaciones. Por tanto, el incremento en desempeño no puede tomarse como evidencia de que exista un patrón espacial real de la enfermedad. Es posible que las coordenadas estén capturando algún patrón asociado al orden de registro de los datos o una estructura inducida por la forma en que se organizó el archivo.
+
+Esta precaución es coherente con el resultado de la Pregunta 16: el índice de Moran global aplicado sobre la grilla artificial no detectó autocorrelación espacial significativa. Por ello, aunque las coordenadas mejoran el AUC-ROC del MLP, no se puede afirmar que la ubicación espacial real mejore la clasificación sin contar con coordenadas observadas.
+
+## Conclusión
+
+La inclusión de coordenadas artificiales modifica el desempeño del MLP binario de forma ambivalente: reduce la exactitud, pero mejora el AUC-ROC. Por tanto, la respuesta a la pregunta es matizada: sí hay una mejora en la discriminación probabilística, pero no en la clasificación discreta bajo el umbral 0.5. Como las coordenadas son artificiales, esta mejora no constituye evidencia sólida de que la información espacial real mejore la clasificación. Para evaluar de forma válida el aporte espacial sería necesario repetir el análisis con coordenadas reales de campo.

@@ -1,0 +1,54 @@
+# Pregunta 14: Importancia de variables en el perceptrón multicapa binario
+
+Para evaluar la importancia de variables en el perceptrón multicapa binario se implementó importancia por permutación de características (*Permutation Feature Importance*, PFI) sobre el conjunto de prueba. Esta estrategia consiste en alterar aleatoriamente los valores de una variable mientras se mantienen las demás sin cambios y medir cuánto cae el desempeño del modelo. Si la caída es grande, la variable es importante; si la caída es pequeña, el modelo no depende fuertemente de ella para sus predicciones.
+
+Se utilizó la exactitud como métrica base y 30 repeticiones de permutación por variable. Dado el tamaño reducido del conjunto de prueba, los resultados deben interpretarse como una aproximación relativa y no como una medida absoluta definitiva.
+
+## Resultados de importancia por permutación
+
+```{python}
+#| echo: false
+#| tbl-cap: "Importancia por permutación del MLP binario sobre el conjunto de prueba."
+import pandas as pd
+tabla_p14_pfi = pd.read_csv("../resultados/tablas/09_importancia_pfi.csv")
+tabla_p14_pfi = tabla_p14_pfi.rename(
+    columns={
+        "Importancia PFI": "Importancia PFI",
+        "Std": "Desviación estándar",
+    }
+)
+tabla_p14_pfi.round(4)
+```
+
+![Comparación de importancia de variables en MLP y Lasso](../resultados/figuras/15_importancia_variables.png){#fig-importancia-variables width="90%"}
+
+El MLP asigna la mayor importancia a `height_med`, seguido por `evi_med` y `ndre_med`. En cuarto lugar aparece `gli_med` y, finalmente, `ndvi_med`. Dado que la importancia se calculó como caída promedio en exactitud, estos valores indican cuánto se deteriora el desempeño del modelo cuando se destruye aleatoriamente la información de cada predictor. Las importancias de `gli_med` y `ndvi_med` son negativas, lo que indica que permutarlas no redujo la exactitud en esta partición; esto suele interpretarse como señal de bajo aporte marginal, redundancia o inestabilidad asociada al tamaño pequeño del conjunto de prueba.
+
+## Comparación con Lasso
+
+```{python}
+#| echo: false
+#| tbl-cap: "Comparación del ranking de importancia entre Lasso y MLP."
+tabla_p14_comp = pd.read_csv("../resultados/tablas/p14_comparacion_importancia_variables.csv")
+tabla_p14_comp = tabla_p14_comp.rename(
+    columns={
+        "Coef. Lasso": "Coeficiente Lasso",
+        "Abs(Coef)": "|Coeficiente Lasso|",
+        "Importancia PFI": "Importancia MLP (PFI)",
+        "Std": "Desv. Est. PFI",
+    }
+)
+tabla_p14_comp.round(4)
+```
+
+El ranking de la regresión logística Lasso fue: `evi_med`, `ndre_med`, `height_med`, `ndvi_med` y `gli_med`. El ranking del MLP fue: `height_med`, `evi_med`, `ndre_med`, `gli_med` y `ndvi_med`. Por tanto, ambos enfoques coinciden en las tres variables más relevantes, pero no en el orden completo. Esta coincidencia parcial es una señal favorable, porque sugiere que EVI, NDRE y altura concentran la mayor parte de la información predictiva, aunque cada modelo usa esa información de manera distinta.
+
+## Implicaciones para el monitoreo espectral
+
+Desde el punto de vista del monitoreo de *Verticillium sp.*, los resultados sugieren que EVI y NDRE son variables prioritarias para detectar cambios asociados al vigor y estrés de la vegetación. La altura también aporta información útil como complemento estructural, aunque su interpretación debe hacerse con cautela por el patrón no monótono observado en el análisis exploratorio.
+
+El menor aporte relativo de GLI y NDVI en los modelos multivariados indica que, en este conjunto de datos, no serían las variables prioritarias para un sistema de alerta si se dispone de EVI, NDRE y altura. El caso del NDVI es más delicado: aunque tiene una fuerte relación univariada con la severidad, su menor importancia relativa en Lasso y PFI sugiere redundancia con otros índices, especialmente NDRE y EVI. Por ello, no se debería concluir que el NDVI es irrelevante, sino que su aporte marginal disminuye cuando se cuenta con índices espectrales más informativos dentro del mismo modelo.
+
+## Conclusión
+
+La importancia por permutación en el MLP y la regularización Lasso coinciden en identificar a `evi_med`, `ndre_med` y `height_med` como las variables más relevantes, aunque no en el mismo orden. Esta convergencia parcial fortalece la interpretación de que la detección de la enfermedad está asociada principalmente con señales de vigor vegetal y estructura de la planta. Para un programa de monitoreo espectral, conviene priorizar índices sensibles al estado fisiológico de la vegetación, especialmente EVI y NDRE, complementados con información de altura cuando esté disponible.

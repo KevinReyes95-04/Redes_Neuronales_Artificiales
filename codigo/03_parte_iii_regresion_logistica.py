@@ -65,6 +65,34 @@ print("\nCoeficientes del modelo logístico:")
 print(df_coefs.round(4).to_string(index=False))
 print(f"\n  Intercepto: {intercept:.4f}")
 save_csv(df_coefs.round(6), "06_coeficientes_logisticos.csv")
+save_csv(
+    pd.DataFrame([{
+        "Parametro": "Intercepto",
+        "Coeficiente": intercept,
+    }]).round(6),
+    "p11_intercepto_logistico.csv",
+)
+
+if valid_se:
+    variables_espectrales = {"ndvi_med", "evi_med", "ndre_med", "gli_med"}
+
+    def evaluar_signo_esperado(row):
+        variable = row["Variable"]
+        coeficiente = row["Coeficiente"]
+        if variable in variables_espectrales:
+            return "Si" if coeficiente < 0 else "No"
+        if variable == "height_med":
+            return "No claro" if coeficiente > 0 else "Si"
+        return "No evaluado"
+
+    df_p11 = df_coefs.copy()
+    df_p11["Significativa (alpha=0.05)"] = np.where(
+        df_p11["p-valor"] < 0.05,
+        "Si",
+        "No",
+    )
+    df_p11["Signo esperado"] = df_p11.apply(evaluar_signo_esperado, axis=1)
+    save_csv(df_p11.round(6), "p11_coeficientes_logisticos_inferencia.csv")
 
 fig, ax = plt.subplots(figsize=(8, 4))
 colors_coef = ["tomato" if c < 0 else "steelblue" for c in coefs]
@@ -105,6 +133,16 @@ print(f"\nC óptimo (Lasso): {log_lasso.C_[0]:.5f}")
 print("\nImportancia de variables según Lasso:")
 print(df_lasso.round(5).to_string(index=False))
 save_csv(df_lasso.round(6), "07_importancia_lasso.csv")
+save_csv(df_lasso.round(6), "p12_importancia_lasso.csv")
+save_csv(
+    pd.DataFrame([{
+        "Metodo": "Regresion logistica Lasso (L1)",
+        "Validacion cruzada": 5,
+        "C optimo": log_lasso.C_[0],
+        "Variables retenidas": int((df_lasso["Abs(Coef)"] > 0).sum()),
+    }]).round(6),
+    "p12_parametros_lasso.csv",
+)
 
 fig, ax = plt.subplots(figsize=(7, 4))
 colors_l = ["steelblue" if c > 0 else "tomato" for c in df_lasso["Coef. Lasso"]]
@@ -130,38 +168,64 @@ y_prob_lr = log_reg.predict_proba(X_te_b)[:, 1]
 y_pred_lr = log_reg.predict(X_te_b)
 auc_lr    = roc_auc_score(y_te_b, y_prob_lr)
 
-def metricas(y_true, y_pred, y_prob):
+def prediccion_youden(y_true, y_prob):
+    fpr, tpr, thresholds = roc_curve(y_true, y_prob)
+    best_idx = int(np.argmax(tpr - fpr))
+    best_thr = float(thresholds[best_idx])
+    return best_thr, (y_prob >= best_thr).astype(int)
+
+def metricas(modelo, criterio, umbral, y_true, y_pred, y_prob):
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     sens = tp/(tp+fn) if (tp+fn) > 0 else 0
     spec = tn/(tn+fp) if (tn+fp) > 0 else 0
     return {
+        "Modelo": modelo,
+        "Criterio umbral": criterio,
+        "Umbral": round(float(umbral), 4),
         "Accuracy":      round(accuracy_score(y_true, y_pred), 4),
         "Precision":     round(precision_score(y_true, y_pred, zero_division=0), 4),
         "Sensibilidad":  round(sens, 4),
         "Especificidad": round(spec, 4),
-        "F1-Score":      round(f1_score(y_true, y_pred, zero_division=0), 4),
+        "F1-score":      round(f1_score(y_true, y_pred, zero_division=0), 4),
         "AUC-ROC":       round(roc_auc_score(y_true, y_prob), 4),
+        "TN": int(tn),
+        "FP": int(fp),
+        "FN": int(fn),
+        "TP": int(tp),
     }
 
-met_mlp = metricas(y_te_b, y_pred_bin, y_prob_bin)
-met_lr  = metricas(y_te_b, y_pred_lr,  y_prob_lr)
+thr_mlp_youden, y_pred_mlp_youden = prediccion_youden(y_te_b, y_prob_bin)
+thr_lr_youden, y_pred_lr_youden = prediccion_youden(y_te_b, y_prob_lr)
 
-df_comp = pd.DataFrame([met_mlp, met_lr], index=["MLP Binario", "Regresión Logística"])
+df_comp_05 = pd.DataFrame([
+    metricas("MLP Binario", "Por defecto", 0.5, y_te_b, y_pred_bin, y_prob_bin),
+    metricas("Regresión Logística", "Por defecto", 0.5, y_te_b, y_pred_lr, y_prob_lr),
+])
+df_comp_youden = pd.DataFrame([
+    metricas("MLP Binario", "Youden", thr_mlp_youden, y_te_b, y_pred_mlp_youden, y_prob_bin),
+    metricas("Regresión Logística", "Youden", thr_lr_youden, y_te_b, y_pred_lr_youden, y_prob_lr),
+])
+df_comp = df_comp_youden
+
 print("\n── Tabla comparativa final ──")
-print(df_comp.to_string())
-save_csv(df_comp.reset_index(names="Modelo"), "08_comparacion_modelos.csv")
+print(df_comp.to_string(index=False))
+save_csv(df_comp_05, "p13_comparacion_modelos_umbral_05.csv")
+save_csv(df_comp_youden, "p13_comparacion_modelos_youden.csv")
+save_csv(df_comp_youden, "08_comparacion_modelos.csv")
 
 fig, ax = plt.subplots(figsize=(9, 4))
-metricas_lbl = list(met_mlp.keys())
+metricas_lbl = ["Accuracy", "Sensibilidad", "F1-score", "AUC-ROC"]
 x = np.arange(len(metricas_lbl))
 w = 0.35
-ax.bar(x - w/2, list(met_mlp.values()), w, label="MLP", color="steelblue", edgecolor="black")
-ax.bar(x + w/2, list(met_lr.values()),  w, label="Reg. Logística", color="coral", edgecolor="black")
+mlp_y = df_comp_youden.loc[df_comp_youden["Modelo"] == "MLP Binario", metricas_lbl].iloc[0]
+lr_y = df_comp_youden.loc[df_comp_youden["Modelo"] == "Regresión Logística", metricas_lbl].iloc[0]
+ax.bar(x - w/2, mlp_y.values, w, label="MLP", color="steelblue", edgecolor="black")
+ax.bar(x + w/2, lr_y.values,  w, label="Reg. Logística", color="coral", edgecolor="black")
 ax.set_xticks(x)
 ax.set_xticklabels(metricas_lbl, rotation=30, ha="right")
 ax.set_ylim(0, 1.05)
 ax.set_ylabel("Valor de la métrica", fontsize=11)
-ax.set_title("Figura 14 – Comparación MLP vs Regresión Logística (P13)",
+ax.set_title("Figura 14 – Comparación MLP vs Regresión Logística con umbral de Youden (P13)",
              fontsize=12, fontweight="bold")
 ax.legend()
 ax.grid(axis="y", alpha=0.3)
@@ -169,13 +233,13 @@ save_figure(fig, "14_comparacion_modelos.png")
 print("✔ Figura 14 guardada: 14_comparacion_modelos.png")
 print("""
 Conclusión P13:
-  • Si el MLP supera a la regresión logística en AUC-ROC y sensibilidad,
-    es preferible para el sistema de alerta fitosanitaria.
-  • La regresión logística es preferible cuando se requiere interpretabilidad
-    directa (coeficientes), rapidez de cómputo y menor riesgo de sobreajuste
-    con muestras pequeñas.
-  • En producción se recomendaría desplegar el MLP con un umbral ajustado
-    que maximice sensibilidad (detectar enfermos), aceptando más FP.
+  • Con umbral 0.5, el MLP supera a la regresión logística en sensibilidad
+    y F1-score, aunque la regresión logística conserva mayor AUC-ROC.
+  • Con umbral de Youden para ambos modelos, la regresión logística obtiene
+    mayor sensibilidad, F1-score y AUC-ROC.
+  • Por desempeño ajustado por umbral, interpretabilidad y bajo costo
+    computacional, la regresión logística es una alternativa preferible
+    para un sistema de apoyo a la decisión agronómica.
 """)
 
 
@@ -206,6 +270,26 @@ print("\nImportancia por permutación (MLP):")
 print(df_pfi.round(5).to_string(index=False))
 save_csv(df_pfi.round(6), "09_importancia_pfi.csv")
 
+df_lasso_rank = df_lasso.copy()
+df_lasso_rank["Ranking Lasso"] = range(1, len(df_lasso_rank) + 1)
+df_pfi_rank = df_pfi.copy()
+df_pfi_rank["Ranking MLP PFI"] = range(1, len(df_pfi_rank) + 1)
+df_importancia_comp = (
+    df_lasso_rank.merge(df_pfi_rank, on="Variable", how="inner")
+    [[
+        "Variable",
+        "Ranking Lasso",
+        "Coef. Lasso",
+        "Abs(Coef)",
+        "Ranking MLP PFI",
+        "Importancia PFI",
+        "Std",
+    ]]
+    .sort_values("Ranking Lasso")
+)
+save_csv(df_importancia_comp.round(6), "p12_comparacion_lasso_mlp_pfi.csv")
+save_csv(df_importancia_comp.round(6), "p14_comparacion_importancia_variables.csv")
+
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
 order_pfi = df_pfi["Variable"].tolist()
 axes[0].barh(order_pfi, df_pfi["Importancia PFI"],
@@ -233,10 +317,13 @@ save_intermediate(
     [
         "y_prob_lr",
         "y_pred_lr",
+        "y_pred_lr_youden",
         "auc_lr",
         "df_coefs",
         "df_lasso",
         "df_comp",
+        "df_comp_05",
+        "df_comp_youden",
         "df_pfi",
     ],
 )
