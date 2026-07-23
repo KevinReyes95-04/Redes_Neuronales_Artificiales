@@ -142,10 +142,9 @@ format:
 
 # Introducción
 
-La enfermedad causada por Verticillium sp. es una de las principales amenazas fitosanitarias en cultivos de alto valor económico. Su detección temprana y la clasificación precisa de su severidad son fundamentales para la toma de decisiones agronómicas. En este taller se dispone de un conjunto de datos con más de 200 observaciones de plantas, caracterizadas
-por cinco índices espectrales obtenidos mediante teledetección y por la altura media de la planta, con una etiqueta de severidad de la enfermedad donde la categoría 1 corresponde a planta sana.
+La marchitez causada por *Verticillium* sp. constituye una de las principales limitantes fitosanitarias en cultivos de alto valor comercial, con efectos directos sobre el rendimiento y la calidad del producto final. Diagnosticar la enfermedad en sus etapas iniciales y clasificar con precisión su nivel de severidad resulta determinante para orientar el manejo agronómico y minimizar las pérdidas económicas asociadas. Para este taller se dispone de una base de datos con más de 200 observaciones de plantas, cada una caracterizada por cinco índices espectrales obtenidos mediante teledetección y por su altura promedio, junto con una variable de severidad en la que la categoría 1 corresponde a plantas sanas.
 
-El objetivo es desarrollar, evaluar y comparar modelos de clasificación basados en perceptrón multicapa (redes neuronales artificiales) y regresión logística, bajo diferentes esquemas de partición de datos, funciones de pérdida y configuraciones arquitectónicas. Adicionalmente, se explorará la dimensión espacial del problema mediante la construcción de una grilla y el análisis de dependencia espacial en escala ordinal.
+El propósito central del ejercicio es construir, evaluar y contrastar modelos de clasificación basados en perceptrón multicapa (redes neuronales artificiales) y regresión logística, bajo distintos esquemas de partición de los datos, funciones de pérdida y configuraciones arquitectónicas, con el fin de identificar qué enfoque ofrece un mejor desempeño predictivo para este problema. De manera complementaria, se examina la dimensión espacial del fenómeno mediante la construcción de una grilla georreferenciada y el análisis de dependencia espacial en variables de escala ordinal, lo que permite indagar si la severidad de la enfermedad exhibe algún patrón de agregación o autocorrelación sobre el terreno.
 
 # Parte I: Clasificación múltiple de severidad con perceptrón multicapa
 
@@ -156,11 +155,11 @@ El objetivo es desarrollar, evaluar y comparar modelos de clasificación basados
 
 #### Descripción de los datos
 
-El conjunto contiene 212 observaciones y seis categorias ordinales de severidad, codificadas de 1 a 6. La variable 1 corresponde a plantas sanas y los valores mayores representan niveles crecientes de severidad.
+La base contiene 212 observaciones agrupadas en seis categorías ordinales de severidad, codificadas del 1 al 6, donde el nivel 1 identifica a las plantas sanas y los valores superiores reflejan un deterioro progresivo de la enfermedad.
 
-El archivo incluye cinco predictores: cuatro indices espectrales (`NDVI`, `EVI`, `NDRE` y `GLI`) y la altura media. Esto difiere del enunciado, que menciona cinco indices espectrales mas la altura. Ademas, la altura aparece entre 0.0005 y 0.8472, por lo que probablemente ya se encuentra normalizada y no expresada directamente en centimetros. Ambas diferencias deben aclararse con la fuente de los datos.
+Entre los predictores disponibles se cuentan cuatro índices espectrales (`NDVI`, `EVI`, `NDRE` y `GLI`) y la altura media de la planta; es decir, un índice menos de los cinco que menciona el enunciado del taller. Llama también la atención el rango de la altura, comprendido entre 0.0005 y 0.8472, lo que sugiere que la variable ya fue normalizada y no se reporta en centímetros como cabría esperar. Ambas discrepancias —el número de índices espectrales y la unidad de la altura— deberían confirmarse con la fuente original de los datos antes de continuar con el modelado.
 
-La tabla completa con media, desviacion estandar, minimo y maximo para cada predictor y categoria se muestra a continuación en:
+A continuación, se presenta la tabla completa de media, desviación estándar, mínimo y máximo para cada predictor según la categoría de severidad:
 
 ```{python}
 #| echo: false
@@ -168,16 +167,16 @@ import pandas as pd
 pd.read_csv("../resultados/tablas/04_estadisticos_descriptivos_por_severidad.csv")
 ```
 
-Antes de comparar las categorías de severidad, conviene observar la forma general de las variables predictoras. La siguiente figura resume sus distribuciones y permite identificar diferencias de dispersión, asimetrías y concentración de valores.
+Antes de comparar las categorías entre sí, resulta útil observar el comportamiento general de los predictores. La figura siguiente resume sus distribuciones y permite reconocer diferencias de dispersión, asimetría y concentración de valores.
 
 ![Distribución general de las variables predictoras](../resultados/figuras/01_distribuciones_variables.png){#fig-distribuciones-variables width="90%"}
 
 
 #### Calidad de los datos
 
-No se encontraron valores faltantes ni infinitos. Se identifico una fila duplicada: las filas originales 174 y 175 contienen exactamente los mismos valores.
+No se detectaron valores faltantes, ni infinitos; sin embargo, sí se identificó una fila duplicada: las filas originales 174 y 175 contienen exactamente los mismos valores en todas las variables.
 
-En 48 observaciones, los valores de `EVI`, `GLI` y altura son exactamente iguales. Esta coincidencia ocurre principalmente en las severidades 3 y 4 y es poco esperable para tres variables obtenidas de manera independiente. No se modificaron ni eliminaron estas observaciones, pero deben verificarse contra los datos de origen antes de entrenar los modelos. 
+Adicionalmente, en 48 observaciones coinciden de forma exacta los valores de `EVI`, `GLI` y altura. Esta coincidencia se concentra sobre todo en las severidades 3 y 4, y resulta poco probable tratándose de tres variables que en teoría se miden de forma independiente. Las observaciones no fueron modificadas ni eliminadas, pero es pertinente confirmar los datos, antes de entrenar los modelos.
 
 ```{python}
 #| echo: false
@@ -188,47 +187,42 @@ pd.read_csv("../resultados/tablas/01_resumen_calidad_datos.csv")
 
 #### Diferencias entre categorias
 
-La comparación visual por categoría se presenta en la siguiente figura. Los boxplots permiten observar tanto los cambios en la mediana como la dispersión de cada predictor dentro de cada nivel de severidad.
+La comparación visual por categoría se presenta a continuación. Los boxplots muestran tanto el desplazamiento de la mediana como la dispersión de cada predictor en cada nivel de severidad.
 
 ![Distribución de los predictores por categoría de severidad](../resultados/figuras/02_boxplots_por_severidad.png){#fig-boxplots-severidad width="90%"}
 
-La tendencia promedio por severidad se resume en la siguiente figura. Esta visualización facilita identificar qué variables cambian de forma más ordenada conforme aumenta la severidad y cuáles presentan patrones menos monotónicos.
+La tendencia promedio por severidad se resume en la siguiente figura, que permite distinguir qué variables cambian de manera más ordenada a medida que avanza la severidad y, cuáles muestran un comportamiento menos monotónico.
 
 ![Medias de las variables predictoras por categoría de severidad](../resultados/figuras/03_medias_por_severidad.png){#fig-medias-severidad width="90%"}
 
-
 ##### NDVI
 
-El NDVI muestra el patron ordinal mas claro. Su media disminuye de 0.8784 en la severidad 1 a 0.6871 en la severidad 6. La asociacion de Spearman con la severidad es fuerte y negativa (`rho = -0.8548`). Las categorias adyacentes 1 y 2 presentan solapamiento, pero la separacion aumenta a partir de la categoria 3.
-
+El NDVI es el predictor con el patrón ordinal más definido. Su media pasa de 0.8784 en la severidad 1 a 0.6871 en la severidad 6, con una correlación de Spearman fuerte y negativa frente a la severidad (`rho = -0.8548`). Las categorías 1 y 2 se solapan parcialmente, pero la separación se hace evidente a partir de la categoría 3.
 
 ##### NDRE
 
-El NDRE tambien disminuye de forma consistente: pasa de una media de 0.3383 en la severidad 1 a 0.1987 en la severidad 6. Su correlacion con la severidad es `rho = -0.8170`. Junto con el NDVI, parece ser uno de los predictores con mayor capacidad para distinguir niveles de enfermedad.
+El NDRE sigue una tendencia igualmente consistente, con una media que desciende de 0.3383 en la severidad 1 a 0.1987 en la severidad 6 (`rho = -0.8170`). Junto con el NDVI, es de los predictores con mayor capacidad aparente para diferenciar niveles de enfermedad.
 
-La figura siguiente destaca precisamente el comportamiento de NDVI y NDRE frente a la severidad. Ambos índices muestran una disminución progresiva, lo que refuerza su utilidad como señales espectrales de deterioro fisiológico asociado a la enfermedad.
+La siguiente figura muestra el comportamiento conjunto de NDVI y NDRE frente a la severidad, donde ambos índices decaen de forma progresiva, lo que respalda su utilidad como indicadores espectrales del deterioro fisiológico asociado a la enfermedad.
 
 ![Comportamiento de NDVI y NDRE por categoría de severidad](../resultados/figuras/05_ndvi_ndre_por_severidad.png){#fig-ndvi-ndre-severidad width="85%"}
 
-
 ##### EVI
 
-El EVI disminuye desde 0.7905 en plantas sanas hasta 0.3180 en la severidad 6, con una asociacion negativa moderada a fuerte (`rho = -0.6124`). Sin embargo, las categorias intermedias tienen alta dispersion y el patron no es completamente monotono: la media de la severidad 5 es ligeramente mayor que la de la severidad 4.
+El EVI disminuye de 0.7905 en plantas sanas a 0.3180 en la severidad 6, con una asociación negativa, de moderada a fuerte (`rho = -0.6124`). No obstante, las categorías intermedias muestran alta dispersión y el patrón no es del todo monotónico, ya que la media de la severidad 5 supera ligeramente a la de la severidad 4.
 
 
 ##### GLI
 
-El GLI presenta una disminucion general, pero con oscilaciones entre las categorias 3, 4 y 5. Su asociacion con la severidad es debil (`rho = -0.2535`) y existe un solapamiento considerable. Su contribucion al modelo podria depender de relaciones no lineales o de interacciones con otros predictores.
-
+El GLI presenta una disminucion general, pero con oscilaciones entre las categorias 3, 4 y 5. Su relación con la severidad es débil (`rho = -0.2535`) y presenta un solapamiento considerable entre grupos. Su contribucion al modelo podria depender de relaciones no lineales o de interacciones con otros predictores. Con lo anterior, es posible que su aporte al modelo dependa más de relaciones no lineales o de interacciones con otras variables que de un efecto lineal directo.
 
 ##### Altura media
 
-La altura disminuye desde una media de 0.5101 en la severidad 1 hasta 0.2492 en la severidad 4, pero aumenta de nuevo en las categorias 5 y 6. La correlacion es negativa pero moderada (`rho = -0.3401`) y las distribuciones se solapan ampliamente. Por si sola, la altura parece tener menor poder discriminante que NDVI y NDRE.
-
+La altura disminuye desde una media de 0.5101 en la severidad 1 hasta 0.2492 en la severidad 4, pero aumenta de nuevo en las categorias 5 y 6. Su correlación con la severidad es negativa pero moderada (`rho = -0.3401`), y sus distribuciones se solapan de forma amplia entre categorías. Por si sola, la altura parece tener menor impacto para discriminar que NDVI y NDRE.
 
 #### Relacion entre predictores
 
-NDVI y NDRE presentan una correlacion de Spearman muy alta (`rho = 0.94`), lo cual indica que contienen informacion parcialmente redundante. EVI tambien se relaciona con GLI (`rho = 0.71`) y con la altura (`rho = 0.66`). Estas asociaciones no impiden utilizar las variables en una red neuronal, pero deben considerarse al interpretar su importancia.
+El NDVI y el NDRE muestran una correlación de Spearman muy alta (`rho = 0.94`), lo que indica que ambos capturan información parcialmente redundante. El EVI, por su parte, se asocia con el GLI (`rho = 0.71`) y con la altura (`rho = 0.66`). Estas relaciones no impiden utilizar las cinco variables en una red neuronal, pero deben considerarse al interpretar su importancia
 
 ```{python}
 #| echo: false
@@ -247,35 +241,31 @@ Si se confirma la validez de los datos, se recomienda estandarizar los cinco pre
 
 El escalador debera ajustarse exclusivamente con el conjunto de entrenamiento y luego aplicarse sin reajuste a validacion y prueba. De esta manera se evita la fuga de informacion.
 
-
 #### Conclusion
 
-Existen diferencias visibles entre las categorias de severidad. NDVI y NDRE presentan los patrones mas ordenados y una separacion clara entre plantas sanas, niveles intermedios y severidades altas. EVI aporta una señal adicional, aunque con mayor variabilidad. GLI y altura muestran un solapamiento considerable y relaciones menos monotonicamente ordenadas.
+Se observan diferencias entre las categorías de severidad. El NDVI y el NDRE presentan los patrones más ordenados, con una separación clara entre plantas sanas, niveles intermedios y severidades altas. El EVI aporta una señal adicional, aunque con mayor variabilidad interna. El GLI y la altura, en cambio, muestran un solapamiento considerable y relaciones menos monotónicas frente a la severidad.
 
-Antes del modelado debe verificarse el origen de las 48 coincidencias entre EVI, GLI y altura, la fila duplicada y la unidad real de la altura. Estas observaciones se conservaron en el analisis para describir fielmente el archivo recibido.
-
-
+Antes de avanzar con el modelado, se debe confirmar el origen de las 48 coincidencias exactas entre EVI, GLI y altura, la fila duplicada detectada y la unidad real en que se expresa la altura. Estas observaciones se mantuvieron en el análisis tal como se suministraron.
 
 ### Pregunta 2: Verifique si las categorías de severidad están balanceadas. En caso de desequilibrio notable, proponga y justifique al menos una estrategia para manejarlo (sobremuestreo, submuestreo, ponderación de clases u otra). Implemente la estrategia elegida y explique su efecto esperado sobre las métricas de ajuste.
 
 #### Verificación del balance de clases
 
-El conjunto de datos cuenta con 212 observaciones distribuidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme: la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la más escasa (n = 13, 6.2%), seguida de la categoría 1 —planta sana— con apenas 27 observaciones (12.9%).
+El grupo de datos cuenta con 212 observaciones repartidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme, ya que la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la menos frecuente (n = 13, 6.2%), seguida de la categoría 1 (planta sana) con apenas 27 observaciones (12.9%).
 
 ![Balance de clases en la variable severidad](../resultados/figuras/06_balance_clases.png){#fig-balance-clases width="80%"}
 
-El ratio mínimo/máximo de 0.28 confirma un *desequilibrio moderado-alto*, superando el umbral crítico de 0.5 habitualmente reportado en la literatura. Este patrón es problemático porque una red neuronal entrenada sin corrección tendería a favorecer las clases mayoritarias (2, 4 y 5), produciendo una exactitud global engañosamente alta mientras falla sistemáticamente en los extremos del espectro de severidad —precisamente las categorías de mayor relevancia agronómica.
-
+El ratio mínimo/máximo de 0.28 confirma un *desequilibrio de moderado a alto*, superando el umbral crítico de 0.5 que suele reportarse en la literatura. Este patrón puede ser problemático porque una red neuronal entrenada sin corrección o sin ningún ajuste, tendería a favorecer las clases mayoritarias (2, 4 y 5), lo que se traduciría en una exactitud global aparentemente buena pero acompañada de fallas sistemáticas justo en los extremos del espectro de severidad, que son las categorías de mayor interés agronómico.
 
 #### Estrategia implementada: SMOTE
 
-Se optó por SMOTE (Synthetic Minority Over-sampling Technique) como estrategia de balanceo. Este método genera observaciones sintéticas para las clases subrepresentadas mediante interpolación lineal entre cada muestra minoritaria y sus k vecinos más cercanos, introduciendo variabilidad controlada y evitando la simple duplicación de registros existentes.
+La estrategia de balanceo elegida fue SMOTE (Synthetic Minority Over-sampling Technique), que genera observaciones sintéticas para las clases subrepresentadas mediante interpolación lineal entre cada muestra minoritaria y sus k vecinos más cercanos, introduciendo variabilidad controlada y evitando la simple duplicación de registros existentes.
 
-Con un tamaño muestral de n = 212, el submuestreo aleatorio (RandomUnderSampler) fue descartado por implicar una pérdida severa de información —el conjunto de entrenamiento quedaría reducido a aproximadamente 78 observaciones—. La ponderación de clases (class_weight='balanced') constituye una alternativa válida pero no corrige la subrepresentación en el espacio de características, solo repondera la función de pérdida.
+Dado el tamaño muestral reducido (n = 212), se descartó el submuestreo aleatorio (RandomUnderSampler), pues implicaría una pérdida severa de información, ya que el conjunto de entrenamiento quedaría reducido a cerca de 78 observaciones. La ponderación de clases (`class_weight='balanced'`) es también una alternativa razonable, aunque actúa solo sobre la función de pérdida y no corrige la subrepresentación en el espacio de características.
 
-Un aspecto metodológico crítico es que SMOTE se aplicó exclusivamente sobre el conjunto de entrenamiento, tras realizar la partición de datos. Aplicarlo antes introduciría data leakage: muestras sintéticas derivadas de observaciones reales del conjunto de prueba contaminarían el entrenamiento, inflando artificialmente las métricas de evaluación.
+El SMOTE se aplicó únicamente sobre el conjunto de entrenamiento, después de realizada la partición de los datos. De haberlo hecho antes, se podría haber introducido fuga de información (*data leakage*) en las muestras sintéticas derivadas de observaciones del conjunto de prueba, contaminando el entrenamiento e inflando de forma artificial las métricas de evaluación.
 
-Para documentar la implementación, la siguiente tabla resume el balance del conjunto de entrenamiento del esquema 70/15/15 antes y después de aplicar SMOTE.
+En la siguiente tabla se resume el balance del conjunto de entrenamiento en el esquema 70/15/15, antes y después de aplicar SMOTE.
 
 | Severidad | Entrenamiento antes de SMOTE | Entrenamiento después de SMOTE |
 |---|---:|---:|
@@ -286,37 +276,34 @@ Para documentar la implementación, la siguiente tabla resume el balance del con
 | 5 | 31 | 33 |
 | 6 | 9 | 33 |
 
-Después del sobremuestreo, todas las categorías quedaron representadas con 33 observaciones en el conjunto de entrenamiento. Los conjuntos de validación y prueba se mantuvieron sin modificar, conservando la distribución original para evaluar el desempeño del modelo en condiciones realistas.
+Después del sobremuestreo, las seis categorías quedaron representadas con 33 observaciones en el conjunto de entrenamiento. Los conjuntos de validación y prueba no se modificaron, de modo que conservan la distribución original y permiten evaluar el desempeño del modelo en condiciones realistas.
 
-Como efecto esperado, la aplicación de SMOTE debería mejorar el recall en las clases 1 y 6, redistribuir los errores de forma más equitativa en la matriz de confusión y elevar el macro F1-score, que resulta la métrica más informativa bajo condiciones de desequilibrio al ponderar por igual todas las categorías.
-
+Se espera que esta corrección mejore el recall de las clases 1 y 6, distribuya los errores de manera más equitativa en la matriz de confusión, y eleve el macro F1-score, la métrica más informativa en escenarios de desequilibrio, al ponderar por igual a todas las categorías.
 
 #### Conclusión
 
-En conclusión, el análisis de balance de clases evidenció un desequilibrio moderado-alto (ratio 0.28) que, de no corregirse, comprometería la capacidad del modelo para detectar adecuadamente las categorías de severidad extrema —precisamente las más relevantes desde el punto de vista fitosanitario. La implementación de SMOTE sobre el conjunto de entrenamiento constituye una respuesta metodológicamente sólida a este problema, al generar variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación. Su aplicación estrictamente posterior a la partición de datos garantiza que las métricas reportadas reflejen el desempeño real del modelo frente a datos no vistos, condición indispensable para que los resultados sean válidos y reproducibles en un contexto de apoyo a la decisión agronómica.
+El análisis de balance de clases mostró un desequilibrio moderado-alto (ratio de 0.28) que, de dejarse sin corregir, habría limitado la capacidad del modelo para identificar correctamente las categorías de severidad extrema, justamente las de mayor relevancia fitosanitaria. Aplicar SMOTE sobre el conjunto de entrenamiento resulta una respuesta metodológicamente sólida frente a este problema, ya que genera variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación posterior. El hecho de aplicarlo estrictamente después de la partición de los datos garantiza que las métricas reportadas reflejen el desempeño real del modelo frente a datos no vistos, condición indispensable para que los resultados sean válidos y reproducibles en un contexto de apoyo a la toma de decisiones en la agronomía.
 
 
 ## Partición de datos
 
 ### Pregunta 3: Partición de datos y selección de hiperparámetros. Para cada esquema, entrene un perceptrón multicapa con la misma arquitectura inicial y compare los resultados. Explique en detalle cuál es la ventaja del esquema de tres particiones frente al de dos, en particular con respecto al riesgo de sobreajuste y a la selección de hiperparámetros.
 
-Se implementaron dos particiones estratificadas para conservar, en la medida de lo posible, la proporción original de categorías de severidad en cada subconjunto. En ambos casos, el sobremuestreo mediante SMOTE se aplicó únicamente sobre el conjunto de entrenamiento. En el esquema 80/20, el entrenamiento original quedó con 169 observaciones y fue balanceado hasta 222 registros; el conjunto de prueba quedó con 43 observaciones. En el esquema 70/15/15, el entrenamiento original quedó con 148 observaciones y fue balanceado hasta 198 registros; validación y prueba conservaron 32 observaciones cada uno.
-
+Se trabajó con dos esquemas de partición estratificada, buscando conservar en cada subconjunto, en la medida de lo posible, la proporción original de las categorías de severidad. En ambos casos, el sobremuestreo con SMOTE se aplicó exclusivamente sobre el conjunto de entrenamiento. En el esquema 80/20, el entrenamiento original quedó con 169 observaciones, balanceadas posteriormente hasta 222 registros, mientras que la prueba conservó 43 observaciones. En el esquema 70/15/15, el entrenamiento original partió de 148 observaciones y se balanceó hasta 198, con validación y prueba de 32 observaciones cada una.
 
 #### Esquema A: Entrenamiento / Prueba (80 % / 20 %)
 
-El esquema de dos particiones asigna 169 observaciones originales al entrenamiento y 43 a la prueba. Su principal debilidad metodológica radica en que no existe un conjunto de validación independiente: cualquier decisión sobre hiperparámetros —número de capas, neuronas o tasa de aprendizaje— que se tome observando el desempeño sobre el conjunto de prueba convierte implícitamente a este último en un conjunto de validación. El modelo seleccionado ya no es el más generalizable, sino el más ajustado a ese conjunto de prueba particular, introduciendo un sesgo optimista en la evaluación final que invalida la comparación justa entre configuraciones.
-
+Este esquema destina 169 observaciones originales al entrenamiento y 43 a la prueba. Su debilidad metodológica más importante es la ausencia de un conjunto de validación independiente; si cualquier decisión sobre hiperparámetros (número de capas, neuronas o tasa de aprendizaje) se toma mirando el desempeño en el conjunto de prueba, este podría terminar funcionando como conjunto de validación. En ese caso, el modelo finalmente elegido ya no es necesariamente el más generalizable, sino el que mejor se ajusta a esa muestra de prueba en particular, lo que introduce un sesgo optimista y compromete la comparación justa entre configuraciones.
 
 #### Esquema B: Entrenamiento / Validación / Prueba (70 % / 15 % / 15 %)
 
-El esquema de tres particiones asigna aproximadamente 148, 32 y 32 observaciones a cada conjunto respectivamente, con roles claramente diferenciados. El conjunto de entrenamiento ajusta los pesos de la red mediante retropropagación; el conjunto de validación monitorea la pérdida en tiempo real para detectar sobreajuste y aplicar early stopping, sin que el modelo aprenda de él; y el conjunto de prueba se reserva de forma estricta para el reporte final, siendo consultado una única vez al término del proceso. Esta separación de roles preserva la integridad de la evaluación y garantiza que las métricas reportadas constituyan una estimación imparcial del error de generalización ante datos completamente nuevos.
-No obstante, con n = 212 los subconjuntos de validación y prueba resultan reducidos (~32 observaciones cada uno), lo que introduce varianza en las estimaciones: una sola observación mal clasificada puede desplazar el accuracy varios puntos porcentuales. Esta limitación motiva la exploración de validación cruzada k-fold en la Pregunta 4 como estrategia complementaria de menor varianza.
+En este esquema, las observaciones se reparten aproximadamente en 148, 32 y 32 para cada conjunto, con funciones bien diferenciadas entre ellos. El entrenamiento ajusta los pesos de la red mediante retropropagación; la validación monitorea la pérdida durante el entrenamiento para detectar sobreajuste y activar el *early stopping*, sin que el modelo aprenda directamente de ella; y la prueba se reserva por completo para el reporte final, consultándose una sola vez al terminar todo el proceso. Esta separación de roles protege la integridad de la evaluación y asegura que las métricas reportadas sean una estimación razonablemente imparcial del error de generalización frente a datos nuevos.
 
+Dado que con 212 observaciones, los conjuntos de validación y prueba quedan reducidos (~32 observaciones cada uno), lo que añade varianza a las estimaciones, basta con que una sola observación se clasifique mal para que el accuracy se mueva varios puntos porcentuales. Esta limitación es justamente lo que motiva explorar validación cruzada k-fold en la Pregunta 4, como estrategia complementaria que reduce esa varianza.
 
 #### Comparación experimental del MLP inicial
 
-Para cumplir la comparación solicitada, se entrenó la misma arquitectura inicial en ambos esquemas: una capa oculta con 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. En el esquema 80/20, al no existir conjunto de validación independiente, el modelo se entrenó con un número fijo de épocas; en el esquema 70/15/15 se utilizó el conjunto de validación para monitorear la pérdida y aplicar *early stopping*.
+Para realizar la comparación, se entrenó la misma arquitectura inicial en los dos esquemas: una capa oculta de 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. En el esquema 80/20, al no contar con validación independiente, el entrenamiento se realizó con un número fijo de épocas; en el esquema 70/15/15, en cambio, se usó el conjunto de validación para monitorear la pérdida y aplicar *early stopping*.
 
 ```{python}
 #| echo: false
@@ -351,19 +338,20 @@ tabla_p3["Validación"] = tabla_p3["Validación"].replace(0, "-")
 tabla_p3.fillna("-")
 ```
 
-El esquema 80/20 obtuvo mayor exactitud en prueba para esta arquitectura inicial. Sin embargo, esta diferencia no implica que sea el esquema metodológicamente preferible: al no existir validación independiente, cualquier ajuste de arquitectura o hiperparámetros basado en la prueba contaminaría la evaluación final. El esquema 70/15/15, aunque sacrifica datos de entrenamiento y puede mostrar mayor variabilidad por el tamaño reducido de validación y prueba, permite separar claramente tres decisiones: ajuste de pesos, selección de hiperparámetros y evaluación final.
-
+Con esta arquitectura inicial, el esquema 80/20 alcanzó una mayor exactitud en prueba. Eso, sin embargo, no lo convierte automáticamente en el esquema metodológicamente más adecuado: al carecer de validación independiente, cualquier ajuste posterior de arquitectura o hiperparámetros basado en la prueba terminaría contaminando la evaluación final. El esquema 70/15/15, aunque cede parte de los datos de entrenamiento y puede mostrar más variabilidad por el tamaño reducido de validación y prueba, tiene la ventaja de mantener claramente separadas tres decisiones distintas: 
+  - el ajuste de pesos, 
+  - la selección de hiperparámetros y,
+  - la evaluación final.
 
 #### Conclusión
 
-La elección del esquema de partición no es una decisión menor, ya que determina directamente la validez de las métricas reportadas y la confiabilidad de la selección de modelos. El esquema 80/20, aunque maximiza los datos de entrenamiento, compromete la imparcialidad de la evaluación al exponer el conjunto de prueba al proceso de ajuste de hiperparámetros. El esquema 70/15/15, en cambio, garantiza una separación metodológica rigurosa entre optimización y evaluación, condición indispensable cuando los resultados deben fundamentar decisiones agronómicas reales. Por estas razones, el esquema de tres particiones fue adoptado como referencia para el resto del taller, asumiendo la mayor varianza asociada al tamaño reducido de cada subconjunto como un costo aceptable frente a la solidez metodológica que ofrece.
+De la elección del esquema de partición, depende la validez de las métricas reportadas y la confiabilidad con la que se selecciona un modelo. El esquema 80/20 maximiza los datos disponibles para entrenamiento, pero compromete la imparcialidad de la evaluación al exponer el conjunto de prueba al proceso de ajuste de hiperparámetros. El esquema 70/15/15, en contraste, mantiene una separación metodológica rigurosa entre optimización y evaluación, algo indispensable cuando los resultados van a fundamentar decisiones agronómicas reales. Por esta razón se adoptó el esquema de tres particiones como referencia para los siguientes puntos, asumiendo la mayor varianza propia de trabajar con subconjuntos más pequeños como un costo razonable frente a la solidez metodológica que aporta.
 
 ### Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, ¿considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.
 
-Con un tamaño muestral de n = 212, la estimación del error de generalización a partir de una única partición fija está sujeta a una varianza considerable, pues la composición específica del conjunto de prueba influye de forma no despreciable sobre las métricas reportadas. Por esta razón, se considera apropiado usar validación cruzada estratificada k-fold como complemento del esquema 70/15/15, no como reemplazo de la evaluación final.
+Con un tamaño de muestra de 212 observaciones, estimar el error de generalización a partir de una única partición fija implica asumir una varianza considerable, ya que la composición del conjunto de prueba influye en las métricas obtenidas. Por esta razón, se considera apropiado usar validación cruzada estratificada k-fold como complemento del esquema 70/15/15, no como reemplazo de la evaluación final.
 
-Se implementó una validación cruzada estratificada con k = 5 folds usando el mismo tipo de modelo de la Parte I: un perceptrón multicapa con una capa oculta de 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. Para evitar fuga de información, en cada fold el escalador se ajustó únicamente con el subconjunto de entrenamiento y luego se aplicó al subconjunto de validación; de igual forma, SMOTE se aplicó solo sobre el entrenamiento de cada fold, manteniendo intacta la validación.
-
+Asimismo, se implementó una validación cruzada estratificada con k = 5 folds usando el mismo tipo de modelo de la Parte I: un perceptrón multicapa con una capa oculta de 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. Para evitar fuga de información, en cada fold el escalador se ajustó únicamente con el subconjunto de entrenamiento y luego se aplicó al subconjunto de validación; de igual forma, SMOTE se aplicó solo sobre el entrenamiento de cada fold, manteniendo intacta la validación.
 
 #### Resultados por fold
 
@@ -397,8 +385,7 @@ tabla_p4_folds = tabla_p4_folds[
 tabla_p4_folds
 ```
 
-Los resultados muestran accuracies de validación entre *0.4048* y *0.5476*, con una media de *0.4763* y una desviación estándar de *0.0526*. Esta variabilidad confirma que, con una muestra de 212 observaciones, el desempeño estimado depende de forma apreciable de la composición del subconjunto usado para evaluar. El F1 macro medio fue de *0.4563 ± 0.0318*, lo cual es especialmente relevante porque el problema presenta desequilibrio entre categorías y la exactitud global puede ocultar errores en clases minoritarias.
-
+Los resultados de validación oscilan entre *0.4048* y *0.5476* de accuracy, con una media de *0.4763* y una desviación estándar de *0.0526*. Esta dispersión confirma que, con solo 212 observaciones, el desempeño estimado del modelo depende de qué observaciones concretas conforman el subconjunto de evaluación en cada fold. El F1 macro promedio fue de *0.4563 ± 0.0318*, dato particularmente relevante dado que el problema presenta desequilibrio entre categorías: la exactitud global, por sí sola, puede estar ocultando errores sistemáticos en las clases minoritarias.
 
 #### Comparación con la partición fija
 
@@ -423,34 +410,29 @@ tabla_p4_comp = tabla_p4_comp.rename(
 tabla_p4_comp.fillna("-")
 ```
 
-La partición fija 70/15/15 obtuvo una exactitud de prueba de *0.4375* para el MLP inicial, mientras que la validación cruzada k-fold estimó una exactitud media de *0.4763*. La diferencia no debe interpretarse como superioridad absoluta de una estrategia sobre la otra, porque evalúan de manera distinta: la partición fija reserva un conjunto de prueba único para el reporte final, mientras que k-fold promedia cinco evaluaciones internas y ofrece una medida más estable de variabilidad.
-
+La partición fija 70/15/15 generó una exactitud de prueba de *0.4375* para el MLP inicial, mientras que la validación cruzada k-fold estimó una exactitud media de *0.4763*. La primera estratégia evalua una partición fija mediante la reserva de un conjunto de prueba único para el reporte final, mientras que k-fold promedia cinco evaluaciones internas y ofrece una medida más estable de variabilidad.
 
 #### Rol metodológico en la estrategia global
 
-La validación cruzada k-fold resulta útil como complemento durante la selección de hiperparámetros, porque reduce el riesgo de elegir una configuración que funcione bien únicamente para una división específica de los datos. Sin embargo, no sustituye la partición fija 70/15/15 adoptada en la Pregunta 3, ya que esta conserva un conjunto de prueba independiente y trazable para reportar las métricas finales del modelo seleccionado.
-
+La validación cruzada k-fold es útil como complemento durante la selección de hiperparámetros, ya que reduce el riesgo de elegir una configuración que funcione bien únicamente para una división específica de los datos. Sin embargo, no sustituye la partición fija 70/15/15 adoptada en la Pregunta 3, ya que esta conserva un conjunto de prueba independiente y trazable para reportar las métricas finales del modelo seleccionado.
 
 #### Conclusión
 
-La validación cruzada estratificada con *k = 5* es apropiada para este problema como herramienta complementaria. Sus resultados confirman que el error de generalización presenta variabilidad no despreciable entre particiones, pero también que los predictores espectrales contienen señal suficiente para superar ampliamente una clasificación aleatoria de seis clases. En el marco del taller, k-fold se utiliza para estimar la estabilidad del desempeño y apoyar la selección de hiperparámetros, mientras que la partición fija 70/15/15 se mantiene como referencia para la evaluación final.
-
-
+La validación cruzada estratificada con *k = 5* es apropiada como herramienta complementaria, ya que sus resultados confirman, por un lado, que el error de generalización varía de forma no despreciable entre particiones y, por otro, que los predictores espectrales contienen señal suficiente para superar ampliamente lo que se esperaría de una clasificación aleatoria entre seis clases. El k-fold se utiliza para estimar la estabilidad del desempeño y apoyar la selección de hiperparámetros, mientras que la partición fija 70/15/15 se mantiene como referencia para la evaluación final del modelo.
 
 ## Arquitectura y entrenamiento
 
 ### Pregunta 5: Entrene al menos cuatro perceptrones multicapa variando sistemáticamente el número de capas ocultas, neuronas por capa y tasa de aprendizaje. Para cada configuración reporte la pérdida en entrenamiento y validación por época. ¿En qué configuraciones observa indicios de sobreajuste o subajuste?
 
-Se entrenaron ocho arquitecturas de perceptrón multicapa orientadas a la clasificación multiclase de la severidad de *Verticillium sp.* (seis categorías: 1 = sano, 2 a 6 = niveles crecientes de severidad), variando el número de capas ocultas (1, 2 y 3), el número de neuronas por capa (16, 32 y 64, con al menos dos tamaños evaluados en cada número de capas) y la tasa de aprendizaje (0.001, 0.01 y 0.1). No se realizó un barrido factorial completo de las 27 combinaciones posibles, sino un diseño curado de ocho configuraciones que cumple los mínimos exigidos por el enunciado; como consecuencia, la tasa de aprendizaje no varía de forma independiente dentro de cada arquitectura, sino que está parcialmente confundida con la combinación capas-neuronas, lo que se tiene en cuenta al interpretar su efecto más adelante.
+Se entrenaron ocho arquitecturas de perceptrón multicapa para la clasificación multiclase de la severidad de *Verticillium sp.* (seis categorías: 1 = planta sana, 2 a 6 = niveles crecientes de severidad). La variación sistemática incluyó el número de capas ocultas (1, 2 y 3), el número de neuronas por capa (16, 32 y 64, evaluando al menos dos tamaños en cada número de capas) y la tasa de aprendizaje (0.001, 0.01 y 0.1). En lugar de un barrido factorial exhaustivo de las 27 combinaciones posibles, se optó por un diseño curado de ocho configuraciones que satisface los mínimos pedidos en el enunciado; esto tiene como consecuencia que la tasa de aprendizaje no varía de forma completamente independiente dentro de cada arquitectura, sino que queda parcialmente confundida con la combinación de capas y neuronas, aspecto que se tendrá presente al interpretar su efecto más adelante.
 
-El conjunto de datos (n = 212) presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones), por lo que el entrenamiento se realizó sobre el conjunto de entrenamiento balanceado mediante SMOTE, mientras que validación y prueba se mantuvieron sin sobremuestreo. Con el esquema de partición 70/15/15 de la Pregunta 3, los tamaños resultantes fueron *entrenamiento = 198*, *validación = 32* y *prueba = 32* observaciones. Este tamaño de validación y prueba es reducido y debe tenerse presente como límite al interpretar diferencias pequeñas entre configuraciones, pues con 32 observaciones una sola predicción adicional correcta ya mueve la exactitud en cerca de 3 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida *softmax*, con entropía cruzada categórica dispersa como función de pérdida y *early stopping* monitoreando la pérdida de validación.
+La muestra de datos conformada por 212 observaciones, presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones), por lo que el entrenamiento se realizó sobre el conjunto de entrenamiento balanceado mediante SMOTE, dejando validación y prueba sin sobremuestrear. Con el esquema de partición 70/15/15 de la Pregunta 3, el obtuvo los siguientes tamaños: *entrenamiento = 198*, *validación = 32* y *prueba = 32* observaciones. Este tamaño de validación y prueba es reducido y debe tenerse presente como límite al interpretar diferencias pequeñas entre configuraciones, pues con 32 observaciones una sola predicción adicional correcta ya mueve la exactitud en cerca de 3 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida *softmax*, con entropía cruzada categórica dispersa como función de pérdida y *early stopping* monitoreando la pérdida de validación.
 
-La selección de la mejor configuración se hizo por la menor pérdida de validación, y no por la exactitud de prueba: usar el conjunto de prueba para escoger hiperparámetros lo convertiría, de facto, en una extensión del conjunto de validación, contaminando la evaluación final con un sesgo optimista, justamente el problema que la partición en tres conjuntos de la Pregunta 3 busca evitar. La exactitud de prueba se reporta únicamente como referencia descriptiva del modelo ya seleccionado.
-
+Los criterios usados para seleccionar la mejor configuración se establecieron teniendo en cuenta la menor pérdida de validación, y no por la exactitud de prueba. Emplear el conjunto de prueba para elegir hiperparámetros lo convertiría, en la práctica, en una extensión del conjunto de validación, contaminando la evaluación final con un sesgo optimista, justamente el problema que la partición en tres conjuntos de la Pregunta 3 buscaba evitar. Por esa razón, la exactitud de prueba se reporta únicamente a modo descriptivo, una vez seleccionado el modelo.
 
 #### Resultados obtenidos
 
-La tabla siguiente resume el desempeño de las ocho configuraciones entrenadas. El historial completo de pérdida y exactitud por época para cada arquitectura se guardó en `resultados/tablas/14_p5_historial_perdida_por_epoca.csv`; por extensión, en el informe se presenta la síntesis numérica y las curvas de aprendizaje.
+La tabla siguiente resume el desempeño de las ocho configuraciones entrenadas. El historial completo de pérdida y exactitud por época para cada arquitectura se guardó en `resultados/tablas/14_p5_historial_perdida_por_epoca.csv`; por su extensión, en el presente informe se relaciona la síntesis numérica y las curvas de aprendizaje.
 
 ```{python}
 #| echo: false
@@ -486,31 +468,27 @@ tabla_p5_resumen = tabla_p5[
 tabla_p5_resumen
 ```
 
-Las curvas de aprendizaje muestran, para cada configuración, la evolución de la pérdida en entrenamiento y validación por época. Esta visualización permite identificar si la red reduce ambas pérdidas de manera coordinada, si la pérdida de entrenamiento sigue bajando mientras la validación empeora, o si ambas permanecen altas.
+Para cada configuración, las curvas de aprendizaje muestran la evolución de la pérdida en entrenamiento y validación por época. Esta visualización permite identificar si la red reduce ambas pérdidas de manera coordinada, si la pérdida de entrenamiento sigue bajando mientras la validación empeora, o si ambas permanecen altas.
 
 ![Curvas de aprendizaje por configuración de MLP](../resultados/figuras/07_curvas_aprendizaje.png){#fig-curvas-aprendizaje-p5 width="100%"}
 
-El modelo seleccionado según el criterio predefinido de menor pérdida mínima de validación fue *2L-64N-lr0.1* (*Loss Val mínima = 0.9958*), con exactitud máxima de validación de *0.5938*, brecha Train-Val de *0.0174* y exactitud de prueba de referencia de *0.3438*. Aunque *2L-16N-lr0.01* obtuvo la mayor exactitud de prueba de referencia (*0.4688*), esta métrica no se usó para seleccionar la arquitectura, porque hacerlo contaminaría el conjunto de prueba. El criterio de pérdida de validación mantiene la selección dentro del proceso de entrenamiento y reserva la prueba para la evaluación final.
-
+El modelo seleccionado, según el criterio predefinido de menor pérdida de validación, fue *2L-64N-lr0.1* (*Loss Val mínima = 0.9958*), con exactitud máxima de validación de *0.5938*, brecha Train-Val de *0.0174* y exactitud de prueba de referencia de *0.3438*. Aunque *2L-16N-lr0.01* obtuvo la mayor exactitud en la prueba de referencia (*0.4688*), no se usó porque podría contaminar el conjunto de prueba. El criterio de pérdida de validación mantiene la selección dentro del proceso de entrenamiento y reserva la prueba para la evaluación final.
 
 #### Diagnóstico de sobreajuste y subajuste
 
-La configuración más simple, *1L-16N-lr0.001*, necesitó 103 épocas y alcanzó una exactitud máxima de entrenamiento de apenas *0.6010*. Esta combinación de muchas épocas, pérdida de validación relativamente alta (*1.1424*) y desempeño de entrenamiento moderado sugiere subajuste: la red aprende lentamente y su capacidad de representación parece limitada para separar seis categorías con solapamiento espectral.
+La configuración más simple, *1L-16N-lr0.001*, necesitó 103 épocas y alcanzó una exactitud máxima de entrenamiento de *0.6010*. Esta combinación de muchas épocas, pérdida de validación relativamente alta (*1.1424*) y desempeño de entrenamiento moderado sugiere subajuste. La red aprende lentamente y su capacidad de representación parece limitada para separar seis categorías con solapamiento espectral.
 
 Los indicios más claros de sobreajuste aparecen en configuraciones con mayor brecha entre entrenamiento y validación, especialmente *3L-64N-lr0.001* (*Brecha Acc Train-Val = 0.1304; Brecha Loss Val-Train = 0.3350*) y *2L-32N-lr0.001* (*Brecha Acc Train-Val = 0.1253; Brecha Loss Val-Train = 0.2959*). En estas redes, la mejora en entrenamiento no se transfiere con la misma intensidad a validación, patrón compatible con memorización parcial del conjunto de entrenamiento, incluidas las muestras sintéticas generadas por SMOTE.
 
-La configuración *2L-64N-lr0.1* muestra el mejor valor mínimo de pérdida de validación y una brecha de exactitud muy baja, pero su curva debe interpretarse con cautela: la tasa de aprendizaje alta permite alcanzar rápidamente una buena región, aunque la pérdida de validación se deteriora después del mínimo. En este caso, el *early stopping* es crucial para recuperar los pesos de la época con mejor validación y evitar que el entrenamiento continúe hacia una zona menos estable.
-
+La configuración *2L-64N-lr0.1* muestra el mejor valor mínimo de pérdida de validación y una brecha de exactitud muy baja, pero su curva debe interpretarse con cautela, ya que la tasa de aprendizaje alta permite alcanzar rápidamente una buena región, aunque la pérdida de validación se deteriora después del mínimo. En este caso, el *early stopping* es crucial para recuperar los pesos de la época con mejor validación y evitar que el entrenamiento continúe hacia una zona menos estable.
 
 #### Conclusión
 
-La comparación sistemática muestra que la arquitectura más simple tiende al subajuste, mientras que algunas arquitecturas de mayor capacidad presentan señales de sobreajuste cuando la brecha entre entrenamiento y validación aumenta. El mejor modelo según la pérdida mínima de validación fue *2L-64N-lr0.1*, aunque su tasa de aprendizaje alta exige apoyarse en *early stopping* para conservar la mejor época. Deben señalarse dos limitaciones: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje del de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que diferencias pequeñas entre configuraciones deben interpretarse con cautela.
-
+En comparación, la arquitectura más simple tiende al subajuste, mientras que algunas arquitecturas de mayor capacidad presentan señales de sobreajuste cuando la brecha entre entrenamiento y validación aumenta. El mejor modelo, según la pérdida mínima de validación, fue *2L-64N-lr0.1*, aunque su tasa de aprendizaje exige apoyarse en *early stopping* para conservar la mejor época. Asimis, deben señalarse dos limitaciones: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que diferencias pequeñas entre configuraciones deben interpretarse con cautela.
 
 ### Pregunta 6: Implemente y compare dos criterios para cuantificar el error durante el entrenamiento: entropía cruzada categórica (CCE) y error cuadrático medio (MSE). ¿Cuál es más apropiado para un problema de clasificación múltiple? Fundamente su respuesta tanto teórica como empíricamente.
 
 Se entrenó la arquitectura seleccionada en la Pregunta 5 (*2L-64N-lr0.1*) dos veces, idéntica en todo salvo la función de pérdida. Para la entropía cruzada se usó `sparse_categorical_crossentropy`, que es equivalente a la entropía cruzada categórica cuando las etiquetas se almacenan como enteros; para MSE se usaron etiquetas en formato *one-hot*.
-
 
 #### Resultados obtenidos
 
@@ -547,18 +525,15 @@ Con la arquitectura seleccionada en la Pregunta 5, CCE obtuvo una exactitud de p
 
 ![Curvas de pérdida para CCE y MSE](../resultados/figuras/08_cce_vs_mse.png){#fig-cce-vs-mse width="85%"}
 
-Las curvas de entrenamiento muestran que ambas funciones reducen la pérdida durante el ajuste, pero no optimizan el mismo objetivo probabilístico. Por esta razón, la comparación directa de los valores de pérdida entre CCE y MSE debe hacerse con cautela: lo más informativo es observar la estabilidad de la validación y el desempeño final sobre prueba.
-
+Las curvas de entrenamiento muestran que ambas funciones reducen la pérdida durante el ajuste, pero no optimizan el mismo objetivo probabilístico. Por esta razón, la comparación directa de los valores de pérdida entre CCE y MSE debe observar la estabilidad de la validación y el desempeño final sobre la prueba.
 
 #### Fundamento teórico
 
-La entropía cruzada categórica es la función de pérdida coherente con la capa de salida *softmax*: maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (*proper scoring rule*), que penaliza de forma creciente la confianza mal ubicada en la clase incorrecta, con gradientes bien escalados incluso cuando la predicción está muy alejada del valor real. El error cuadrático medio, en cambio, fue diseñado para variables continuas; aplicado sobre probabilidades *softmax* con codificación *one-hot*, produce gradientes que pueden ser menos informativos cuando la salida se acerca a 0 o a 1, ralentizando el aprendizaje justo en casos de error claro. Además, MSE trata las probabilidades de clase como coordenadas continuas y no como una distribución categórica que debe asignar alta probabilidad a una única clase verdadera.
-
+La entropía cruzada categórica es la función de pérdida coherente con la capa de salida *softmax*, esta maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (*proper scoring rule*), que penaliza de forma creciente la confianza mal ubicada en la clase incorrecta, con gradientes bien escalados incluso cuando la predicción está muy alejada del valor real. El error cuadrático medio, en cambio, fue diseñado para variables continuas; aplicado sobre probabilidades *softmax* con codificación *one-hot*, produce gradientes que pueden ser menos informativos cuando la salida se acerca a 0 o a 1, ralentizando el aprendizaje justo en casos de error claro. Además, MSE trata las probabilidades de clase como coordenadas continuas y no como una distribución categórica que debe asignar alta probabilidad a una única clase verdadera.
 
 #### Conclusión
 
-Se recomienda la entropía cruzada categórica como función de pérdida para este problema de clasificación múltiple. La recomendación se sostiene teóricamente por su coherencia con la salida *softmax* y empíricamente porque, con la arquitectura seleccionada, obtuvo mayor exactitud de prueba que MSE. Aunque el conjunto de prueba es pequeño y las métricas deben interpretarse con cautela, en esta comparación la evidencia práctica y el fundamento estadístico apuntan en la misma dirección: CCE es más apropiada que MSE para entrenar el perceptrón multicapa multiclase.
-
+Para este caso de clasificación múltiple, se recomienda la entropía cruzada categórica como función de pérdida, ya que es coherente con la salida *softmax* y con la arquitectura seleccionada, obteniendo mayor exactitud de prueba que MSE. Aunque el conjunto de prueba es pequeño y las métricas deben interpretarse con cautela, en esta comparación la evidencia práctica y el fundamento estadístico apuntan en la misma dirección: CCE es más apropiada que MSE para entrenar el perceptrón multicapa multiclase.
 
 ## Métricas de evaluación
 
