@@ -13,6 +13,8 @@ execute:
 fig-align: center
 fig-cap-location: bottom
 tbl-cap-location: top
+tbl-colwidths: true
+columns: 120
 format:
   html:
     toc: true
@@ -81,6 +83,7 @@ format:
         table {
           margin: 1.1rem auto;
           width: auto;
+          max-width: 100%;
           font-size: 0.93rem;
           border-collapse: collapse;
         }
@@ -142,9 +145,9 @@ format:
 
 # Introducción
 
-La marchitez causada por *Verticillium* sp. constituye una de las principales limitantes fitosanitarias en cultivos de alto valor comercial, con efectos directos sobre el rendimiento y la calidad del producto final. Diagnosticar la enfermedad en sus etapas iniciales y clasificar con precisión su nivel de severidad resulta determinante para orientar el manejo agronómico y minimizar las pérdidas económicas asociadas. Para este taller se dispone de una base de datos con más de 200 observaciones de plantas, cada una caracterizada por cinco índices espectrales obtenidos mediante teledetección y por su altura promedio, junto con una variable de severidad en la que la categoría 1 corresponde a plantas sanas.
+La marchitez causada por *Verticillium* sp. constituye una de las principales limitantes fitosanitarias en cultivos de alto valor comercial, con efectos directos sobre el rendimiento y la calidad del producto final. Diagnosticar la enfermedad en sus etapas iniciales y clasificar con exactitud su nivel de severidad resulta determinante para orientar el manejo agronómico y minimizar las pérdidas económicas asociadas. Para este taller se dispone de una base de datos con 212 observaciones de plantas. El enunciado menciona cinco índices espectrales y la altura media, pero el archivo suministrado contiene cuatro índices espectrales obtenidos mediante teledetección y la altura media. La variable de severidad incluye seis categorías ordinales: la categoría 1 corresponde a plantas sanas y las categorías 2 a 6 reflejan niveles crecientes de afectación por la enfermedad.
 
-El propósito central del ejercicio es construir, evaluar y contrastar modelos de clasificación basados en perceptrón multicapa (redes neuronales artificiales) y regresión logística, bajo distintos esquemas de partición de los datos, funciones de pérdida y configuraciones arquitectónicas, con el fin de identificar qué enfoque ofrece un mejor desempeño predictivo para este problema. De manera complementaria, se examina la dimensión espacial del fenómeno mediante la construcción de una grilla georreferenciada y el análisis de dependencia espacial en variables de escala ordinal, lo que permite indagar si la severidad de la enfermedad exhibe algún patrón de agregación o autocorrelación sobre el terreno.
+El propósito central del ejercicio es construir, evaluar y contrastar modelos de clasificación basados en perceptrón multicapa (MLP, por sus siglas en inglés) y regresión logística, bajo distintos esquemas de partición de los datos, funciones de pérdida y configuraciones arquitectónicas. De manera complementaria, se examina la dimensión espacial del fenómeno mediante una grilla regular con asignación artificial, debido a que el archivo no contiene coordenadas reales. Esta aproximación permite implementar el análisis solicitado, pero no sustenta conclusiones geográficas sobre el terreno.
 
 # Parte I: Clasificación múltiple de severidad con perceptrón multicapa
 
@@ -155,7 +158,7 @@ El propósito central del ejercicio es construir, evaluar y contrastar modelos d
 
 #### Descripción de los datos
 
-La base contiene 212 observaciones agrupadas en seis categorías ordinales de severidad, codificadas del 1 al 6, donde el nivel 1 identifica a las plantas sanas y los valores superiores reflejan un deterioro progresivo de la enfermedad.
+La base contiene 212 observaciones agrupadas en seis categorías ordinales de severidad, codificadas del 1 al 6, donde el nivel 1 identifica a las plantas sanas mientras que los niveles superiores reflejan un deterioro progresivo de la enfermedad.
 
 Entre los predictores disponibles se cuentan cuatro índices espectrales (`NDVI`, `EVI`, `NDRE` y `GLI`) y la altura media de la planta; es decir, un índice menos de los cinco que menciona el enunciado del taller. Llama también la atención el rango de la altura, comprendido entre 0.0005 y 0.8472, lo que sugiere que la variable ya fue normalizada y no se reporta en centímetros como cabría esperar. Ambas discrepancias —el número de índices espectrales y la unidad de la altura— deberían confirmarse con la fuente original de los datos antes de continuar con el modelado.
 
@@ -163,13 +166,89 @@ A continuación, se presenta la tabla completa de media, desviación estándar, 
 
 ```{python}
 #| echo: false
+#| tbl-cap: "Estadísticos descriptivos por categoría de severidad."
 import pandas as pd
-pd.read_csv("../resultados/tablas/04_estadisticos_descriptivos_por_severidad.csv")
+from IPython.display import Markdown, display
+
+def mostrar_tabla(tabla, decimales=4):
+    """Muestra una tabla Markdown sin índice y adaptable a HTML y PDF."""
+    tabla = tabla.copy()
+    columnas_numericas = {
+        columna
+        for columna in tabla.columns
+        if pd.api.types.is_numeric_dtype(tabla[columna])
+    }
+
+    def formatear(valor, columna):
+        if pd.isna(valor):
+            return "-"
+        if columna in columnas_numericas:
+            if isinstance(valor, (int,)) or (
+                isinstance(valor, float) and valor.is_integer()
+            ):
+                return str(int(valor))
+            return f"{float(valor):.{decimales}f}"
+        return (
+            str(valor)
+            .replace("\\", " / ")
+            .replace("|", "\\|")
+            .replace("\n", " ")
+        )
+
+    encabezado = (
+        "| "
+        + " | ".join(
+            str(columna).replace("\\", " / ").replace("|", "\\|")
+            for columna in tabla.columns
+        )
+        + " |"
+    )
+    alineacion = (
+        "| "
+        + " | ".join(
+            "---:" if columna in columnas_numericas else ":---"
+            for columna in tabla.columns
+        )
+        + " |"
+    )
+    filas = [
+        "| "
+        + " | ".join(
+            formatear(valor, columna)
+            for columna, valor in zip(tabla.columns, fila)
+        )
+        + " |"
+        for fila in tabla.itertuples(index=False, name=None)
+    ]
+    display(Markdown("\n".join([encabezado, alineacion, *filas])))
+
+tabla_p1_descriptivos = pd.read_csv(
+    "../resultados/tablas/04_estadisticos_descriptivos_por_severidad.csv"
+).rename(
+    columns={
+        "severity": "Severidad",
+        "descripcion": "Predictor",
+        "media": "Media",
+        "desviacion_estandar": "Desv. estándar",
+        "minimo": "Mínimo",
+        "maximo": "Máximo",
+    }
+)
+mostrar_tabla(
+    tabla_p1_descriptivos[
+        ["Severidad", "Predictor", "n", "Media", "Desv. estándar", "Mínimo", "Máximo"]
+    ],
+    decimales=4,
+)
 ```
 
 Antes de comparar las categorías entre sí, resulta útil observar el comportamiento general de los predictores. La figura siguiente resume sus distribuciones y permite reconocer diferencias de dispersión, asimetría y concentración de valores.
 
-![Distribución general de las variables predictoras](../resultados/figuras/01_distribuciones_variables.png){#fig-distribuciones-variables width="90%"}
+\clearpage
+
+![Distribución general de las variables predictoras](../resultados/figuras/01_distribuciones_variables.png){#fig-distribuciones-variables width="75%"}
+
+\clearpage
 
 
 #### Calidad de los datos
@@ -180,20 +259,25 @@ Adicionalmente, en 48 observaciones coinciden de forma exacta los valores de `EV
 
 ```{python}
 #| echo: false
+#| label: tbl-calidad-datos
+#| tbl-cap: "Resumen de calidad de los datos."
 import pandas as pd
-pd.read_csv("../resultados/tablas/01_resumen_calidad_datos.csv")
+tabla_calidad = pd.read_csv(
+    "../resultados/tablas/01_resumen_calidad_datos.csv"
+).rename(columns={"indicador": "Indicador", "valor": "Valor"})
+mostrar_tabla(tabla_calidad, decimales=0)
 ```
 
 
-#### Diferencias entre categorias
+#### Diferencias entre categorías
 
 La comparación visual por categoría se presenta a continuación. Los boxplots muestran tanto el desplazamiento de la mediana como la dispersión de cada predictor en cada nivel de severidad.
 
-![Distribución de los predictores por categoría de severidad](../resultados/figuras/02_boxplots_por_severidad.png){#fig-boxplots-severidad width="90%"}
+![Distribución de los predictores por categoría de severidad](../resultados/figuras/02_boxplots_por_severidad.png){#fig-boxplots-severidad width="75%"}
 
 La tendencia promedio por severidad se resume en la siguiente figura, que permite distinguir qué variables cambian de manera más ordenada a medida que avanza la severidad y, cuáles muestran un comportamiento menos monotónico.
 
-![Medias de las variables predictoras por categoría de severidad](../resultados/figuras/03_medias_por_severidad.png){#fig-medias-severidad width="90%"}
+![Medias de las variables predictoras por categoría de severidad](../resultados/figuras/03_medias_por_severidad.png){#fig-medias-severidad width="75%"}
 
 ##### NDVI
 
@@ -214,34 +298,50 @@ El EVI disminuye de 0.7905 en plantas sanas a 0.3180 en la severidad 6, con una 
 
 ##### GLI
 
-El GLI presenta una disminucion general, pero con oscilaciones entre las categorias 3, 4 y 5. Su relación con la severidad es débil (`rho = -0.2535`) y presenta un solapamiento considerable entre grupos. Su contribucion al modelo podria depender de relaciones no lineales o de interacciones con otros predictores. Con lo anterior, es posible que su aporte al modelo dependa más de relaciones no lineales o de interacciones con otras variables que de un efecto lineal directo.
+El GLI presenta una disminución general, pero con oscilaciones entre las categorías 3, 4 y 5. Su relación con la severidad es débil (`rho = -0.2535`) y presenta un solapamiento considerable entre grupos. Por ello, su aporte al modelo podría depender más de relaciones no lineales o de interacciones con otras variables que de un efecto lineal directo.
 
 ##### Altura media
 
-La altura disminuye desde una media de 0.5101 en la severidad 1 hasta 0.2492 en la severidad 4, pero aumenta de nuevo en las categorias 5 y 6. Su correlación con la severidad es negativa pero moderada (`rho = -0.3401`), y sus distribuciones se solapan de forma amplia entre categorías. Por si sola, la altura parece tener menor impacto para discriminar que NDVI y NDRE.
+La altura disminuye desde una media de 0.5101 en la severidad 1 hasta 0.2492 en la severidad 4, pero aumenta de nuevo en las categorías 5 y 6. Su correlación con la severidad es negativa, pero moderada (`rho = -0.3401`), y sus distribuciones se solapan de forma amplia entre categorías. Por sí sola, la altura parece tener menor capacidad discriminante que el NDVI y el NDRE.
 
-#### Relacion entre predictores
+#### Relación entre predictores
 
-El NDVI y el NDRE muestran una correlación de Spearman muy alta (`rho = 0.94`), lo que indica que ambos capturan información parcialmente redundante. El EVI, por su parte, se asocia con el GLI (`rho = 0.71`) y con la altura (`rho = 0.66`). Estas relaciones no impiden utilizar las cinco variables en una red neuronal, pero deben considerarse al interpretar su importancia
+El NDVI y el NDRE muestran una correlación de Spearman muy alta (`rho = 0.94`), lo que indica que ambos capturan información parcialmente redundante. El EVI, por su parte, se asocia con el GLI (`rho = 0.71`) y con la altura (`rho = 0.66`). Estas relaciones no impiden utilizar los cinco predictores en una red neuronal, pero deben considerarse al interpretar su importancia.
 
 ```{python}
 #| echo: false
+#| label: tbl-spearman-severidad
+#| tbl-cap: "Correlación de Spearman entre cada predictor y la severidad."
 import pandas as pd
-pd.read_csv("../resultados/tablas/05_correlacion_spearman_con_severidad.csv")
+tabla_p1_correlaciones = pd.read_csv(
+    "../resultados/tablas/05_correlacion_spearman_con_severidad.csv"
+).rename(
+    columns={
+        "descripcion": "Predictor",
+        "rho_spearman": "Rho de Spearman",
+        "valor_p": "p-valor",
+    }
+)
+mostrar_tabla(
+    tabla_p1_correlaciones[["Predictor", "Rho de Spearman", "p-valor"]],
+    decimales=4,
+)
 ```
 
 ![Matriz de correlación entre variables predictoras](../resultados/figuras/04_matriz_correlacion.png){#fig-matriz-correlacion width="80%"}
 
 
-#### Transformacion y estandarizacion
+#### Transformación y estandarización
 
-No se recomienda aplicar inicialmente transformaciones logaritmicas. Los predictores estan acotados aproximadamente entre 0 y 1, y varios contienen valores muy cercanos a cero. Una transformacion logaritmica dificultaria la interpretacion y no resolveria el patron de valores que requiere revision. 
+No se recomienda aplicar inicialmente transformaciones logarítmicas. Los predictores están acotados aproximadamente entre 0 y 1, y varios contienen valores muy cercanos a cero. Una transformación logarítmica dificultaría la interpretación y no resolvería el patrón de valores que requiere revisión.
 
-Si se confirma la validez de los datos, se recomienda estandarizar los cinco predictores mediante puntuaciones Z antes de entrenar el perceptron multicapa. Aunque sus rangos son parecidos, sus dispersiones son diferentes; la estandarizacion facilitara la optimizacion y evitara que una variable influya mas por su escala numerica.
+Si se confirma la validez de los datos, se recomienda estandarizar los cinco predictores mediante puntuaciones Z antes de entrenar el perceptrón multicapa. Aunque sus rangos son parecidos, sus dispersiones son diferentes; la estandarización facilitará la optimización y evitará que una variable influya más por su escala numérica.
 
-El escalador debera ajustarse exclusivamente con el conjunto de entrenamiento y luego aplicarse sin reajuste a validacion y prueba. De esta manera se evita la fuga de informacion.
+El escalador debe ajustarse exclusivamente con el conjunto de entrenamiento y luego aplicarse, sin reajuste, a los conjuntos de validación y prueba. De esta manera se evita la fuga de información.
 
-#### Conclusion
+Como salvedad de implementación, la auditoría del código mostró que los resultados actuales se generaron ajustando `StandardScaler` sobre la matriz completa antes de realizar las particiones. Aunque el escalador no utiliza la etiqueta de severidad, este procedimiento permite que la media y la desviación estándar de validación y prueba influyan en el preprocesamiento y constituye una fuga de información. Por ello, las métricas deben considerarse exploratorias hasta repetir el flujo ajustando cada escalador únicamente con el entrenamiento; la misma precaución aplica a las variantes espaciales de las Preguntas 17 y 18.
+
+#### Conclusión
 
 Se observan diferencias entre las categorías de severidad. El NDVI y el NDRE presentan los patrones más ordenados, con una separación clara entre plantas sanas, niveles intermedios y severidades altas. El EVI aporta una señal adicional, aunque con mayor variabilidad interna. El GLI y la altura, en cambio, muestran un solapamiento considerable y relaciones menos monotónicas frente a la severidad.
 
@@ -251,17 +351,17 @@ Antes de avanzar con el modelado, se debe confirmar el origen de las 48 coincide
 
 #### Verificación del balance de clases
 
-El grupo de datos cuenta con 212 observaciones repartidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme, ya que la categoría 2 concentra el mayor número de casos (n = 47, 22.5%), mientras que la severidad 6 es la menos frecuente (n = 13, 6.2%), seguida de la categoría 1 (planta sana) con apenas 27 observaciones (12.9%).
+El conjunto de datos cuenta con 212 observaciones repartidas en seis categorías de severidad. Como se observa en la siguiente figura, la distribución no es uniforme: la categoría 2 concentra el mayor número de casos (n = 47; 22.2 %), mientras que la severidad 6 es la menos frecuente (n = 13; 6.1 %). La categoría 1, correspondiente a plantas sanas, cuenta con 27 observaciones (12.7 %).
 
 ![Balance de clases en la variable severidad](../resultados/figuras/06_balance_clases.png){#fig-balance-clases width="80%"}
 
-El ratio mínimo/máximo de 0.28 confirma un *desequilibrio de moderado a alto*, superando el umbral crítico de 0.5 que suele reportarse en la literatura. Este patrón puede ser problemático porque una red neuronal entrenada sin corrección o sin ningún ajuste, tendería a favorecer las clases mayoritarias (2, 4 y 5), lo que se traduciría en una exactitud global aparentemente buena pero acompañada de fallas sistemáticas justo en los extremos del espectro de severidad, que son las categorías de mayor interés agronómico.
+La razón entre la frecuencia mínima y la máxima es 0.28 (13/47), lo que confirma un desequilibrio relevante. Este patrón puede ser problemático porque una red neuronal entrenada sin corrección tendería a favorecer las clases mayoritarias (2, 4 y 5). El resultado podría ser una exactitud global aparentemente aceptable, pero acompañada de fallas sistemáticas en los extremos del espectro de severidad, que son categorías de especial interés agronómico.
 
 #### Estrategia implementada: SMOTE
 
 La estrategia de balanceo elegida fue SMOTE (Synthetic Minority Over-sampling Technique), que genera observaciones sintéticas para las clases subrepresentadas mediante interpolación lineal entre cada muestra minoritaria y sus k vecinos más cercanos, introduciendo variabilidad controlada y evitando la simple duplicación de registros existentes.
 
-Dado el tamaño muestral reducido (n = 212), se descartó el submuestreo aleatorio (RandomUnderSampler), pues implicaría una pérdida severa de información, ya que el conjunto de entrenamiento quedaría reducido a cerca de 78 observaciones. La ponderación de clases (`class_weight='balanced'`) es también una alternativa razonable, aunque actúa solo sobre la función de pérdida y no corrige la subrepresentación en el espacio de características.
+Dado el tamaño muestral reducido (n = 212), se descartó el submuestreo aleatorio, pues implicaría una pérdida considerable de información: en el esquema 70/15/15, el conjunto de entrenamiento se reduciría a 54 observaciones (9 por cada una de las seis categorías). La ponderación de clases (`class_weight='balanced'`) también es una alternativa razonable, aunque actúa sobre la función de pérdida y no aumenta la representación de las clases minoritarias en el espacio de características.
 
 El SMOTE se aplicó únicamente sobre el conjunto de entrenamiento, después de realizada la partición de los datos. De haberlo hecho antes, se podría haber introducido fuga de información (*data leakage*) en las muestras sintéticas derivadas de observaciones del conjunto de prueba, contaminando el entrenamiento e inflando de forma artificial las métricas de evaluación.
 
@@ -276,13 +376,15 @@ En la siguiente tabla se resume el balance del conjunto de entrenamiento en el e
 | 5 | 31 | 33 |
 | 6 | 9 | 33 |
 
+: Balance del conjunto de entrenamiento antes y después de SMOTE.
+
 Después del sobremuestreo, las seis categorías quedaron representadas con 33 observaciones en el conjunto de entrenamiento. Los conjuntos de validación y prueba no se modificaron, de modo que conservan la distribución original y permiten evaluar el desempeño del modelo en condiciones realistas.
 
-Se espera que esta corrección mejore el recall de las clases 1 y 6, distribuya los errores de manera más equitativa en la matriz de confusión, y eleve el macro F1-score, la métrica más informativa en escenarios de desequilibrio, al ponderar por igual a todas las categorías.
+Se espera que esta corrección mejore la sensibilidad (*recall*) de las clases 1 y 6, distribuya los errores de manera más equitativa en la matriz de confusión y eleve el F1 macro, una métrica especialmente informativa en escenarios de desequilibrio porque concede el mismo peso a todas las categorías.
 
 #### Conclusión
 
-El análisis de balance de clases mostró un desequilibrio moderado-alto (ratio de 0.28) que, de dejarse sin corregir, habría limitado la capacidad del modelo para identificar correctamente las categorías de severidad extrema, justamente las de mayor relevancia fitosanitaria. Aplicar SMOTE sobre el conjunto de entrenamiento resulta una respuesta metodológicamente sólida frente a este problema, ya que genera variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación posterior. El hecho de aplicarlo estrictamente después de la partición de los datos garantiza que las métricas reportadas reflejen el desempeño real del modelo frente a datos no vistos, condición indispensable para que los resultados sean válidos y reproducibles en un contexto de apoyo a la toma de decisiones en la agronomía.
+El análisis de balance de clases mostró un desequilibrio moderado-alto (razón mínima/máxima de 0.28) que, de dejarse sin corregir, habría limitado la capacidad del modelo para identificar correctamente las categorías de severidad extrema, justamente las de mayor relevancia fitosanitaria. Aplicar SMOTE sobre el conjunto de entrenamiento resulta una respuesta metodológicamente sólida frente a este problema, ya que genera variabilidad sintética representativa sin sacrificar observaciones reales ni comprometer la integridad de la evaluación posterior. El hecho de aplicarlo estrictamente después de la partición de los datos garantiza que las métricas reportadas reflejen el desempeño del modelo frente a datos no vistos.
 
 
 ## Partición de datos
@@ -299,7 +401,7 @@ Este esquema destina 169 observaciones originales al entrenamiento y 43 a la pru
 
 En este esquema, las observaciones se reparten aproximadamente en 148, 32 y 32 para cada conjunto, con funciones bien diferenciadas entre ellos. El entrenamiento ajusta los pesos de la red mediante retropropagación; la validación monitorea la pérdida durante el entrenamiento para detectar sobreajuste y activar el *early stopping*, sin que el modelo aprenda directamente de ella; y la prueba se reserva por completo para el reporte final, consultándose una sola vez al terminar todo el proceso. Esta separación de roles protege la integridad de la evaluación y asegura que las métricas reportadas sean una estimación razonablemente imparcial del error de generalización frente a datos nuevos.
 
-Dado que con 212 observaciones, los conjuntos de validación y prueba quedan reducidos (~32 observaciones cada uno), lo que añade varianza a las estimaciones, basta con que una sola observación se clasifique mal para que el accuracy se mueva varios puntos porcentuales. Esta limitación es justamente lo que motiva explorar validación cruzada k-fold en la Pregunta 4, como estrategia complementaria que reduce esa varianza.
+Con 212 observaciones, los conjuntos de validación y prueba quedan reducidos a cerca de 32 observaciones cada uno, lo que añade varianza a las estimaciones. Basta con que una observación cambie de clasificación para que la exactitud varíe aproximadamente 3.1 puntos porcentuales. Esta limitación motiva la exploración de la validación cruzada *k-fold* en la Pregunta 4 como estrategia complementaria.
 
 #### Comparación experimental del MLP inicial
 
@@ -321,39 +423,38 @@ tabla_p3 = tabla_p3[
         "Accuracy entrenamiento",
         "Accuracy validacion",
         "Accuracy prueba",
-        "Loss prueba",
     ]
 ].rename(
     columns={
         "Entrenamiento": "Entrenamiento usado",
         "Validacion": "Validación",
         "Epocas ejecutadas": "Épocas ejecutadas",
-        "Accuracy entrenamiento": "Accuracy entrenamiento",
-        "Accuracy validacion": "Accuracy validación",
-        "Accuracy prueba": "Accuracy prueba",
-        "Loss prueba": "Loss prueba",
+        "Accuracy entrenamiento": "Exactitud entrenamiento",
+        "Accuracy validacion": "Exactitud validación",
+        "Accuracy prueba": "Exactitud prueba",
     }
 )
 tabla_p3["Validación"] = tabla_p3["Validación"].replace(0, "-")
-tabla_p3.fillna("-")
+mostrar_tabla(tabla_p3.fillna("-"), decimales=4)
 ```
 
-Con esta arquitectura inicial, el esquema 80/20 alcanzó una mayor exactitud en prueba. Eso, sin embargo, no lo convierte automáticamente en el esquema metodológicamente más adecuado: al carecer de validación independiente, cualquier ajuste posterior de arquitectura o hiperparámetros basado en la prueba terminaría contaminando la evaluación final. El esquema 70/15/15, aunque cede parte de los datos de entrenamiento y puede mostrar más variabilidad por el tamaño reducido de validación y prueba, tiene la ventaja de mantener claramente separadas tres decisiones distintas: 
-  - el ajuste de pesos, 
-  - la selección de hiperparámetros y,
-  - la evaluación final.
+Con esta arquitectura inicial, el esquema 80/20 alcanzó una mayor exactitud en prueba. Eso, sin embargo, no lo convierte automáticamente en el esquema metodológicamente más adecuado: al carecer de validación independiente, cualquier ajuste posterior de arquitectura o hiperparámetros basado en la prueba terminaría contaminando la evaluación final. El esquema 70/15/15, aunque cede parte de los datos de entrenamiento y puede mostrar más variabilidad por el tamaño reducido de validación y prueba, mantiene claramente separadas tres decisiones:
+
+- el ajuste de los pesos;
+- la selección de hiperparámetros;
+- la evaluación final.
 
 #### Conclusión
 
-De la elección del esquema de partición, depende la validez de las métricas reportadas y la confiabilidad con la que se selecciona un modelo. El esquema 80/20 maximiza los datos disponibles para entrenamiento, pero compromete la imparcialidad de la evaluación al exponer el conjunto de prueba al proceso de ajuste de hiperparámetros. El esquema 70/15/15, en contraste, mantiene una separación metodológica rigurosa entre optimización y evaluación, algo indispensable cuando los resultados van a fundamentar decisiones agronómicas reales. Por esta razón se adoptó el esquema de tres particiones como referencia para los siguientes puntos, asumiendo la mayor varianza propia de trabajar con subconjuntos más pequeños como un costo razonable frente a la solidez metodológica que aporta.
+La validez de las métricas reportadas y la confiabilidad de la selección del modelo dependen del esquema de partición. El esquema 80/20 maximiza los datos disponibles para entrenamiento, pero no ofrece un conjunto independiente para seleccionar hiperparámetros. El esquema 70/15/15, en contraste, mantiene una separación metodológica entre optimización y evaluación. Por esta razón, se adoptó el esquema de tres particiones como referencia para las preguntas siguientes, reconociendo como limitación la mayor varianza asociada con subconjuntos pequeños.
 
 ### Pregunta 4: Dado que el tamaño muestral es mayor a 200 pero no muy grande, ¿considera que sería apropiado usar validación cruzada k-fold como alternativa o complemento? Argumente su respuesta y, si decide implementarla, reporte los resultados comparativos.
 
 Con un tamaño de muestra de 212 observaciones, estimar el error de generalización a partir de una única partición fija implica asumir una varianza considerable, ya que la composición del conjunto de prueba influye en las métricas obtenidas. Por esta razón, se considera apropiado usar validación cruzada estratificada k-fold como complemento del esquema 70/15/15, no como reemplazo de la evaluación final.
 
-Asimismo, se implementó una validación cruzada estratificada con k = 5 folds usando el mismo tipo de modelo de la Parte I: un perceptrón multicapa con una capa oculta de 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. Para evitar fuga de información, en cada fold el escalador se ajustó únicamente con el subconjunto de entrenamiento y luego se aplicó al subconjunto de validación; de igual forma, SMOTE se aplicó solo sobre el entrenamiento de cada fold, manteniendo intacta la validación.
+Asimismo, se implementó una validación cruzada estratificada de cinco pliegues (*k = 5*) usando el mismo tipo de modelo de la Parte I: un perceptrón multicapa con una capa oculta de 16 neuronas, activación ReLU, salida *softmax*, tasa de aprendizaje de 0.001 y pérdida de entropía cruzada categórica. Para evitar fuga de información, en cada pliegue el escalador se ajustó únicamente con el subconjunto de entrenamiento y luego se aplicó al subconjunto de validación; de igual forma, SMOTE se aplicó solo sobre el entrenamiento de cada pliegue, manteniendo intacta la validación.
 
-#### Resultados por fold
+#### Resultados por pliegue
 
 ```{python}
 #| echo: false
@@ -375,42 +476,64 @@ tabla_p4_folds = tabla_p4_folds[
     ]
 ].rename(
     columns={
+        "Fold": "Pliegue",
         "Validacion": "Validación",
         "Epocas ejecutadas": "Épocas ejecutadas",
-        "Accuracy validacion": "Accuracy validación",
+        "Accuracy validacion": "Exactitud validación",
         "F1 macro validacion": "F1 macro validación",
-        "Loss validacion": "Loss validación",
+        "Loss validacion": "Pérdida validación",
     }
 )
-tabla_p4_folds
+mostrar_tabla(tabla_p4_folds, decimales=4)
 ```
 
-Los resultados de validación oscilan entre *0.4048* y *0.5476* de accuracy, con una media de *0.4763* y una desviación estándar de *0.0526*. Esta dispersión confirma que, con solo 212 observaciones, el desempeño estimado del modelo depende de qué observaciones concretas conforman el subconjunto de evaluación en cada fold. El F1 macro promedio fue de *0.4563 ± 0.0318*, dato particularmente relevante dado que el problema presenta desequilibrio entre categorías: la exactitud global, por sí sola, puede estar ocultando errores sistemáticos en las clases minoritarias.
+Los resultados de validación oscilan entre *0.4048* y *0.5476* de exactitud, con una media de *0.4763* y una desviación estándar de *0.0526*. Esta dispersión confirma que, con solo 212 observaciones, el desempeño estimado depende de las observaciones que conforman cada pliegue de evaluación. El F1 macro promedio fue de *0.4563 ± 0.0318*, dato especialmente relevante porque la exactitud global puede ocultar errores sistemáticos en las clases minoritarias.
 
 #### Comparación con la partición fija
 
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación entre partición fija y validación cruzada k-fold."
+#| tbl-colwidths: [24, 24, 13, 13, 13, 13]
 import pandas as pd
 
 tabla_p4_comp = pd.read_csv("../resultados/tablas/p4_comparacion_kfold_particion_fija.csv")
+tabla_p4_comp = tabla_p4_comp[
+    [
+        "Estrategia",
+        "Conjunto evaluado",
+        "Accuracy medio",
+        "Desviacion accuracy",
+        "F1 macro medio",
+        "Desviacion F1 macro",
+    ]
+]
 tabla_p4_comp = tabla_p4_comp.rename(
     columns={
         "Estrategia": "Estrategia",
-        "Modelo": "Modelo",
-        "Conjunto evaluado": "Conjunto evaluado",
-        "Accuracy medio": "Accuracy",
-        "Desviacion accuracy": "Desv. accuracy",
+        "Conjunto evaluado": "Conjunto",
+        "Accuracy medio": "Exactitud",
+        "Desviacion accuracy": "Desv. exact.",
         "F1 macro medio": "F1 macro",
         "Desviacion F1 macro": "Desv. F1 macro",
-        "Uso recomendado": "Uso recomendado",
     }
 )
-tabla_p4_comp.fillna("-")
+tabla_p4_comp["Estrategia"] = tabla_p4_comp["Estrategia"].replace(
+    {
+        "Particion fija 70/15/15": "Partición 70/15/15",
+        "K-fold estratificado (k=5)": "k-fold estratificado (k=5)",
+    }
+)
+tabla_p4_comp["Conjunto"] = tabla_p4_comp["Conjunto"].replace(
+    {
+        "Prueba independiente": "Prueba independiente",
+        "Validaciones internas": "Validaciones internas",
+    }
+)
+mostrar_tabla(tabla_p4_comp.fillna("-"), decimales=4)
 ```
 
-La partición fija 70/15/15 generó una exactitud de prueba de *0.4375* para el MLP inicial, mientras que la validación cruzada k-fold estimó una exactitud media de *0.4763*. La primera estratégia evalua una partición fija mediante la reserva de un conjunto de prueba único para el reporte final, mientras que k-fold promedia cinco evaluaciones internas y ofrece una medida más estable de variabilidad.
+La partición fija 70/15/15 generó una exactitud de prueba de *0.3438* para el MLP inicial, mientras que la validación cruzada *k-fold* estimó una exactitud media de *0.4763*. La primera estrategia evalúa una única partición mediante la reserva de un conjunto de prueba para el reporte final, mientras que *k-fold* promedia cinco evaluaciones internas y permite cuantificar la variabilidad entre particiones.
 
 #### Rol metodológico en la estrategia global
 
@@ -426,7 +549,7 @@ La validación cruzada estratificada con *k = 5* es apropiada como herramienta c
 
 Se entrenaron ocho arquitecturas de perceptrón multicapa para la clasificación multiclase de la severidad de *Verticillium sp.* (seis categorías: 1 = planta sana, 2 a 6 = niveles crecientes de severidad). La variación sistemática incluyó el número de capas ocultas (1, 2 y 3), el número de neuronas por capa (16, 32 y 64, evaluando al menos dos tamaños en cada número de capas) y la tasa de aprendizaje (0.001, 0.01 y 0.1). En lugar de un barrido factorial exhaustivo de las 27 combinaciones posibles, se optó por un diseño curado de ocho configuraciones que satisface los mínimos pedidos en el enunciado; esto tiene como consecuencia que la tasa de aprendizaje no varía de forma completamente independiente dentro de cada arquitectura, sino que queda parcialmente confundida con la combinación de capas y neuronas, aspecto que se tendrá presente al interpretar su efecto más adelante.
 
-La muestra de datos conformada por 212 observaciones, presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones), por lo que el entrenamiento se realizó sobre el conjunto de entrenamiento balanceado mediante SMOTE, dejando validación y prueba sin sobremuestrear. Con el esquema de partición 70/15/15 de la Pregunta 3, el obtuvo los siguientes tamaños: *entrenamiento = 198*, *validación = 32* y *prueba = 32* observaciones. Este tamaño de validación y prueba es reducido y debe tenerse presente como límite al interpretar diferencias pequeñas entre configuraciones, pues con 32 observaciones una sola predicción adicional correcta ya mueve la exactitud en cerca de 3 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida *softmax*, con entropía cruzada categórica dispersa como función de pérdida y *early stopping* monitoreando la pérdida de validación.
+La muestra de 212 observaciones presenta un desbalance moderado entre categorías (conteos entre 13 y 47 observaciones). Por ello, el entrenamiento se realizó sobre el conjunto balanceado mediante SMOTE, dejando validación y prueba sin sobremuestrear. Con el esquema 70/15/15 de la Pregunta 3 se obtuvieron los siguientes tamaños: *entrenamiento balanceado = 198*, *validación = 32* y *prueba = 32* observaciones. El tamaño reducido de validación y prueba debe tenerse presente al interpretar diferencias pequeñas entre configuraciones: con 32 observaciones, una predicción adicional correcta modifica la exactitud en cerca de 3.1 puntos porcentuales. Todas las redes utilizaron activación ReLU en las capas ocultas y salida *softmax*, con entropía cruzada categórica dispersa como función de pérdida y *early stopping* monitoreando la pérdida de validación.
 
 Los criterios usados para seleccionar la mejor configuración se establecieron teniendo en cuenta la menor pérdida de validación, y no por la exactitud de prueba. Emplear el conjunto de prueba para elegir hiperparámetros lo convertiría, en la práctica, en una extensión del conjunto de validación, contaminando la evaluación final con un sesgo optimista, justamente el problema que la partición en tres conjuntos de la Pregunta 3 buscaba evitar. Por esa razón, la exactitud de prueba se reporta únicamente a modo descriptivo, una vez seleccionado el modelo.
 
@@ -437,6 +560,7 @@ La tabla siguiente resume el desempeño de las ocho configuraciones entrenadas. 
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación de arquitecturas de perceptrón multicapa para clasificación multiclase."
+#| tbl-colwidths: [16, 8, 10, 9, 8, 17, 17, 15]
 import pandas as pd
 
 tabla_p5 = pd.read_csv("../resultados/tablas/13_p5_comparacion_arquitecturas_mlp.csv")
@@ -449,30 +573,28 @@ tabla_p5_resumen = tabla_p5[
         "Épocas ejecutadas",
         "Loss Train mínima",
         "Loss Val mínima",
-        "Acc Train (máx)",
         "Acc Val (máx)",
-        "Brecha Acc Train-Val",
-        "Acc Test",
     ]
 ].rename(
     columns={
+        "Configuración": "Config.",
         "Capas ocultas": "Capas",
         "Neuronas/capa": "Neuronas",
+        "Tasa aprendizaje": "Tasa (lr)",
         "Épocas ejecutadas": "Épocas",
-        "Loss Train mínima": "Loss Train mín.",
-        "Loss Val mínima": "Loss Val mín.",
-        "Acc Train (máx)": "Acc Train",
-        "Acc Val (máx)": "Acc Val",
+        "Loss Train mínima": "Pérd. entren.",
+        "Loss Val mínima": "Pérd. valid.",
+        "Acc Val (máx)": "Exact. valid.",
     }
 )
-tabla_p5_resumen
+mostrar_tabla(tabla_p5_resumen, decimales=4)
 ```
 
 Para cada configuración, las curvas de aprendizaje muestran la evolución de la pérdida en entrenamiento y validación por época. Esta visualización permite identificar si la red reduce ambas pérdidas de manera coordinada, si la pérdida de entrenamiento sigue bajando mientras la validación empeora, o si ambas permanecen altas.
 
 ![Curvas de aprendizaje por configuración de MLP](../resultados/figuras/07_curvas_aprendizaje.png){#fig-curvas-aprendizaje-p5 width="100%"}
 
-El modelo seleccionado, según el criterio predefinido de menor pérdida de validación, fue *2L-64N-lr0.1* (*Loss Val mínima = 0.9958*), con exactitud máxima de validación de *0.5938*, brecha Train-Val de *0.0174* y exactitud de prueba de referencia de *0.3438*. Aunque *2L-16N-lr0.01* obtuvo la mayor exactitud en la prueba de referencia (*0.4688*), no se usó porque podría contaminar el conjunto de prueba. El criterio de pérdida de validación mantiene la selección dentro del proceso de entrenamiento y reserva la prueba para la evaluación final.
+El modelo seleccionado, según el criterio predefinido de menor pérdida de validación, fue *2L-64N-lr0.1* (*Loss Val mínima = 0.9958*), con una exactitud máxima de validación de *0.5938*. Esta decisión mantiene la selección de arquitectura dentro del proceso de entrenamiento y reserva el conjunto de prueba para la evaluación detallada de la Pregunta 7.
 
 #### Diagnóstico de sobreajuste y subajuste
 
@@ -484,11 +606,13 @@ La configuración *2L-64N-lr0.1* muestra el mejor valor mínimo de pérdida de v
 
 #### Conclusión
 
-En comparación, la arquitectura más simple tiende al subajuste, mientras que algunas arquitecturas de mayor capacidad presentan señales de sobreajuste cuando la brecha entre entrenamiento y validación aumenta. El mejor modelo, según la pérdida mínima de validación, fue *2L-64N-lr0.1*, aunque su tasa de aprendizaje exige apoyarse en *early stopping* para conservar la mejor época. Asimis, deben señalarse dos limitaciones: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que diferencias pequeñas entre configuraciones deben interpretarse con cautela.
+En comparación, la arquitectura más simple tiende al subajuste, mientras que algunas arquitecturas de mayor capacidad presentan señales de sobreajuste cuando la brecha entre entrenamiento y validación aumenta. El mejor modelo, según la pérdida mínima de validación, fue *2L-64N-lr0.1*, aunque su tasa de aprendizaje exige apoyarse en *early stopping* para conservar la mejor época. Asimismo, deben señalarse dos limitaciones: el diseño de ocho configuraciones no permite aislar por completo el efecto de la tasa de aprendizaje del efecto de la arquitectura, y el tamaño reducido de validación y prueba (32 observaciones cada uno) implica que las diferencias pequeñas deben interpretarse con cautela.
 
 ### Pregunta 6: Implemente y compare dos criterios para cuantificar el error durante el entrenamiento: entropía cruzada categórica (CCE) y error cuadrático medio (MSE). ¿Cuál es más apropiado para un problema de clasificación múltiple? Fundamente su respuesta tanto teórica como empíricamente.
 
-Se entrenó la arquitectura seleccionada en la Pregunta 5 (*2L-64N-lr0.1*) dos veces, idéntica en todo salvo la función de pérdida. Para la entropía cruzada se usó `sparse_categorical_crossentropy`, que es equivalente a la entropía cruzada categórica cuando las etiquetas se almacenan como enteros; para MSE se usaron etiquetas en formato *one-hot*.
+Se entrenaron dos modelos con la arquitectura seleccionada en la Pregunta 5 (*2L-64N-lr0.1*), los mismos datos y el mismo protocolo de entrenamiento. La diferencia metodológica fue la función de pérdida y, por necesidad, el formato de las etiquetas: para la entropía cruzada se usó `sparse_categorical_crossentropy` con etiquetas enteras; para MSE se usaron etiquetas en formato *one-hot*.
+
+No se forzó una inicialización idéntica de pesos antes de entrenar ambos modelos. En consecuencia, aunque la diferencia observada es amplia y favorece a CCE, una fracción de esa diferencia podría deberse a la variación estocástica del entrenamiento. Una comparación confirmatoria debería repetir ambos criterios con varias semillas o con pesos iniciales compartidos.
 
 #### Resultados obtenidos
 
@@ -512,13 +636,25 @@ tabla_p6 = tabla_p6[
     columns={
         "Funcion perdida": "Función de pérdida",
         "Implementacion": "Implementación",
-        "Accuracy prueba": "Accuracy prueba",
+        "Accuracy prueba": "Exactitud prueba",
         "Aciertos prueba": "Aciertos",
         "Total prueba": "Total",
         "Decision metodologica": "Decisión metodológica",
     }
 )
-tabla_p6
+tabla_p6["Función de pérdida"] = tabla_p6["Función de pérdida"].replace(
+    {
+        "Entropia cruzada categorica": "Entropía cruzada categórica",
+        "Error cuadratico medio": "Error cuadrático medio",
+    }
+)
+tabla_p6["Decisión metodológica"] = tabla_p6["Decisión metodológica"].replace(
+    {
+        "Recomendada para clasificacion multiclase con softmax":
+            "Recomendada para clasificación multiclase con softmax",
+    }
+)
+mostrar_tabla(tabla_p6, decimales=4)
 ```
 
 Con la arquitectura seleccionada en la Pregunta 5, CCE obtuvo una exactitud de prueba de *0.4375* (14/32), mientras que MSE obtuvo *0.2188* (7/32). La diferencia empírica favorece claramente a CCE en esta ejecución: el modelo entrenado con entropía cruzada clasificó correctamente el doble de observaciones que el modelo entrenado con MSE.
@@ -529,7 +665,7 @@ Las curvas de entrenamiento muestran que ambas funciones reducen la pérdida dur
 
 #### Fundamento teórico
 
-La entropía cruzada categórica es la función de pérdida coherente con la capa de salida *softmax*, esta maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (*proper scoring rule*), que penaliza de forma creciente la confianza mal ubicada en la clase incorrecta, con gradientes bien escalados incluso cuando la predicción está muy alejada del valor real. El error cuadrático medio, en cambio, fue diseñado para variables continuas; aplicado sobre probabilidades *softmax* con codificación *one-hot*, produce gradientes que pueden ser menos informativos cuando la salida se acerca a 0 o a 1, ralentizando el aprendizaje justo en casos de error claro. Además, MSE trata las probabilidades de clase como coordenadas continuas y no como una distribución categórica que debe asignar alta probabilidad a una única clase verdadera.
+La entropía cruzada categórica es coherente con la capa de salida *softmax*: maximiza la verosimilitud de una distribución categórica y constituye una regla de puntuación propia (*proper scoring rule*). Penaliza de forma creciente la confianza asignada a una clase incorrecta y proporciona gradientes informativos cuando la predicción está alejada del valor real. El error cuadrático medio, en cambio, fue diseñado principalmente para variables continuas; aplicado sobre probabilidades *softmax* con codificación *one-hot*, puede producir gradientes menos informativos cuando las salidas se acercan a 0 o a 1. Además, MSE trata las probabilidades de clase como coordenadas continuas, no como una distribución categórica que debe concentrar probabilidad en la clase verdadera.
 
 #### Conclusión
 
@@ -547,10 +683,22 @@ Se evaluó el modelo seleccionado en la Pregunta 5, *2L-64N-lr0.1*, entrenado co
 ```{python}
 #| echo: false
 #| tbl-cap: "Resumen de métricas globales del modelo multiclase en prueba."
+#| tbl-colwidths: [22, 13, 9, 10, 14, 15, 17]
 import pandas as pd
 
 tabla_p7_resumen = pd.read_csv("../resultados/tablas/p7_resumen_metricas_multiclase.csv")
-tabla_p7_resumen
+tabla_p7_resumen = tabla_p7_resumen[
+    [
+        "Modelo",
+        "Accuracy",
+        "Aciertos",
+        "Total prueba",
+        "F1 macro",
+        "F1 ponderado",
+        "AUC-ROC macro",
+    ]
+].rename(columns={"Accuracy": "Exactitud"})
+mostrar_tabla(tabla_p7_resumen, decimales=4)
 ```
 
 
@@ -562,7 +710,8 @@ tabla_p7_resumen
 import pandas as pd
 
 tabla_p7_metricas = pd.read_csv("../resultados/tablas/p7_metricas_clasificacion_multiclase.csv")
-tabla_p7_metricas
+tabla_p7_metricas = tabla_p7_metricas.rename(columns={"Precision": "Precisión"})
+mostrar_tabla(tabla_p7_metricas, decimales=4)
 ```
 
 El macro F1-score fue de *0.3137*, inferior al F1 ponderado (*0.3909*). Esta diferencia indica que el desempeño global está favorecido por las clases con mayor soporte en prueba, mientras que las clases minoritarias o difíciles, especialmente Sev 1 y Sev 6, reducen de forma marcada el promedio no ponderado.
@@ -577,7 +726,10 @@ La matriz de confusión, con filas correspondientes a la severidad real y column
 #| tbl-cap: "Matriz de confusión del modelo multiclase."
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p7_matriz_confusion_multiclase.csv")
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p7_matriz_confusion_multiclase.csv"),
+    decimales=0,
+)
 ```
 
 ![Matriz de confusión del modelo multiclase](../resultados/figuras/09_confusion_multiclase.png){#fig-confusion-multiclase width="80%"}
@@ -592,7 +744,10 @@ La matriz evidencia una tendencia a concentrar predicciones en severidades inter
 #| tbl-cap: "AUC-ROC por clase bajo esquema uno-contra-todos."
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p7_auc_roc_ovr_multiclase.csv")
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p7_auc_roc_ovr_multiclase.csv"),
+    decimales=4,
+)
 ```
 
 ![Curvas ROC uno-contra-todos por clase](../resultados/figuras/10_roc_multiclase.png){#fig-roc-multiclase width="85%"}
@@ -624,7 +779,12 @@ El criterio adoptado asigna la severidad 1 a la categoría "Sano" (0) y las seve
 #| tbl-cap: "Distribución de clases después del colapso binario."
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p8_distribucion_binaria.csv")
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p8_distribucion_binaria.csv").rename(
+        columns={"Codigo": "Código"}
+    ),
+    decimales=2,
+)
 ```
 
 #### Criterio adoptado y justificación
@@ -652,7 +812,14 @@ Se entrenó un perceptrón multicapa binario usando la misma arquitectura selecc
 #| tbl-cap: "Partición del problema binario y balanceo con SMOTE."
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p9_particion_binaria.csv")
+tabla_p9_particion = pd.read_csv("../resultados/tablas/p9_particion_binaria.csv")
+tabla_p9_particion["Conjunto"] = tabla_p9_particion["Conjunto"].replace(
+    {"Validacion": "Validación"}
+)
+mostrar_tabla(
+    tabla_p9_particion,
+    decimales=0,
+)
 ```
 
 #### Resultados obtenidos
@@ -664,7 +831,12 @@ Con el umbral por defecto de 0.5, la exactitud de prueba fue de *0.7812* (25/32)
 #| tbl-cap: "Métricas del MLP binario con umbral 0.5."
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p9_metricas_binarias_umbral_05.csv")
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p9_metricas_binarias_umbral_05.csv").rename(
+        columns={"Precision": "Precisión"}
+    ),
+    decimales=4,
+)
 ```
 
 #### Comparación con el modelo multiclase
@@ -676,7 +848,18 @@ La comparación con el modelo multiclase seleccionado en la Parte I se presenta 
 #| tbl-cap: "Comparación entre MLP multiclase y MLP binario sobre el conjunto de prueba."
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p9_comparacion_mlp_multiclase_binario.csv")
+mostrar_tabla(
+    pd.read_csv(
+        "../resultados/tablas/p9_comparacion_mlp_multiclase_binario.csv"
+    ).rename(
+        columns={
+            "Accuracy": "Exactitud",
+            "Precision macro": "Precisión macro",
+            "Precision ponderada": "Precisión ponderada",
+        }
+    ),
+    decimales=4,
+)
 ```
 
 La exactitud pasa de *0.4375* en el modelo multiclase a *0.7812* en el binario, y el F1 ponderado de *0.3909* a *0.8126*. También mejora el F1 macro, de *0.3137* a *0.6621*, lo que indica que la mejora no se debe únicamente al peso de la clase mayoritaria. No obstante, esta comparación debe interpretarse con cautela: al reducir seis categorías ordinales a dos clases, desaparecen muchos errores entre niveles de severidad que antes contaban como fallos, especialmente las confusiones entre severidad sana/leve y entre categorías intermedias.
@@ -696,9 +879,34 @@ Con el umbral por defecto de 0.5, la sensibilidad del modelo binario fue de 22/2
 ```{python}
 #| echo: false
 #| tbl-cap: "Métricas del modelo binario usando el umbral óptimo de Youden."
+#| tbl-colwidths: [18, 12, 12, 12, 12, 12, 10, 12]
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p10_metricas_umbral_youden.csv")
+tabla_p10_youden = pd.read_csv(
+    "../resultados/tablas/p10_metricas_umbral_youden.csv"
+)[
+    [
+        "Criterio umbral",
+        "Umbral",
+        "Accuracy",
+        "Precision",
+        "Sensibilidad",
+        "Especificidad",
+        "F1-score",
+        "AUC-ROC",
+    ]
+].rename(
+    columns={
+        "Criterio umbral": "Criterio",
+        "Accuracy": "Exact.",
+        "Precision": "Prec.",
+        "Sensibilidad": "Sens.",
+        "Especificidad": "Espec.",
+        "F1-score": "F1",
+        "AUC-ROC": "AUC",
+    }
+)
+mostrar_tabla(tabla_p10_youden, decimales=4)
 ```
 
 También se comparó el umbral por defecto de 0.5 con el umbral óptimo de Youden:
@@ -706,9 +914,31 @@ También se comparó el umbral por defecto de 0.5 con el umbral óptimo de Youde
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación entre umbral por defecto y umbral de Youden."
+#| tbl-colwidths: [18, 12, 12, 14, 14, 12, 9, 9]
 import pandas as pd
 
-pd.read_csv("../resultados/tablas/p10_comparacion_umbrales.csv")
+tabla_p10_umbrales = pd.read_csv(
+    "../resultados/tablas/p10_comparacion_umbrales.csv"
+)[
+    [
+        "Criterio",
+        "Umbral",
+        "Accuracy",
+        "Sensibilidad",
+        "Especificidad",
+        "F1 Enfermo",
+        "FP",
+        "FN",
+    ]
+].rename(
+    columns={
+        "Accuracy": "Exact.",
+        "Sensibilidad": "Sens.",
+        "Especificidad": "Espec.",
+        "F1 Enfermo": "F1 enferm.",
+    }
+)
+mostrar_tabla(tabla_p10_umbrales, decimales=4)
 ```
 
 Al subir el umbral de 0.5 a 0.9226, la matriz de confusión pasa de *(TN=3, FP=1, FN=6, TP=22)* a *(TN=4, FP=0, FN=6, TP=22)*. En esta corrida, el criterio de Youden elimina el único falso positivo y aumenta la especificidad de 0.75 a 1.00, pero no recupera falsos negativos: la sensibilidad se mantiene en 0.7857. Esto muestra que el umbral óptimo según Youden mejora el equilibrio estadístico entre sensibilidad y especificidad, aunque no necesariamente maximiza el objetivo fitosanitario de detectar todas las plantas enfermas.
@@ -717,11 +947,13 @@ Al subir el umbral de 0.5 a 0.9226, la matriz de confusión pasa de *(TN=3, FP=1
 
 #### Interpretación en el contexto fitosanitario
 
-Un falso negativo, es decir, una planta enferma clasificada como sana, es claramente más costoso en este contexto: la planta no recibe tratamiento y la infección por *Verticillium sp.*, al tratarse de un patógeno de suelo con capacidad de dispersión, puede progresar y contagiar el entorno. El costo de un falso positivo, en cambio, es acotado: una inspección o un tratamiento preventivo innecesario, con un costo económico menor y sin riesgo fitosanitario adicional. En esta muestra, el umbral de Youden mejora la exactitud y la especificidad, pero no reduce los falsos negativos frente al umbral 0.5. Por tanto, aunque es un criterio estadístico útil, para un sistema de alerta temprana convendría evaluar umbrales alternativos definidos por una sensibilidad mínima deseada, junto con un agrónomo que cuantifique el costo real de cada tipo de error.
+Un falso negativo, es decir, una planta enferma clasificada como sana, es más costoso en este contexto: la planta no recibe una inspección o intervención oportuna y la infección por *Verticillium sp.*, al tratarse de un patógeno de suelo con capacidad de dispersión, puede progresar. El costo de un falso positivo suele ser menor, pero no es nulo: puede generar inspecciones, muestreos o tratamientos innecesarios. En esta muestra, el umbral de Youden mejora la exactitud y la especificidad, pero no reduce los falsos negativos frente al umbral 0.5. Por tanto, aunque es un criterio estadístico útil, para un sistema de alerta temprana convendría evaluar umbrales alternativos definidos por una sensibilidad mínima deseada, junto con un profesional en agronomía que cuantifique el costo real de cada tipo de error.
 
 #### Conclusión
 
 El ajuste del umbral de decisión, más allá del valor por defecto de 0.5, constituye una herramienta simple para alinear el modelo con los costos reales del problema. En esta corrida, Youden mejora la especificidad y elimina falsos positivos, pero mantiene 6 falsos negativos. Por ello, la selección final del umbral no debería depender solo de Youden: si el objetivo operativo es minimizar plantas enfermas no detectadas, debe priorizarse explícitamente la sensibilidad.
+
+Como el umbral se calculó sobre las probabilidades del conjunto de prueba, su desempeño debe considerarse exploratorio. En una aplicación futura, el umbral tendría que seleccionarse con validación o validación cruzada y evaluarse una sola vez sobre una prueba independiente.
 
 # Parte III: Regresión logística y comparación de modelos
 
@@ -729,12 +961,17 @@ El ajuste del umbral de decisión, más allá del valor por defecto de 0.5, cons
 
 ### Pregunta 11: Ajuste un modelo de regresión logística binaria usando la misma partición que en la Parte II. Reporte los coeficientes estimados, sus errores estándar, valores p e intervalos de confianza al 95%. ¿Qué variables son estadísticamente significativas? ¿Tienen el signo esperado desde el punto de vista agronómico?
 
-Se ajustó una regresión logística sobre la misma partición binaria utilizada en la Parte II (entrenamiento con SMOTE, sin sobremuestreo en validación ni en prueba), usando los cinco índices espectrales y la altura media, todos estandarizados.
+Se ajustó una regresión logística sobre la misma partición binaria utilizada en la Parte II (entrenamiento con SMOTE, sin sobremuestreo en validación ni en prueba), usando los cuatro índices espectrales disponibles y la altura media, todos estandarizados.
+
+Los errores estándar, valores p e intervalos de confianza se obtuvieron mediante una aproximación basada en la matriz de información del modelo. Deben interpretarse como resultados exploratorios, no como inferencia confirmatoria: el ajuste se realizó sobre un entrenamiento balanceado con observaciones sintéticas de SMOTE, que no equivalen a nuevas unidades muestrales independientes. Esta salvedad no impide responder la pregunta, pero limita la fuerza con la que puede afirmarse significancia estadística.
 
 #### Resultados obtenidos
 
+**Coeficientes e inferencia aproximada de la regresión logística**
+
 ```{python}
 #| echo: false
+#| tbl-colwidths: [16, 14, 14, 12, 18, 12, 14]
 import pandas as pd
 tabla_p11 = pd.read_csv("../resultados/tablas/p11_coeficientes_logisticos_inferencia.csv")
 tabla_p11_mostrar = tabla_p11.copy()
@@ -746,40 +983,51 @@ tabla_p11_mostrar = tabla_p11_mostrar[
     [
         "Variable",
         "Coeficiente",
-        "OR (exp(β))",
         "Error Std",
-        "Z",
         "p-valor",
         "IC 95%",
         "Significativa (alpha=0.05)",
         "Signo esperado",
     ]
-]
-for columna in ["Coeficiente", "OR (exp(β))", "Error Std", "Z", "p-valor"]:
+].rename(
+    columns={
+        "Error Std": "Error est.",
+        "Significativa (alpha=0.05)": "Signif.",
+        "Signo esperado": "Signo esp.",
+    }
+)
+for columna in ["Coeficiente", "Error est.", "p-valor"]:
     tabla_p11_mostrar[columna] = tabla_p11_mostrar[columna].round(4)
-tabla_p11_mostrar
+mostrar_tabla(tabla_p11_mostrar, decimales=4)
 ```
 
 El intercepto estimado fue:
 
 ```{python}
 #| echo: false
-pd.read_csv("../resultados/tablas/p11_intercepto_logistico.csv").round(4)
+#| label: tbl-p11-intercepto
+#| tbl-cap: "Intercepto estimado de la regresión logística."
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p11_intercepto_logistico.csv").rename(
+        columns={"Parametro": "Parámetro"}
+    ),
+    decimales=4,
+)
 ```
 
 ![Coeficientes estimados de la regresión logística binaria con intervalos de confianza al 95%.](../resultados/figuras/12_coeficientes_logisticos.png){#fig-p11-coeficientes-logisticos width="80%"}
 
-Al nivel de significancia α = 0.05, solo el EVI (p = 0.0012) y la altura media (p = 0.0398) resultan estadísticamente significativos. El NDVI, el NDRE y el GLI no lo son en este modelo multivariado, pese a que en el análisis exploratorio de la Pregunta 1 el NDVI (ρ = −0.855) y el NDRE (ρ = −0.817) mostraron las correlaciones univariadas de Spearman más fuertes con la severidad, muy por encima de la altura (ρ = −0.340).
+Con el criterio exploratorio de $\alpha = 0.05$, solo el EVI ($p = 0.0012$) y la altura media ($p = 0.0398$) resultan estadísticamente significativos. El NDVI, el NDRE y el GLI no lo son en este modelo multivariado, pese a que en el análisis exploratorio de la Pregunta 1 el NDVI ($\rho = -0.855$) y el NDRE ($\rho = -0.817$) mostraron las correlaciones univariadas de Spearman más fuertes con la severidad, muy por encima de la altura ($\rho = -0.340$).
 
 #### Interpretación de los coeficientes
 
 La pérdida de significancia de variables con fuerte correlación univariada se explica principalmente por multicolinealidad: el NDVI, el EVI y el NDRE son índices espectrales derivados de combinaciones parcialmente solapadas de bandas de reflectancia, todos sensibles a la actividad fotosintética y al contenido de clorofila, por lo que están altamente correlacionados entre sí. Esto se refleja en los errores estándar de la tabla, donde el NDVI presenta el valor más alto de todas las variables (1.325), mayor incluso que su propio coeficiente en valor absoluto, lo que genera un intervalo de confianza extremadamente amplio que cruza el cero. Cuando varias variables comparten la misma señal subyacente, el modelo reparte el crédito explicativo entre ellas de forma inestable, y cuál de ellas termina apareciendo significativa depende de particularidades de la muestra más que de su relevancia biológica.
 
-En cuanto al signo de los coeficientes, el NDVI, el EVI, el NDRE y el GLI son negativos, lo cual coincide con lo esperado desde el punto de vista agronómico: valores más altos de estos índices reflejan mayor vigor fotosintético y, por tanto, se asocian a una menor probabilidad de estar enfermo. La altura media, en cambio, presenta un coeficiente positivo y significativo, lo que a primera vista resulta contraintuitivo, pues cabría esperar que las plantas más enfermas fueran también más bajas. Sin embargo, esto es consistente con lo observado en el análisis exploratorio: la altura promedio por severidad no decrece de forma monótona, sino que cae entre las severidades 1 y 4 y repunta en las severidades 5 y 6, siendo además la variable con la correlación univariada más débil de las cinco (ρ = −0.340). Es probable que el signo positivo de la altura en el modelo multivariado sea, en parte, un artefacto de esa relación no monótona combinado con la multicolinealidad entre los índices espectrales, por lo que debe señalarse como una limitación de la interpretación causal de este coeficiente y no como una conclusión agronómica firme.
+En cuanto al signo de los coeficientes, el NDVI, el EVI, el NDRE y el GLI son negativos, lo cual coincide con lo esperado desde el punto de vista agronómico: valores más altos de estos índices reflejan mayor vigor fotosintético y, por tanto, se asocian con una menor probabilidad de estar enfermo. La altura media, en cambio, presenta un coeficiente positivo y significativo bajo la aproximación empleada, lo que a primera vista resulta contraintuitivo, pues cabría esperar que las plantas más enfermas fueran también más bajas. Sin embargo, esto es consistente con lo observado en el análisis exploratorio: la altura promedio por severidad no decrece de forma monótona, sino que cae entre las severidades 1 y 4 y repunta en las severidades 5 y 6; además, es la variable con la correlación univariada más débil de las cinco ($\rho = -0.340$). Es probable que el signo positivo de la altura en el modelo multivariado sea, en parte, un artefacto de esa relación no monótona combinado con la multicolinealidad entre los índices espectrales. Por ello, debe señalarse como una limitación de la interpretación causal y no como una conclusión agronómica firme.
 
 #### Conclusión
 
-Según este modelo, el EVI es el predictor individual más fuerte y confiable, con el mayor valor absoluto de Z, el menor p-valor y el intervalo de confianza relativamente más estrecho, seguido de la altura, aunque con la salvedad señalada sobre su signo. El NDVI y el NDRE, pese a ser los índices más prometedores en el análisis univariado, no aportan señal estadísticamente independiente una vez que el EVI está en el modelo, muy probablemente por la colinealidad entre índices espectrales, un punto que conviene retomar en la Pregunta 12 al aplicar selección de variables mediante Lasso, dado que la regularización L1 está diseñada precisamente para lidiar con este tipo de redundancia entre predictores correlacionados.
+Dentro de la aproximación empleada, el EVI es el predictor individual con mayor evidencia estadística, seguido de la altura, aunque con la salvedad señalada sobre su signo. El NDVI y el NDRE, pese a ser los índices más prometedores en el análisis univariado, no aportan señal estadísticamente independiente una vez que el EVI está en el modelo, probablemente por la colinealidad entre índices espectrales. Esta redundancia se retoma en la Pregunta 12 mediante la regularización Lasso.
 
 ### Pregunta 12: Aplique al menos un método de selección de variables sobre el modelo de regresión logística: puede usar selección paso a paso, regularización Lasso (L1) o Ridge (L2), o criterios de información (AIC/BIC). ¿Cuáles son las variables más relevantes para predecir la severidad según este modelo? Compare este resultado con la importancia de variables obtenida con la red neuronal en la Pregunta 14.
 
@@ -793,14 +1041,27 @@ El parámetro de regularización seleccionado por validación cruzada fue:
 
 ```{python}
 #| echo: false
+#| label: tbl-p12-parametros-lasso
+#| tbl-cap: "Parámetro seleccionado por la regresión logística Lasso."
 import pandas as pd
-pd.read_csv("../resultados/tablas/p12_parametros_lasso.csv").round(4)
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p12_parametros_lasso.csv").rename(
+        columns={
+            "Metodo": "Método",
+            "Validacion cruzada": "Validación cruzada",
+            "C optimo": "C óptimo",
+        }
+    ),
+    decimales=4,
+)
 ```
 
 La importancia de variables estimada a partir de la magnitud absoluta de los coeficientes Lasso fue:
 
 ```{python}
 #| echo: false
+#| label: tbl-p12-importancia-lasso
+#| tbl-cap: "Importancia de variables según la magnitud de los coeficientes Lasso."
 tabla_p12_lasso = pd.read_csv("../resultados/tablas/p12_importancia_lasso.csv")
 tabla_p12_lasso = tabla_p12_lasso.rename(
     columns={
@@ -808,7 +1069,7 @@ tabla_p12_lasso = tabla_p12_lasso.rename(
         "Abs(Coef)": "Valor absoluto",
     }
 )
-tabla_p12_lasso.round(4)
+mostrar_tabla(tabla_p12_lasso, decimales=4)
 ```
 
 ![Importancia de variables según regresión logística Lasso](../resultados/figuras/13_importancia_lasso.png){#fig-importancia-lasso width="80%"}
@@ -827,16 +1088,26 @@ La comparación con la importancia de variables del perceptrón multicapa binari
 
 ```{python}
 #| echo: false
+#| label: tbl-p12-comparacion-importancia
+#| tbl-cap: "Comparación entre la importancia de Lasso y la importancia por permutación del MLP."
 tabla_p12_comp = pd.read_csv("../resultados/tablas/p12_comparacion_lasso_mlp_pfi.csv")
+tabla_p12_comp = tabla_p12_comp[
+    [
+        "Variable",
+        "Ranking Lasso",
+        "Abs(Coef)",
+        "Ranking MLP PFI",
+        "Importancia PFI",
+    ]
+]
 tabla_p12_comp = tabla_p12_comp.rename(
     columns={
-        "Coef. Lasso": "Coeficiente Lasso",
-        "Abs(Coef)": "|Coeficiente Lasso|",
-        "Importancia PFI": "Importancia MLP (PFI)",
-        "Std": "Desv. Est. PFI",
+        "Abs(Coef)": "Magnitud Lasso",
+        "Ranking MLP PFI": "Ranking MLP",
+        "Importancia PFI": "Importancia MLP",
     }
 )
-tabla_p12_comp.round(4)
+mostrar_tabla(tabla_p12_comp, decimales=4)
 ```
 
 El ranking de la regresión logística Lasso fue: `evi_med`, `ndre_med`, `height_med`, `ndvi_med` y `gli_med`. El ranking del MLP por importancia de permutación fue: `height_med`, `evi_med`, `ndre_med`, `gli_med` y `ndvi_med`. Por tanto, ambos enfoques coinciden en las tres variables más relevantes, pero no en el orden: Lasso prioriza los índices espectrales EVI y NDRE, mientras que el MLP asigna mayor caída de exactitud a la altura.
@@ -858,8 +1129,32 @@ Con el umbral por defecto de 0.5, el resultado fue:
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación entre MLP binario y regresión logística usando umbral 0.5."
+#| tbl-colwidths: [19, 11, 12, 12, 12, 12, 10, 12]
 import pandas as pd
-pd.read_csv("../resultados/tablas/p13_comparacion_modelos_umbral_05.csv").round(4)
+tabla_p13_05 = pd.read_csv(
+    "../resultados/tablas/p13_comparacion_modelos_umbral_05.csv"
+)[
+    [
+        "Modelo",
+        "Umbral",
+        "Accuracy",
+        "Precision",
+        "Sensibilidad",
+        "Especificidad",
+        "F1-score",
+        "AUC-ROC",
+    ]
+].rename(
+    columns={
+        "Accuracy": "Exact.",
+        "Precision": "Prec.",
+        "Sensibilidad": "Sens.",
+        "Especificidad": "Espec.",
+        "F1-score": "F1",
+        "AUC-ROC": "AUC",
+    }
+)
+mostrar_tabla(tabla_p13_05, decimales=4)
 ```
 
 Con el umbral de Youden calculado para cada modelo, el resultado fue:
@@ -867,9 +1162,35 @@ Con el umbral de Youden calculado para cada modelo, el resultado fue:
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación entre MLP binario y regresión logística usando umbral de Youden."
+#| tbl-colwidths: [19, 11, 12, 12, 12, 12, 10, 12]
 import pandas as pd
-pd.read_csv("../resultados/tablas/p13_comparacion_modelos_youden.csv").round(4)
+tabla_p13_youden = pd.read_csv(
+    "../resultados/tablas/p13_comparacion_modelos_youden.csv"
+)[
+    [
+        "Modelo",
+        "Umbral",
+        "Accuracy",
+        "Precision",
+        "Sensibilidad",
+        "Especificidad",
+        "F1-score",
+        "AUC-ROC",
+    ]
+].rename(
+    columns={
+        "Accuracy": "Exact.",
+        "Precision": "Prec.",
+        "Sensibilidad": "Sens.",
+        "Especificidad": "Espec.",
+        "F1-score": "F1",
+        "AUC-ROC": "AUC",
+    }
+)
+mostrar_tabla(tabla_p13_youden, decimales=4)
 ```
+
+Los umbrales de Youden se estimaron con el mismo conjunto usado para calcular las métricas, por lo que esta comparación es descriptiva y puede ser optimista. Para seleccionar un modelo operativo, los umbrales deben fijarse con validación y aplicarse después a un conjunto de prueba independiente.
 
 ![Comparación entre MLP binario y regresión logística](../resultados/figuras/14_comparacion_modelos.png){#fig-comparacion-modelos width="90%"}
 
@@ -881,7 +1202,7 @@ Cuando se permite ajustar el umbral mediante Youden, la regresión logística su
 
 #### Interpretabilidad y costo computacional
 
-La regresión logística tiene ventajas claras en interpretabilidad: sus coeficientes permiten identificar la dirección y magnitud del efecto de cada predictor, calcular odds ratios y evaluar significancia estadística. Además, su costo computacional es bajo, el entrenamiento es rápido y el modelo es fácil de auditar, lo cual puede ser importante en un sistema de apoyo a decisiones agronómicas donde se requiere explicar por qué una planta fue clasificada como enferma.
+La regresión logística tiene ventajas claras en interpretabilidad: sus coeficientes permiten identificar la dirección y magnitud del efecto de cada predictor, calcular razones de momios (*odds ratios*) y evaluar significancia estadística con las salvedades ya expuestas. Además, su costo computacional es bajo, el entrenamiento es rápido y el modelo es fácil de auditar, lo cual puede ser importante en un sistema de apoyo a decisiones agronómicas donde se requiere explicar por qué una planta fue clasificada como enferma.
 
 El MLP, en cambio, es menos interpretable de forma directa y requiere mayor costo computacional de entrenamiento, pero puede capturar relaciones no lineales e interacciones entre variables espectrales y altura. En este conjunto de datos, esa flexibilidad mejora la clasificación directa frente a la regresión logística cuando ambos modelos usan el umbral por defecto de 0.5; sin embargo, esa ventaja desaparece cuando ambos modelos se comparan con umbrales ajustados y con AUC-ROC.
 
@@ -912,7 +1233,7 @@ tabla_p14_pfi = tabla_p14_pfi.rename(
         "Std": "Desviación estándar",
     }
 )
-tabla_p14_pfi.round(4)
+mostrar_tabla(tabla_p14_pfi, decimales=4)
 ```
 
 ![Comparación de importancia de variables en MLP y Lasso](../resultados/figuras/15_importancia_variables.png){#fig-importancia-variables width="90%"}
@@ -925,15 +1246,23 @@ El MLP asigna la mayor importancia a `height_med`, seguido por `evi_med` y `ndre
 #| echo: false
 #| tbl-cap: "Comparación del ranking de importancia entre Lasso y MLP."
 tabla_p14_comp = pd.read_csv("../resultados/tablas/p14_comparacion_importancia_variables.csv")
+tabla_p14_comp = tabla_p14_comp[
+    [
+        "Variable",
+        "Ranking Lasso",
+        "Abs(Coef)",
+        "Ranking MLP PFI",
+        "Importancia PFI",
+    ]
+]
 tabla_p14_comp = tabla_p14_comp.rename(
     columns={
-        "Coef. Lasso": "Coeficiente Lasso",
-        "Abs(Coef)": "|Coeficiente Lasso|",
-        "Importancia PFI": "Importancia MLP (PFI)",
-        "Std": "Desv. Est. PFI",
+        "Abs(Coef)": "Magnitud Lasso",
+        "Ranking MLP PFI": "Ranking MLP",
+        "Importancia PFI": "Importancia MLP",
     }
 )
-tabla_p14_comp.round(4)
+mostrar_tabla(tabla_p14_comp, decimales=4)
 ```
 
 El ranking de la regresión logística Lasso fue: `evi_med`, `ndre_med`, `height_med`, `ndvi_med` y `gli_med`. El ranking del MLP fue: `height_med`, `evi_med`, `ndre_med`, `gli_med` y `ndvi_med`. Por tanto, ambos enfoques coinciden en las tres variables más relevantes, pero no en el orden completo. Esta coincidencia parcial es una señal favorable, porque sugiere que EVI, NDRE y altura concentran la mayor parte de la información predictiva, aunque cada modelo usa esa información de manera distinta.
@@ -963,8 +1292,22 @@ El resumen de la construcción de la grilla se presenta a continuación:
 ```{python}
 #| echo: false
 #| tbl-cap: "Resumen de la construcción de la grilla 14 x 14."
+#| tbl-colwidths: [35, 65]
 import pandas as pd
-pd.read_csv("../resultados/tablas/p15_resumen_grilla.csv")
+tabla_p15_resumen = pd.read_csv("../resultados/tablas/p15_resumen_grilla.csv")
+tabla_p15_resumen["Indicador"] = tabla_p15_resumen["Indicador"].replace(
+    {
+        "Dimension de la grilla": "Dimensión de la grilla",
+        "Metodo de asignacion": "Método de asignación",
+    }
+)
+tabla_p15_resumen["Valor"] = tabla_p15_resumen["Valor"].replace(
+    {
+        "Muestra aleatoria sin reemplazo y ubicacion secuencial en la grilla":
+            "Muestra aleatoria sin reemplazo y ubicación secuencial en la grilla",
+    }
+)
+mostrar_tabla(tabla_p15_resumen, decimales=0)
 ```
 
 La muestra de 196 observaciones conserva representación de todos los niveles de severidad:
@@ -972,7 +1315,10 @@ La muestra de 196 observaciones conserva representación de todos los niveles de
 ```{python}
 #| echo: false
 #| tbl-cap: "Distribución de severidad en la muestra asignada a la grilla."
-pd.read_csv("../resultados/tablas/p15_distribucion_severidad_grilla.csv")
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p15_distribucion_severidad_grilla.csv"),
+    decimales=0,
+)
 ```
 
 La asignación completa de cada observación a su fila y columna de la grilla se guardó en `resultados/tablas/p15_asignacion_grilla.csv`.
@@ -1005,7 +1351,20 @@ El método aplicado se resume en la siguiente tabla:
 #| echo: false
 #| tbl-cap: "Configuración del índice de Moran global para severidad ordinal."
 import pandas as pd
-pd.read_csv("../resultados/tablas/p16_metodo_moran_ordinal.csv")
+tabla_p16_metodo = pd.read_csv(
+    "../resultados/tablas/p16_metodo_moran_ordinal.csv"
+).rename(columns={"Caracteristica": "Característica"})
+tabla_p16_metodo["Característica"] = tabla_p16_metodo["Característica"].replace(
+    {
+        "Metodo elegido": "Método elegido",
+        "Numero de celdas evaluadas": "Número de celdas evaluadas",
+        "Normalizacion de pesos": "Normalización de pesos",
+    }
+)
+tabla_p16_metodo["Valor"] = tabla_p16_metodo["Valor"].replace(
+    {"Indice de Moran global": "Índice de Moran global"}
+)
+mostrar_tabla(tabla_p16_metodo, decimales=4)
 ```
 
 #### Resultados
@@ -1013,7 +1372,16 @@ pd.read_csv("../resultados/tablas/p16_metodo_moran_ordinal.csv")
 ```{python}
 #| echo: false
 #| tbl-cap: "Resultados del índice de Moran global usando rangos de severidad."
-pd.read_csv("../resultados/tablas/p16_moran_global_ordinal.csv").round(4)
+tabla_p16_resultados = pd.read_csv(
+    "../resultados/tablas/p16_moran_global_ordinal.csv"
+).rename(columns={"Estadistico": "Estadístico"})
+tabla_p16_resultados["Estadístico"] = tabla_p16_resultados["Estadístico"].replace(
+    {
+        "Indice de Moran global (I)": "Índice de Moran global (I)",
+        "Estadistico Z": "Estadístico Z",
+    }
+)
+mostrar_tabla(tabla_p16_resultados, decimales=4)
 ```
 
 El valor del índice de Moran global es prácticamente cero y muy cercano al valor esperado bajo la hipótesis nula de aleatoriedad espacial. Además, el p-valor de 0.9695 es mucho mayor que 0.05, por lo que no se rechaza la hipótesis nula de ausencia de autocorrelación espacial.
@@ -1041,8 +1409,18 @@ La configuración del experimento fue:
 ```{python}
 #| echo: false
 #| tbl-cap: "Configuración del MLP con coordenadas espaciales."
+#| tbl-colwidths: [35, 65]
 import pandas as pd
-pd.read_csv("../resultados/tablas/p17_configuracion_mlp_coordenadas.csv")
+tabla_p17_config = pd.read_csv(
+    "../resultados/tablas/p17_configuracion_mlp_coordenadas.csv"
+).rename(columns={"Caracteristica": "Característica"})
+tabla_p17_config["Característica"] = tabla_p17_config["Característica"].replace(
+    {
+        "Clasificacion usada": "Clasificación usada",
+        "Umbral de clasificacion": "Umbral de clasificación",
+    }
+)
+mostrar_tabla(tabla_p17_config, decimales=4)
 ```
 
 #### Resultados comparativos
@@ -1050,7 +1428,18 @@ pd.read_csv("../resultados/tablas/p17_configuracion_mlp_coordenadas.csv")
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación entre MLP binario base y MLP con coordenadas artificiales."
-pd.read_csv("../resultados/tablas/p17_comparacion_mlp_coordenadas.csv").round(4)
+#| tbl-colwidths: [27, 9, 14, 14, 18, 18]
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p17_comparacion_mlp_coordenadas.csv").rename(
+        columns={
+            "Numero predictores": "Pred.",
+            "Accuracy": "Exact.",
+            "Delta Accuracy vs base": "Cambio exact.",
+            "Delta AUC vs base": "Cambio AUC",
+        }
+    ),
+    decimales=4,
+)
 ```
 
 Al incluir las coordenadas, la exactitud disminuye de 0.7812 a 0.6562, lo que representa una caída de 0.1250 puntos. Sin embargo, el AUC-ROC aumenta de 0.8348 a 0.9196, con una diferencia de 0.0848 puntos. Por tanto, el efecto no es uniforme: las coordenadas artificiales empeoran la clasificación discreta bajo el umbral 0.5, pero mejoran la capacidad global de ordenamiento probabilístico del modelo.
@@ -1078,8 +1467,19 @@ La configuración de las estrategias comparadas fue:
 ```{python}
 #| echo: false
 #| tbl-cap: "Estrategias de incorporación de información espacial evaluadas."
+#| tbl-colwidths: [20, 28, 12, 40]
 import pandas as pd
-pd.read_csv("../resultados/tablas/p18_configuracion_estrategias_espaciales.csv")
+mostrar_tabla(
+    pd.read_csv(
+        "../resultados/tablas/p18_configuracion_estrategias_espaciales.csv"
+    ).rename(
+        columns={
+            "Numero predictores": "Pred.",
+            "Descripcion": "Descripción",
+        }
+    ),
+    decimales=0,
+)
 ```
 
 #### Resultados comparativos
@@ -1087,7 +1487,19 @@ pd.read_csv("../resultados/tablas/p18_configuracion_estrategias_espaciales.csv")
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación de estrategias espaciales en el MLP binario."
-pd.read_csv("../resultados/tablas/p18_comparacion_estrategias_espaciales.csv").round(4)
+#| tbl-colwidths: [36, 14, 14, 18, 18]
+mostrar_tabla(
+    pd.read_csv(
+        "../resultados/tablas/p18_comparacion_estrategias_espaciales.csv"
+    ).rename(
+        columns={
+            "Accuracy": "Exact.",
+            "Delta Accuracy vs base": "Cambio exact.",
+            "Delta AUC vs base": "Cambio AUC",
+        }
+    ),
+    decimales=4,
+)
 ```
 
 ![Efecto de la información espacial en el AUC-ROC](../resultados/figuras/17_espacial_aucroc.png){#fig-espacial-aucroc width="90%"}
@@ -1106,7 +1518,7 @@ Este resultado debe leerse con cautela porque las interacciones espaciales solo 
 
 #### Conclusión
 
-De las estrategias evaluadas, el modelo con solo coordenadas obtiene la mayor exactitud (`Accuracy = 0.8750`), mientras que el modelo con coordenadas simples añadidas a los predictores originales obtiene el mayor AUC-ROC (`0.9196`). El modelo con interacciones multiplicativas también supera al modelo base en ambas métricas, aunque de forma más moderada.
+De las estrategias evaluadas, el modelo con solo coordenadas obtiene la mayor exactitud (`0.8750`), mientras que el modelo con coordenadas simples añadidas a los predictores originales obtiene el mayor AUC-ROC (`0.9196`). El modelo con interacciones multiplicativas también supera al modelo base en ambas métricas, aunque de forma más moderada.
 
 En consecuencia, las estrategias espaciales muestran mejoras numéricas frente al modelo base en algunas métricas, especialmente en AUC-ROC, pero esas mejoras no pueden interpretarse como evidencia agronómica de dependencia espacial porque las coordenadas son artificiales. La incorporación de información espacial explícita solo sería recomendable en una fase posterior si se dispone de coordenadas reales de campo. Con los datos actuales, las variables espectrales y la altura siguen siendo la fuente principal y más defendible de información predictiva.
 
@@ -1114,7 +1526,7 @@ En consecuencia, las estrategias espaciales muestran mejoras numéricas frente a
 
 ### Pregunta 19: Propuesta metodológica propia. Proponga, justifique e implemente al menos una extensión o análisis complementario no solicitado explícitamente en este taller. Documente claramente el objetivo de su propuesta, la metodología empleada, los resultados obtenidos y las conclusiones.
 
-Como propuesta metodológica propia se implementaron dos extensiones complementarias. La primera consistió en evaluar el efecto de la regularización por `dropout` en el perceptrón multicapa binario, manteniendo además el uso de `early stopping`. La segunda consistió en comparar el desempeño de los modelos neuronales con un algoritmo no neuronal, Random Forest, usando las mismas particiones de entrenamiento, validación y prueba.
+Como propuesta metodológica propia se implementaron dos extensiones complementarias. La primera consistió en evaluar el efecto de la regularización por *dropout* en el perceptrón multicapa binario, manteniendo además el uso de *early stopping*. La segunda consistió en comparar el desempeño de los modelos neuronales con un algoritmo no neuronal: bosque aleatorio (*Random Forest*), usando las mismas particiones de entrenamiento, validación y prueba.
 
 El objetivo de esta propuesta fue evaluar dos aspectos relevantes para un sistema de apoyo a la decisión agronómica: la robustez del MLP frente al sobreajuste y la conveniencia de contrastar la red neuronal con un modelo alternativo de aprendizaje automático, capaz de capturar relaciones no lineales y entregar una medida directa de importancia de variables.
 
@@ -1122,7 +1534,7 @@ El objetivo de esta propuesta fue evaluar dos aspectos relevantes para un sistem
 
 Para la regularización de la red neuronal se entrenó un MLP binario con la misma arquitectura base seleccionada previamente, pero incorporando capas `Dropout` con una tasa de 0.3 después de cada capa oculta. El entrenamiento usó `early stopping` monitoreando la pérdida de validación, con paciencia de 20 épocas y restauración de los mejores pesos. Esta combinación busca reducir el sobreajuste: `dropout` fuerza a la red a no depender excesivamente de neuronas específicas, mientras que `early stopping` detiene el entrenamiento cuando el desempeño de validación deja de mejorar.
 
-Como modelo alternativo se entrenó un Random Forest de 200 árboles, con `class_weight = "balanced"` para compensar el desequilibrio entre plantas sanas y enfermas. El modelo se ajustó sobre el mismo conjunto de entrenamiento balanceado y se evaluó sobre el mismo conjunto de prueba usado en los modelos anteriores. Se reportaron accuracy y AUC-ROC para mantener la comparación con las secciones previas.
+Como modelo alternativo se entrenó un bosque aleatorio de 200 árboles. El modelo se ajustó sobre el mismo conjunto de entrenamiento balanceado con SMOTE y se evaluó sobre el mismo conjunto de prueba usado en los modelos anteriores. También se configuró `class_weight = "balanced"`; sin embargo, al partir de un entrenamiento ya balanceado, esta opción tiene un efecto práctico mínimo. Se reportaron exactitud y AUC-ROC para mantener la comparación con las secciones previas.
 
 Las extensiones implementadas se resumen en:
 
@@ -1130,7 +1542,15 @@ Las extensiones implementadas se resumen en:
 #| echo: false
 #| tbl-cap: "Extensiones metodológicas implementadas en la propuesta libre."
 import pandas as pd
-pd.read_csv("../resultados/tablas/p19_configuracion_propuesta.csv")
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p19_configuracion_propuesta.csv").rename(
+        columns={
+            "Extension": "Extensión",
+            "Implementacion": "Implementación",
+        }
+    ),
+    decimales=4,
+)
 ```
 
 #### Resultados comparativos
@@ -1140,14 +1560,27 @@ Para hacer la comparación operativa de forma consistente con las secciones ante
 ```{python}
 #| echo: false
 #| tbl-cap: "Comparación final de modelos usando el umbral de Youden."
-pd.read_csv("../resultados/tablas/p19_comparacion_modelos.csv").round(4)
+tabla_p19_modelos = pd.read_csv(
+    "../resultados/tablas/p19_comparacion_modelos.csv"
+)[
+    [
+        "Modelo",
+        "Umbral",
+        "Accuracy",
+        "Sensibilidad",
+        "Especificidad",
+        "F1-score",
+        "AUC-ROC",
+    ]
+].rename(columns={"Accuracy": "Exactitud"})
+mostrar_tabla(tabla_p19_modelos, decimales=4)
 ```
 
 ![Efecto del Dropout sobre las curvas de pérdida](../resultados/figuras/18_dropout_comparacion.png){#fig-dropout-comparacion width="90%"}
 
 ![Comparación final de modelos](../resultados/figuras/19_comparacion_final.png){#fig-comparacion-final width="90%"}
 
-La regresión logística obtiene el mayor AUC-ROC (`0.9464`) y también una exactitud de `0.9375` con el umbral de Youden. El MLP con Dropout alcanza la misma exactitud, sensibilidad y F1-score que la regresión logística, aunque con un AUC-ROC menor (`0.9286`). El MLP binario base obtiene una exactitud de `0.8125` y AUC-ROC de `0.8348`, mientras que Random Forest presenta un desempeño intermedio (`Accuracy = 0.8438`, `AUC-ROC = 0.8929`).
+La regresión logística obtiene el mayor AUC-ROC (`0.9464`) y también una exactitud de `0.9375` con el umbral de Youden. El MLP con *dropout* alcanza la misma exactitud, sensibilidad y F1-score que la regresión logística, aunque con un AUC-ROC menor (`0.9286`). El MLP binario base obtiene una exactitud de `0.8125` y un AUC-ROC de `0.8348`, mientras que el bosque aleatorio presenta un desempeño intermedio (exactitud de `0.8438` y AUC-ROC de `0.8929`).
 
 #### Efecto de Dropout y Early Stopping
 
@@ -1156,7 +1589,19 @@ El comportamiento de entrenamiento de los dos MLP se resume en:
 ```{python}
 #| echo: false
 #| tbl-cap: "Resumen del entrenamiento del MLP base y del MLP con Dropout."
-pd.read_csv("../resultados/tablas/p19_resumen_dropout.csv").round(4)
+#| tbl-colwidths: [22, 12, 18, 18, 18, 12]
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p19_resumen_dropout.csv").rename(
+        columns={
+            "Epocas entrenadas": "Épocas",
+            "Loss train final": "Pérd. entren.",
+            "Loss val final": "Pérd. valid.",
+            "Loss val minima": "Pérd. valid. mín.",
+            "Epoca mejor val_loss": "Mejor época",
+        }
+    ),
+    decimales=4,
+)
 ```
 
 El Dropout cambia de forma importante la dinámica de entrenamiento: el modelo con Dropout se detiene después de 23 épocas, mientras que el MLP base entrena 40 épocas. En el conjunto de prueba, el MLP con Dropout mejora frente al MLP base al usar el umbral de Youden: la exactitud pasa de `0.8125` a `0.9375`, la sensibilidad de `0.7857` a `0.9286` y el AUC-ROC de `0.8348` a `0.9286`. Esto sugiere que la regularización puede ayudar a generalizar mejor en esta corrida.
@@ -1170,7 +1615,10 @@ Random Forest no supera a la regresión logística ni al MLP con Dropout en AUC-
 ```{python}
 #| echo: false
 #| tbl-cap: "Importancia de variables según Random Forest."
-pd.read_csv("../resultados/tablas/p19_importancia_random_forest.csv").round(4)
+mostrar_tabla(
+    pd.read_csv("../resultados/tablas/p19_importancia_random_forest.csv"),
+    decimales=4,
+)
 ```
 
 ![Importancia de variables según Random Forest](../resultados/figuras/20_importancia_rf.png){#fig-importancia-rf width="80%"}
